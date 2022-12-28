@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System.SourceGenerator", "Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj", "{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Sample", "Arch.Sample\Arch.Sample.csproj", "{ED61027D-1586-4349-A6F8-17665C786678}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System", "Arch.System\Arch.System.csproj", "{39363918-BFC7-43BF-8307-F5581225FB41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED61027D-1586-4349-A6F8-17665C786678}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED61027D-1586-4349-A6F8-17665C786678}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED61027D-1586-4349-A6F8-17665C786678}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED61027D-1586-4349-A6F8-17665C786678}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39363918-BFC7-43BF-8307-F5581225FB41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39363918-BFC7-43BF-8307-F5581225FB41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39363918-BFC7-43BF-8307-F5581225FB41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39363918-BFC7-43BF-8307-F5581225FB41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
