@@ -13,7 +13,11 @@ world.Create(new Position(0,0), new Velocity(1,1));
 world.Create(new Position(0,0), new Velocity(1,1));
 
 var group = new Group<float>(
-    new MovementSystem(world)    
+    new MovementSystem(world),
+    new DebugSystem(world)
 );
 group.Initialize(10.0f);
+group.BeforeUpdate(10.0f);
 group.Update(10.0f);
+group.AfterUpdate(10.0f);
+group.Dispose();

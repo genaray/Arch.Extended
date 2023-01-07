@@ -85,6 +85,12 @@ public static class StringBuilderExtensions
     }
     public static StringBuilder GetTypeArray(this StringBuilder sb, IList<ITypeSymbol> parameterSymbols)
     {
+        if (parameterSymbols.Count == 0)
+        {
+            sb.Append("Array.Empty<ComponentType>()");
+            return sb;
+        }
+
         sb.Append("new ComponentType[]{");
         
         foreach (var symbol in parameterSymbols)
@@ -151,6 +157,7 @@ public static class StringBuilderExtensions
         var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
         allArray = allArray.DistinctBy(symbol => symbol.Name).ToList();
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
         var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
@@ -209,7 +216,6 @@ public static class StringBuilderExtensions
     
     public static StringBuilder AppendQueryWithEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
-        var typeArray = "Array.Empty<ComponentType>";
         var getArrays = new StringBuilder().GetArrays(methodSymbol.Parameters);
         var getFirstElements = new StringBuilder().GetFirstElements(methodSymbol.Parameters);
         var getComponents = new StringBuilder().GetComponents(methodSymbol.Parameters);
@@ -223,6 +229,7 @@ public static class StringBuilderExtensions
         var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
         allArray = allArray.DistinctBy(symbol => symbol.Name).ToList();
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
         var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);

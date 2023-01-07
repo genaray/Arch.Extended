@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 
@@ -42,5 +43,16 @@ public partial class MovementSystem : BaseSystem<World,float>
         refs.t0.Y += refs.t1.Y;
         
         Console.WriteLine($"Updated {entity} with attributes only :) ");
+    }
+}
+
+public partial class DebugSystem : BaseSystem<World, float>
+{
+    public DebugSystem(World world) : base(world) { }
+
+    [Update]
+    public void PrintAllEntities(in Entity entity)
+    {
+        Console.WriteLine($"Observed {entity}");
     }
 }
