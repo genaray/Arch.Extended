@@ -8,9 +8,9 @@ namespace Test;
 public record struct Position(float X, float Y);
 public record struct Velocity(float X, float Y);
 
-public partial class MovemmentSystem : BaseSystem<World,float>
+public partial class MovementSystem : BaseSystem<World,float>
 {
-    public MovemmentSystem(World world) : base(world) {}
+    public MovementSystem(World world) : base(world) {}
 
     [Update]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
