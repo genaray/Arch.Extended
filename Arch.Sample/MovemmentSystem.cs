@@ -31,4 +31,16 @@ public partial class MovemmentSystem : BaseSystem<World,float>
         
         Console.WriteLine($"Updated :)");
     }
+    
+    [Update]
+    [All<Position, Velocity>, Any<Position>, Any<int>, None<long>]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AttributeTest(in Entity entity)
+    {
+        var refs = entity.Get<Position, Velocity>();
+        refs.t0.X += refs.t1.X;
+        refs.t0.Y += refs.t1.Y;
+        
+        Console.WriteLine($"Updated {entity} with attributes only :) ");
+    }
 }

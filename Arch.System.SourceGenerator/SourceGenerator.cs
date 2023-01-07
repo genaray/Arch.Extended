@@ -8,18 +8,6 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Arch.System.SourceGenerator;
 
-public static class SourceGenerationHelper
-{
-    public const string Attribute = @"
-namespace Arch.System.SourceGenerator
-{
-    [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
-    public class UpdateAttribute : global::System.Attribute
-    {
-    }
-}";
-}
-
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
@@ -30,13 +18,24 @@ public class QueryGenerator : IIncrementalGenerator
         _classToMethods = new(512);
         if (!Debugger.IsAttached)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
         }
 
+        var attributes = $$"""
+            namespace Arch.System.SourceGenerator
+            {
+                {{new StringBuilder().AppendGenericAttributes("All", "All", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("Any", "Any", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("None", "None", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
+            }
+        """;
+        
         // Add the marker attribute to the compilation
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-            "Attributes.g.cs", 
-            SourceText.From(SourceGenerationHelper.Attribute, Encoding.UTF8))
+                "Attributes.g.cs", 
+                SourceText.From(attributes, Encoding.UTF8)
+            )
         );
         
         // Do a simple filter for enums
@@ -60,13 +59,14 @@ public class QueryGenerator : IIncrementalGenerator
             list = new List<string>();
             _classToMethods[methodSymbol.ContainingSymbol] = list;
         }
-        list.Add(methodSymbol.Name+"_Update");
+        list.Add(methodSymbol.Name+"Query");
     }
     
     static void Execute(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
         
+        // Creating methods
         var distinctEnums = methods.Distinct();
         foreach (var methodSyntax in distinctEnums)
         {
@@ -77,10 +77,11 @@ public class QueryGenerator : IIncrementalGenerator
 
             var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
             var sb = new StringBuilder();
-            var method = entity ? sb.QueryWithEntity(methodSymbol) : sb.QueryWithoutEntity(methodSymbol);
+            var method = entity ? sb.AppendQueryWithEntity(methodSymbol) : sb.AppendQueryWithoutEntity(methodSymbol);
             context.AddSource($"{methodSymbol.Name}.g.cs",  CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
 
+        // Creating class that calls the created methods after another.
         foreach (var classToMethod in _classToMethods)
         {
             var classSymbol = classToMethod.Key as INamedTypeSymbol;
@@ -91,18 +92,19 @@ public class QueryGenerator : IIncrementalGenerator
             
             var methodCalls = new StringBuilder().GetMethods(classToMethod.Value);
             var template = 
-$@"
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-namespace {classSymbol.ContainingNamespace.Name};
-public partial class {classSymbol.Name}{{
-        
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override void Update(in {typeSymbol.Name} {typeSymbol.Name.ToLower()}){{
-        {methodCalls}
-    }}
-}}
-";
+            $$"""
+            using System.Runtime.CompilerServices;
+            using System.Runtime.InteropServices;
+            namespace {{classSymbol.ContainingNamespace.Name}};
+            public partial class {{classSymbol.Name}}{
+                    
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public override void Update(in {{typeSymbol.Name}} {{typeSymbol.Name.ToLower()}}){
+                    {{methodCalls}}
+                }
+            }
+            """;
+            
             context.AddSource($"{classSymbol.Name}.g.cs",  CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }
     }
