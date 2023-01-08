@@ -75,6 +75,8 @@ With them, queries within systems can be written virtually by themselves and it 
 The only thing you have to pay attention to is that the system class is partial and inherits from BaseSystem.
 The attributes can be used to meaningfully describe what query to generate, and the query will always call the annotated method.
 
+> Systems should lie within a namespace, the global one is NOT supported at the moment.
+
 ```cs
 // Components ( ignore the formatting, this saves space )
 public struct Position{ float X, Y };
