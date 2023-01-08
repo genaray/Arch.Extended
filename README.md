@@ -88,9 +88,9 @@ public partial class MovementSystem : BaseSystem<World, float>{
     public MovementSystem(World world) : base(world) {}
     
     // Generates a query and calls this annotated method for all entities with position and velocity components.
-    [Update]
+    [Update]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void MoveEntity(ref Position pos, ref Velocity vel)
+    public void MoveEntity(ref Position pos, ref Velocity vel)  // Entity requires atleast those components. "in Entity" can also be passed. 
     {
         pos.X += vel.X;
         pos.Y += vel.Y;
@@ -99,7 +99,7 @@ public partial class MovementSystem : BaseSystem<World, float>{
     /// Generates a query and calls this method for all entities with position, velocity, player, mob, particle, either moving or idle and no dead component.
     /// All, Any, None are seperate attributes and do not require each other.
     [Update]
-    [All<Player, Mob, Particle>, Any<Moving, Idle>, None<Dead>]
+    [All<Player, Mob, Particle>, Any<Moving, Idle>, None<Dead>]  // Adds filters to the source generation to adress certain entities. 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void MoveEntityWithConstraints(ref Position pos, ref Velocity vel)
     {
