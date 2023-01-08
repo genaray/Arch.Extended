@@ -16,11 +16,9 @@ public class QueryGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         _classToMethods = new(512);
-        if (!Debugger.IsAttached)
-        {
-            //Debugger.Launch();
-        }
+        if (!Debugger.IsAttached) Debugger.Launch();
 
+        // Register the generic attributes 
         var attributes = $$"""
             namespace Arch.System.SourceGenerator
             {
@@ -30,29 +28,25 @@ public class QueryGenerator : IIncrementalGenerator
                 {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
             }
         """;
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
         
-        // Add the marker attribute to the compilation
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
-                "Attributes.g.cs", 
-                SourceText.From(attributes, Encoding.UTF8)
-            )
-        );
-        
-        // Do a simple filter for enums
-        IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 }, // select methods with attributes
-                transform: static (ctx, _) => GetIfMethodHasAttributeOf(ctx, "Arch.System.SourceGenerator.UpdateAttribute")) // sect the enum with the [EnumExtensions] attribute
-            .Where(static m => m is not null)!; // filter out attributed enums that we don't care about
+        // Do a simple filter for methods marked with update
+        IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
+                transform: static (ctx, _) => GetIfMethodHasAttributeOf(ctx, "Arch.System.SourceGenerator.UpdateAttribute"))
+        .Where(static m => m is not null)!; // filter out attributed methods that we don't care about
 
         // Combine the selected enums with the `Compilation`
         IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.Collect());
-
-        // Generate the source using the compilation and enums
-        context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Execute(source.Item1, source.Item2, spc));
+        context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Generate(source.Item1, source.Item2, spc));
     }
-
-    private static void Add(IMethodSymbol methodSymbol)
+    
+    /// <summary>
+    ///     Adds a <see cref="IMethodSymbol"/> to its class.
+    ///     Stores them in <see cref="_classToMethods"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which will be added/mapped to its class.</param>
+    private static void AddMethodToClass(IMethodSymbol methodSymbol)
     {
         if (!_classToMethods.TryGetValue(methodSymbol.ContainingSymbol, out var list))
         {
@@ -62,7 +56,44 @@ public class QueryGenerator : IIncrementalGenerator
         list.Add(methodSymbol.Name+"Query");
     }
     
-    static void Execute(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
+    /// <summary>
+    ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
+    /// </summary>
+    /// <param name="context">Its <see cref="GeneratorSyntaxContext"/>.</param>
+    /// <param name="name">The attributes name.</param>
+    /// <returns></returns>
+    private static MethodDeclarationSyntax? GetIfMethodHasAttributeOf(GeneratorSyntaxContext context, string name)
+    {
+        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
+        var enumDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
+
+        // loop through all the attributes on the method
+        foreach (var attributeListSyntax in enumDeclarationSyntax.AttributeLists)
+        {
+            foreach (var attributeSyntax in attributeListSyntax.Attributes)
+            {
+                if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
+                
+                var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
+                var fullName = attributeContainingTypeSymbol.ToDisplayString();
+
+                // Is the attribute the [EnumExtensions] attribute?
+                if (fullName != name) continue;
+                return enumDeclarationSyntax;
+            }
+        }
+
+        // we didn't find the attribute we were looking for
+        return null;
+    }
+    
+    /// <summary>
+    ///     Generates queries and partial classes for the found marked methods.
+    /// </summary>
+    /// <param name="compilation">The <see cref="Compilation"/>.</param>
+    /// <param name="methods">The <see cref="ImmutableArray{MethodDeclarationSyntax}"/> array, the methods which we will generate queries and classes for.</param>
+    /// <param name="context">The <see cref="SourceProductionContext"/>.</param>
+    private static void Generate(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
         
@@ -73,7 +104,7 @@ public class QueryGenerator : IIncrementalGenerator
             var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
             var methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
 
-            Add(methodSymbol);
+            AddMethodToClass(methodSymbol);
 
             var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
             var sb = new StringBuilder();
@@ -109,31 +140,4 @@ public class QueryGenerator : IIncrementalGenerator
             context.AddSource($"{classSymbol.Name}.g.cs",  CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }
     }
-    
-    static MethodDeclarationSyntax? GetIfMethodHasAttributeOf(GeneratorSyntaxContext context, string name)
-    {
-        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-        var enumDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
-
-        // loop through all the attributes on the method
-        foreach (var attributeListSyntax in enumDeclarationSyntax.AttributeLists)
-        {
-            foreach (var attributeSyntax in attributeListSyntax.Attributes)
-            {
-                if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
-                
-                var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                var fullName = attributeContainingTypeSymbol.ToDisplayString();
-
-                // Is the attribute the [EnumExtensions] attribute?
-                if (fullName != name) continue;
-                return enumDeclarationSyntax;
-            }
-        }
-
-        // we didn't find the attribute we were looking for
-        return null;
-    }   
-    
-    
 }

@@ -4,7 +4,6 @@ namespace Arch.System.SourceGenerator;
 
 public static class IMethodSymbolExtensions
 {
-
     public static INamedTypeSymbol GetAttribute(this IMethodSymbol ms, string name)
     {
         foreach (var attribute in ms.GetAttributes())
