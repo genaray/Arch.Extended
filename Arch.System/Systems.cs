@@ -1,4 +1,6 @@
-﻿namespace Arch.System;
+﻿using System.Runtime.CompilerServices;
+
+namespace Arch.System;
 
 /// <summary>
 ///     An interface providing several methods for a system. 
@@ -11,7 +13,7 @@ public interface ISystem<T> : IDisposable
     ///     Initializes a system, before its first ever run.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
-    void Initialize(in T t);
+    void Initialize();
     
     /// <summary>
     ///     Runs before <see cref="Update"/>.
@@ -39,12 +41,9 @@ public interface ISystem<T> : IDisposable
 /// <typeparam name="T">The type passed to the <see cref="ISystem{T}"/> interface.</typeparam>
 public abstract class BaseSystem<W, T> : ISystem<T>
 {
-    
-    /// <summary>
-    ///     The world instance. 
-    /// </summary>
-    public W World { get; private set; }
 
+    private T _data;
+    
     /// <summary>
     ///     Creates an instance. 
     /// </summary>
@@ -53,9 +52,28 @@ public abstract class BaseSystem<W, T> : ISystem<T>
     {
         World = world;
     }
-    
-    public virtual void Initialize(in T t){}
-    public virtual void BeforeUpdate(in T t){}
+ 
+    /// <summary>
+    ///     The world instance. 
+    /// </summary>
+    public W World { get; private set; }
+
+    /// <summary>
+    ///     The systems data.
+    ///     Assigned during <see cref="BeforeUpdate"/>
+    /// </summary>
+    public ref T Data
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _data;
+    }
+
+    public virtual void Initialize(){}
+
+    public virtual void BeforeUpdate(in T t)
+    {
+        _data = t;
+    }
     public virtual void Update(in T t){}
     public virtual void AfterUpdate(in T t){}
     public virtual void Dispose(){}
@@ -110,12 +128,12 @@ public class Group<T> : ISystem<T>
     ///     Initializes all <see cref="ISystem{T}"/>'s in this <see cref="Group{T}"/>.
     /// </summary>
     /// <param name="t">An instance passed to each <see cref="ISystem{T}.Initialize"/> method.</param>
-    public void Initialize(in T t)
+    public void Initialize()
     {
         for (var index = 0; index < _systems.Count; index++)
         {
             var system = _systems[index];
-            system.Initialize(in t);
+            system.Initialize();
         }
     }
 

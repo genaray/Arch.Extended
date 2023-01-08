@@ -163,7 +163,7 @@ public static class StringBuilderExtensions
         var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
         var noneTypeArray = new StringBuilder().GetTypeArray(noneAttributeSymbol);
         var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveAttributeSymbol);
-        
+
         var template = 
             $$"""
             using System;
@@ -181,7 +181,7 @@ public static class StringBuilderExtensions
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             using System.Runtime.CompilerServices;
-            namespace {{methodSymbol.ContainingNamespace.Name}};
+            namespace {{methodSymbol.ContainingNamespace}};
             public partial class {{methodSymbol.ContainingSymbol.Name}}{
                 
                 private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
@@ -253,7 +253,7 @@ public static class StringBuilderExtensions
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             using System.Runtime.CompilerServices;
-            namespace {{methodSymbol.ContainingNamespace.Name}};
+            namespace {{methodSymbol.ContainingNamespace}};
             public partial class {{methodSymbol.ContainingSymbol.Name}}{
                 
                 private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{            

@@ -95,7 +95,8 @@ public class QueryGenerator : IIncrementalGenerator
             $$"""
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
-            namespace {{classSymbol.ContainingNamespace.Name}};
+            using {{typeSymbol.ContainingNamespace}};
+            namespace {{classSymbol.ContainingNamespace}};
             public partial class {{classSymbol.Name}}{
                     
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

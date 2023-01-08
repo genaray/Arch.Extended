@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System.SourceGenerator", "Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj", "{CBF9A4D4-5E31-4457-8F7B-EBC01EB86AF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Sample", "Arch.Sample\Arch.Sample.csproj", "{ED61027D-1586-4349-A6F8-17665C786678}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System.Sample", "Arch.System.Sample\Arch.System.Sample.csproj", "{ED61027D-1586-4349-A6F8-17665C786678}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System", "Arch.System\Arch.System.csproj", "{39363918-BFC7-43BF-8307-F5581225FB41}"
 EndProject
