@@ -156,7 +156,7 @@ public static class StringBuilderExtensions
         
         var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
-        allArray = allArray.DistinctBy(symbol => symbol.Name).ToList();
+        allArray = allArray.Distinct().ToList();
         allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
@@ -181,30 +181,31 @@ public static class StringBuilderExtensions
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             using System.Runtime.CompilerServices;
-            namespace {{methodSymbol.ContainingNamespace}};
-            public partial class {{methodSymbol.ContainingSymbol.Name}}{
-                
-                private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
-                    All = {{allTypeArray}},
-                    Any = {{anyTypeArray}},
-                    None = {{noneTypeArray}},
-                    Exclusive = {{exclusiveTypeArray}}
-                };
+            namespace {{methodSymbol.ContainingNamespace}}{
+                public partial class {{methodSymbol.ContainingSymbol.Name}}{
+                    
+                    private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
+                        All = {{allTypeArray}},
+                        Any = {{anyTypeArray}},
+                        None = {{noneTypeArray}},
+                        Exclusive = {{exclusiveTypeArray}}
+                    };
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void {{methodSymbol.Name}}Query(){
-                 
-                    var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
-                    foreach(ref var chunk in query.GetChunkIterator()){
-                        
-                        var chunkSize = chunk.Size;
-                        {{getArrays}}
-                        {{getFirstElements}}
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public void {{methodSymbol.Name}}Query(){
+                     
+                        var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
+                        foreach(ref var chunk in query.GetChunkIterator()){
+                            
+                            var chunkSize = chunk.Size;
+                            {{getArrays}}
+                            {{getFirstElements}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
-                        {
-                            {{getComponents}}
-                            {{methodSymbol.Name}}({{insertParams}});
+                            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                            {
+                                {{getComponents}}
+                                {{methodSymbol.Name}}({{insertParams}});
+                            }
                         }
                     }
                 }
@@ -228,7 +229,7 @@ public static class StringBuilderExtensions
         
         var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
-        allArray = allArray.DistinctBy(symbol => symbol.Name).ToList();
+        allArray = allArray.Distinct().ToList();
         allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
@@ -253,32 +254,33 @@ public static class StringBuilderExtensions
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             using System.Runtime.CompilerServices;
-            namespace {{methodSymbol.ContainingNamespace}};
-            public partial class {{methodSymbol.ContainingSymbol.Name}}{
-                
-                private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{            
-                    All = {{allTypeArray}},
-                    Any = {{anyTypeArray}},
-                    None = {{noneTypeArray}},
-                    Exclusive = {{exclusiveTypeArray}}    
-                };
+            namespace {{methodSymbol.ContainingNamespace}}{
+                public partial class {{methodSymbol.ContainingSymbol.Name}}{
+                    
+                    private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{            
+                        All = {{allTypeArray}},
+                        Any = {{anyTypeArray}},
+                        None = {{noneTypeArray}},
+                        Exclusive = {{exclusiveTypeArray}}    
+                    };
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void {{methodSymbol.Name}}Query(){
-                 
-                    var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
-                    foreach(ref var chunk in query.GetChunkIterator()){
-                        
-                        var chunkSize = chunk.Size;
-                        {{getArrays}}
-                        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
-                        {{getFirstElements}}
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public void {{methodSymbol.Name}}Query(){
+                     
+                        var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
+                        foreach(ref var chunk in query.GetChunkIterator()){
+                            
+                            var chunkSize = chunk.Size;
+                            {{getArrays}}
+                            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                            {{getFirstElements}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
-                        {
-                            ref readonly var EntityComponent = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                            {{getComponents}}
-                            {{methodSymbol.Name}}({{insertParams}});
+                            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                            {
+                                ref readonly var EntityComponent = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                                {{getComponents}}
+                                {{methodSymbol.Name}}({{insertParams}});
+                            }
                         }
                     }
                 }

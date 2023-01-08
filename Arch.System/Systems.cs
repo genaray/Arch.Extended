@@ -12,7 +12,6 @@ public interface ISystem<T> : IDisposable
     /// <summary>
     ///     Initializes a system, before its first ever run.
     /// </summary>
-    /// <param name="t">An instance passed to it.</param>
     void Initialize();
     
     /// <summary>

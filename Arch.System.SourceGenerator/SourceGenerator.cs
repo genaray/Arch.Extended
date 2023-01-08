@@ -16,7 +16,7 @@ public class QueryGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         _classToMethods = new(512);
-        if (!Debugger.IsAttached) Debugger.Launch();
+        //if (!Debugger.IsAttached) Debugger.Launch();
 
         // Register the generic attributes 
         var attributes = $$"""
@@ -127,12 +127,13 @@ public class QueryGenerator : IIncrementalGenerator
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
             using {{typeSymbol.ContainingNamespace}};
-            namespace {{classSymbol.ContainingNamespace}};
-            public partial class {{classSymbol.Name}}{
-                    
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public override void Update(in {{typeSymbol.Name}} {{typeSymbol.Name.ToLower()}}){
-                    {{methodCalls}}
+            namespace {{classSymbol.ContainingNamespace}}{
+                public partial class {{classSymbol.Name}}{
+                        
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public override void Update(in {{typeSymbol.Name}} {{typeSymbol.Name.ToLower()}}){
+                        {{methodCalls}}
+                    }
                 }
             }
             """;
