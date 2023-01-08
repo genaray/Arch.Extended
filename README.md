@@ -5,7 +5,7 @@
 ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
 Extensions for [Arch](https://github.com/genaray/Arch) with some useful features like Systems, Source Generator and Utils.
-- 
+ 
 - 🛠️ **_Productive_** >  Adds some useful tools and features to the main repository!
 - ☕️ **_SIMPLE_** >  Works easily, reliably and understandably!
 - 💪 _**MAINTAINED**_ > It's actively being worked on, maintained, and supported!
