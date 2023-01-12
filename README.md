@@ -15,9 +15,71 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 - ⚙️ **_Systems_** > By means of systems, it is now easy to organize, reuse and arrange queries. 
 - ✍️ **_Source Generator_** > Declarative syntax using attributes and source generator, let your queries write themselves! 
 
+
+# Fully featured Code sample
+
+With this package you are able to write and group queries and systems for Arch automatically.
+And all this with the best possible performance
+
+```cs
+// Components ( ignore the formatting, this saves space )
+public struct Position{ float X, Y };
+public struct Velocity{ float Dx, Dy };
+
+// BaseSystem provides several usefull methods for interacting and structuring systems
+public class MovementSystem : BaseSystem<World, float>
+{
+    public MovementSystem(World world) : base(world) {}
+    
+    // Generates a query and calls that one automatically on BaseSystem.Update
+    [Update]
+    public void Move([Data] in float time, ref Position pos, ref Velocity vel)
+    {
+        pos.X += time * vel.X;
+        pos.Y += time * vel.Y;
+    }
+    
+    // Generates and filters a query and calls that one automatically on BaseSystem.Update in order
+    [Update]
+    [All<Player, Mob>, Any<Idle, Moving>, None<Alive>]
+    public void ResetVelocity(ref Velocity vel)
+    {
+        vel = new Velocity{ X = 0, Y = 0 };
+    }
+}
+
+public class Game 
+{
+    public static void Main(string[] args) 
+    {     
+        var deltaTime = 0.05f; // This is mostly given by engines, frameworks
+        
+        // Create a world and a group of systems which will be controlled 
+        var world = World.Create();
+        var _systems = new Group<float>(
+            new MovementSystem(world),   // Run in order
+            new MyOtherSystem(...),
+            ...
+        );
+      
+        _systems.Initialize();                  // Inits all registered systems
+        _systems.BeforeUpdate(in deltaTime);    // Calls .BeforeUpdate on all systems ( can be overriden )
+        _systems.Update(in deltaTime);          // Calls .Update on all systems ( can be overriden )
+        _systems.AfterUpdate(in deltaTime);     // Calls .AfterUpdate on all System ( can be overriden )
+        _systems.Dispose();                     // Calls .Dispose on all systems ( can be overriden )
+    }
+}
+```
+# Contents
+- [Systems Code sample](#systems-code-sample)
+- [Systems source generator](#systems-source-generator)
+    * [Syntax](#syntax)
+    * [Query Methods in BaseSystem](#query-methods-in-basesystem)
+    * [Query Methods in custom classes](#query-methods-in-custom-classes)
+
 # Systems Code sample
 
-The Arch.System package provides a number of useful classes to organize and structure queries. 
+The `Arch.System` package provides a number of useful classes to organize and structure queries. 
 These are organized into "systems" and can also be grouped.
 
 The example below demonstrates a slightly larger code sample
@@ -69,7 +131,7 @@ public class Game
 
 # Systems source generator
 
-The Arch.System.SourceGenerator provides some code generation utils. 
+The `Arch.System.SourceGenerator` package provides some code generation utils. 
 With them, queries can be written virtually by themselves which saves some boilerplate code. 
 
 Query methods can be generated in all classes as long as they are partial. However it makes most sense in the `BaseSystem`.
@@ -198,14 +260,14 @@ public static partial class MyQueries{
 
     [Update]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void MoveEntities([Data] in float time, ref Position pos, ref Velocity vel){
+    public static void MoveEntities([Data] in float time, ref Position pos, ref Velocity vel){
         pos.X += time * vel.X;
         pos.Y += time * vel.Y;
     }
     
     [Update]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DamageEntities(ref Hitted hit, ref Health health){
+    public static void DamageEntities(ref Hitted hit, ref Health health){
         health.value -= hit.value;
     }
     
