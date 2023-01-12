@@ -17,6 +17,8 @@ public static class StringBuilderExtensions
                 return "ref";
             case RefKind.In:
                 return "in";
+            case RefKind.Out:
+                return "out";
         }
         return null;
     }
@@ -71,7 +73,7 @@ public static class StringBuilderExtensions
     {
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()} = ref Unsafe.Add(ref {symbol.Type.Name.ToLower()}FirstElement, entityIndex);");
+                sb.AppendLine($"ref var {symbol.Name.ToLower()} = ref Unsafe.Add(ref {symbol.Type.Name.ToLower()}FirstElement, entityIndex);");
 
         return sb;
     }
@@ -79,7 +81,7 @@ public static class StringBuilderExtensions
     public static StringBuilder InsertParams(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
-            sb.Append($"{RefKindToString(symbol.RefKind)} {symbol.Type.Name.ToLower()},");
+            sb.Append($"{RefKindToString(symbol.RefKind)} {symbol.Name.ToLower()},");
         
         if(sb.Length > 0) sb.Length--;
         return sb;
@@ -119,7 +121,7 @@ public static class StringBuilderExtensions
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                sb.Append($"{RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Type.Name.ToLower()},");
+                sb.Append($"{RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Name.ToLower()},");
         }
         sb.Length--;
         return sb;
