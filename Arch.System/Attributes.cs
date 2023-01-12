@@ -4,7 +4,7 @@
 ///     Marks a method to generate a high performance query for it. 
 /// </summary>
 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
-public class UpdateAttribute : global::System.Attribute
+public class QueryAttribute : global::System.Attribute
 {
 }
 

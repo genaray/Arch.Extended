@@ -16,14 +16,14 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
     private readonly Rectangle _viewport;
     public MovementSystem(World world, Rectangle viewport) : base(world) { _viewport = viewport;}
 
-    [Update]
+    [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move([Data] GameTime time, ref Position pos, ref Velocity vel)
     {
         pos.Vector2 += time.ElapsedGameTime.Milliseconds * vel.Vector2;
     }
     
-    [Update]
+    [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Bounce(ref Position pos, ref Velocity vel)
     {
@@ -48,7 +48,7 @@ public partial class ColorSystem : BaseSystem<World, GameTime>
 {
     public ColorSystem(World world) : base(world) {}
 
-    [Update]
+    [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ChangeColor([Data] GameTime time, ref Sprite sprite)
     {
@@ -72,7 +72,7 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
         _batch.Begin();
     }
 
-    [Update]
+    [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Draw(ref Position position, ref Sprite sprite)
     {
@@ -100,7 +100,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
         PrintEntitiesWithoutVelocityQuery(World);  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
     }
 
-    [Update]
+    [Query]
     [All<Position, Sprite>, None<Velocity>]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void PrintEntitiesWithoutVelocity(in Entity entity)

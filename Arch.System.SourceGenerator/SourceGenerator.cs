@@ -33,7 +33,7 @@ public class QueryGenerator : IIncrementalGenerator
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
-                 static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.SourceGenerator.UpdateAttribute")
+                 static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.SourceGenerator.QueryAttribute")
         ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
 
         // Combine the selected enums with the `Compilation`
