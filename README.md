@@ -32,7 +32,7 @@ public class MovementSystem : BaseSystem<World, float>
     public MovementSystem(World world) : base(world) {}
     
     // Generates a query and calls that one automatically on BaseSystem.Update
-    [Update]
+    [Query]
     public void Move([Data] in float time, ref Position pos, ref Velocity vel)
     {
         pos.X += time * vel.X;
@@ -40,7 +40,7 @@ public class MovementSystem : BaseSystem<World, float>
     }
     
     // Generates and filters a query and calls that one automatically on BaseSystem.Update in order
-    [Update]
+    [Query]
     [All<Player, Mob>, Any<Idle, Moving>, None<Alive>]
     public void ResetVelocity(ref Velocity vel)
     {
@@ -146,14 +146,14 @@ The generated methods can also be called manually.
 `Arch.System` provides some attributes that can be used for code generation. 
 These can be arranged and used arbitrarily.
 
-- `[Update]` > Update marks some method so that the code generator makes a query out of it.
+- `[Query]` > Update marks some method so that the code generator makes a query out of it.
 - `[All<T0...T25>]` > Mirrors `QueryDescription.All`, defines which components an entity needs.
 - `[Any<T0...T25>]` > Mirrors `QueryDescription.Any`, defines that an entity needs at least one of the components.
 - `[None<T0...T25>]` > Mirrors `QueryDescription.None`, defines that an entity should have none of those components.
 - `[Exclusive<T0...T25>]` > Mirrors `QueryDescription.Exclusive`, defines an exclusive set of entity components.
 - `[Data]` > Marks a method parameter and specifies that this type should be passed through the query.
 
-`Update` is always required. 
+`Query` is always required. 
 `All`, `Any`, `None`, `Exclusive`, `Data` are optional and independent from each other. 
 
 Let us now look at some example.
@@ -174,7 +174,7 @@ public partial class MovementSystem : BaseSystem<World, float>{
     public MovementSystem(World world) : base(world) {}
     
     // Generates a query and calls this annotated method for all entities with position and velocity components.
-    [Update]  // Marks method inside BaseSystem for source generation.
+    [Query]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void MoveEntity([Data] ref float time, ref Position pos, ref Velocity vel)  // Entity requires atleast those components. "in Entity" can also be passed. 
     {
@@ -184,7 +184,7 @@ public partial class MovementSystem : BaseSystem<World, float>{
     
     /// Generates a query and calls this method for all entities with velocity, player, mob, particle, either moving or idle and no dead component.
     /// All, Any, None are seperate attributes and do not require each other.
-    [Update]
+    [Query]
     [All<Player, Mob, Particle>, Any<Moving, Idle>, None<Alive>]  // Adds filters to the source generation to adress certain entities. 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void StopDeadEntities(ref Velocity vel)
@@ -194,6 +194,8 @@ public partial class MovementSystem : BaseSystem<World, float>{
     }
 }
 ```
+
+If a parameter of a method within a basesystem is marked as `Data`, then `BaseSystem.Data` is passed directly to the query. In the example above you can see this at the time: `float`.
 
 If you use the source generator and its attributes in a class that does not override `BaseSystem.Update`, this method is implemented by the source generator itself.
 If the method is already implemented by the user, only "query" methods are generated, which you can call yourself.
@@ -210,7 +212,7 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
         MoveEntityQuery(World);  // Call source generated query, which calls the MoveEntity method
     }
 
-    [Update]
+    [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void MoveEntity(ref Position pos, ref Velocity vel)
     {
@@ -229,14 +231,14 @@ This is useful to group and reuse queries.
 // Class which will generate 
 public partial class MyQueries{
 
-    [Update]  // Marks method inside BaseSystem for source generation.
+    [Query]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void MoveEntities([Data] in float time, ref Position pos, ref Velocity vel){
         pos.X += time * vel.X;
         pos.Y += time * vel.Y;
     }
     
-    [Update]  // Marks method inside BaseSystem for source generation.
+    [Query]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DamageEntities(ref Hitted hit, ref Health health){
         health.value -= hit.value;
@@ -258,14 +260,14 @@ The advantage is that no class instance is needed.
 // Class which will generate 
 public static partial class MyQueries{
 
-    [Update]  // Marks method inside BaseSystem for source generation.
+    [Query]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void MoveEntities([Data] in float time, ref Position pos, ref Velocity vel){
         pos.X += time * vel.X;
         pos.Y += time * vel.Y;
     }
     
-    [Update]  // Marks method inside BaseSystem for source generation.
+    [Query]  // Marks method inside BaseSystem for source generation.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DamageEntities(ref Hitted hit, ref Health health){
         health.value -= hit.value;
