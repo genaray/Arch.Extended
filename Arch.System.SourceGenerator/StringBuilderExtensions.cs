@@ -112,6 +112,18 @@ public static class StringBuilderExtensions
         
         return sb;
     }
+
+    public static StringBuilder DataParameters(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
+    {
+        sb.Append(',');
+        foreach (var parameter in parameterSymbols)
+        {
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+                sb.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
+        }
+        sb.Length--;
+        return sb;
+    }
     
     public static StringBuilder CallMethods(this StringBuilder sb, IEnumerable<IMethodSymbol> methodNames)
     {
@@ -176,15 +188,8 @@ public static class StringBuilderExtensions
         allArray = allArray.Distinct().ToList();
         allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
 
-        var data = new StringBuilder();
-        data.Append(',');
-        foreach (var parameter in methodSymbol.Parameters)
-        {
-            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                data.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
-        }
-        data.Length--;
-        
+        // Generate code
+        var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
         var getArrays = new StringBuilder().GetArrays(components);
         var getFirstElements = new StringBuilder().GetFirstElements(components);
         var getComponents = new StringBuilder().GetComponents(components);
@@ -266,16 +271,9 @@ public static class StringBuilderExtensions
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
         allArray = allArray.Distinct().ToList();
         allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
-
-        var data = new StringBuilder();
-        data.Append(',');
-        foreach (var parameter in methodSymbol.Parameters)
-        {
-            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                data.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
-        }
-        data.Length--;
         
+        // Generate code 
+        var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
         var getArrays = new StringBuilder().GetArrays(components);
         var getFirstElements = new StringBuilder().GetFirstElements(components);
         var getComponents = new StringBuilder().GetComponents(components);
