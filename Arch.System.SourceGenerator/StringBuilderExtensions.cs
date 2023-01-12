@@ -119,7 +119,7 @@ public static class StringBuilderExtensions
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                sb.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
+                sb.Append($"{RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Type.Name.ToLower()},");
         }
         sb.Length--;
         return sb;
@@ -134,7 +134,7 @@ public static class StringBuilderExtensions
             foreach (var parameter in method.Parameters)
             {
                 if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data"))) continue;
-                data.Append($"ref Data,");
+                data.Append($"{RefKindToString(parameter.RefKind)} Data,");
                 break;
             }
             data.Length--;
