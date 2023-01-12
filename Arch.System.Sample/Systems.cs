@@ -18,9 +18,9 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
 
     [Update]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Move(ref Position pos, ref Velocity vel)
+    public void Move([Data] GameTime time, ref Position pos, ref Velocity vel)
     {
-        pos.Vector2 += Data.ElapsedGameTime.Milliseconds * vel.Vector2;
+        pos.Vector2 += time.ElapsedGameTime.Milliseconds * vel.Vector2;
     }
     
     [Update]
@@ -50,11 +50,11 @@ public partial class ColorSystem : BaseSystem<World, GameTime>
 
     [Update]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ChangeColor(ref Sprite sprite)
+    public void ChangeColor([Data] GameTime time, ref Sprite sprite)
     {
-        sprite.Color.R += (byte)(Data.ElapsedGameTime.TotalMilliseconds * 0.08);
-        sprite.Color.G += (byte)(Data.ElapsedGameTime.TotalMilliseconds * 0.08);
-        sprite.Color.B += (byte)(Data.ElapsedGameTime.TotalMilliseconds * 0.08);
+        sprite.Color.R += (byte)(time.ElapsedGameTime.TotalMilliseconds * 0.08);
+        sprite.Color.G += (byte)(time.ElapsedGameTime.TotalMilliseconds * 0.08);
+        sprite.Color.B += (byte)(time.ElapsedGameTime.TotalMilliseconds * 0.08);
     }
 }
 
@@ -97,7 +97,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     public override void Update(in GameTime t)
     {
         World.Query(in _customQuery, (in Entity entity) => Console.WriteLine($"Custom : {entity}"));  // Manual query
-        PrintEntitiesWithoutVelocityQuery();  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
+        PrintEntitiesWithoutVelocityQuery(World);  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
     }
 
     [Update]

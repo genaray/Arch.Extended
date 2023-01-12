@@ -11,7 +11,7 @@ namespace Arch.System.SourceGenerator;
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
-    private static Dictionary<ISymbol, List<string>> _classToMethods { get; set; }
+    private static Dictionary<ISymbol, List<IMethodSymbol>> _classToMethods { get; set; }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -32,9 +32,9 @@ public class QueryGenerator : IIncrementalGenerator
         
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                predicate: static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
-                transform: static (ctx, _) => GetIfMethodHasAttributeOf(ctx, "Arch.System.SourceGenerator.UpdateAttribute"))
-        .Where(static m => m is not null)!; // filter out attributed methods that we don't care about
+                 static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
+                 static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.SourceGenerator.UpdateAttribute")
+        ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
 
         // Combine the selected enums with the `Compilation`
         IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.Collect());
@@ -50,10 +50,10 @@ public class QueryGenerator : IIncrementalGenerator
     {
         if (!_classToMethods.TryGetValue(methodSymbol.ContainingSymbol, out var list))
         {
-            list = new List<string>();
+            list = new List<IMethodSymbol>();
             _classToMethods[methodSymbol.ContainingSymbol] = list;
         }
-        list.Add(methodSymbol.Name+"Query");
+        list.Add(methodSymbol);
     }
     
     /// <summary>
@@ -62,7 +62,7 @@ public class QueryGenerator : IIncrementalGenerator
     /// <param name="context">Its <see cref="GeneratorSyntaxContext"/>.</param>
     /// <param name="name">The attributes name.</param>
     /// <returns></returns>
-    private static MethodDeclarationSyntax? GetIfMethodHasAttributeOf(GeneratorSyntaxContext context, string name)
+    private static MethodDeclarationSyntax? GetMethodSymbolIfAttributeof(GeneratorSyntaxContext context, string name)
     {
         // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
         var enumDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
@@ -115,13 +115,18 @@ public class QueryGenerator : IIncrementalGenerator
         // Creating class that calls the created methods after another.
         foreach (var classToMethod in _classToMethods)
         {
+            
+            // Get BaseSystem class
             var classSymbol = classToMethod.Key as INamedTypeSymbol;
+            var parentSymbol = classSymbol.BaseType;
+
+            if(!parentSymbol.Name.Equals("BaseSystem")) continue;     // Ignore classes which do not derive from BaseSystem
             if(classSymbol.MemberNames.Contains("Update")) continue;  // Update was implemented by user, no need to do that by source generator. 
             
-            var parentSymbol = classSymbol.BaseType;
+            // Get generic of BaseSystem
             var typeSymbol = parentSymbol.TypeArguments[1];
             
-            var methodCalls = new StringBuilder().GetMethods(classToMethod.Value);
+            var methodCalls = new StringBuilder().CallMethods(classToMethod.Value);
             var template = 
             $$"""
             using System.Runtime.CompilerServices;

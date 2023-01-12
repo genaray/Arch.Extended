@@ -48,38 +48,39 @@ public static class StringBuilderExtensions
         return sb;
     }
     
-    public static StringBuilder GetArrays(this StringBuilder sb, ImmutableArray<IParameterSymbol> parameterSymbols)
+    public static StringBuilder GetArrays(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
-            if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"var {symbol.Type.Name}Array = chunk.GetArray<{symbol.Type.Name}>();");
+            if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
+                sb.AppendLine($"var {symbol.Type.Name.ToLower()}Array = chunk.GetArray<{symbol.Type}>();");
 
         return sb;
     }
     
-    public static StringBuilder GetFirstElements(this StringBuilder sb, ImmutableArray<IParameterSymbol> parameterSymbols)
+    public static StringBuilder GetFirstElements(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
       
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name}FirstElement = ref ArrayExtensions.DangerousGetReference({symbol.Type.Name}Array);");
+                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref ArrayExtensions.DangerousGetReference({symbol.Type.Name.ToLower()}Array);");
 
         return sb;
     }
     
-    public static StringBuilder GetComponents(this StringBuilder sb, ImmutableArray<IParameterSymbol> parameterSymbols)
+    public static StringBuilder GetComponents(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name}Component = ref Unsafe.Add(ref {symbol.Type.Name}FirstElement, entityIndex);");
+                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()} = ref Unsafe.Add(ref {symbol.Type.Name.ToLower()}FirstElement, entityIndex);");
 
         return sb;
     }
     
-    public static StringBuilder InsertParams(this StringBuilder sb, ImmutableArray<IParameterSymbol> parameterSymbols)
+    public static StringBuilder InsertParams(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
-            sb.Append($"{RefKindToString(symbol.RefKind)} {symbol.Type.Name}Component,");
+            sb.Append($"{RefKindToString(symbol.RefKind)} {symbol.Type.Name.ToLower()},");
+        
         if(sb.Length > 0) sb.Length--;
         return sb;
     }
@@ -95,7 +96,7 @@ public static class StringBuilderExtensions
         
         foreach (var symbol in parameterSymbols)
             if(symbol.Name is not "Entity") // Prevent entity being added to the type array
-                sb.Append($"typeof({symbol.Name}),");
+                sb.Append($"typeof({symbol}),");
         
         if (sb.Length > 0) sb.Length -= 1;
         sb.Append('}');
@@ -112,10 +113,21 @@ public static class StringBuilderExtensions
         return sb;
     }
     
-    public static StringBuilder GetMethods(this StringBuilder sb, List<string> methodNames)
+    public static StringBuilder CallMethods(this StringBuilder sb, IEnumerable<IMethodSymbol> methodNames)
     {
         foreach (var method in methodNames)
-            sb.AppendLine($"{method}();");
+        {
+            var data = new StringBuilder();
+            data.Append(',');
+            foreach (var parameter in method.Parameters)
+            {
+                if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data"))) continue;
+                data.Append($"ref Data,");
+                break;
+            }
+            data.Length--;
+            sb.AppendLine($"{method.Name}Query(World {data});");   
+        }
         return sb;
     }
     
@@ -144,21 +156,40 @@ public static class StringBuilderExtensions
 
     public static StringBuilder AppendQueryWithoutEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
-        var getArrays = new StringBuilder().GetArrays(methodSymbol.Parameters);
-        var getFirstElements = new StringBuilder().GetFirstElements(methodSymbol.Parameters);
-        var getComponents = new StringBuilder().GetComponents(methodSymbol.Parameters);
-        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
 
+        var staticModifier = methodSymbol.IsStatic ? "static" : "";
+        
+        // Get attributes
         var allAttributeSymbol = methodSymbol.GetAttribute("All");
         var anyAttributeSymbol = methodSymbol.GetAttribute("Any");
         var noneAttributeSymbol = methodSymbol.GetAttribute("None");
         var exclusiveAttributeSymbol = methodSymbol.GetAttribute("Exclusive");
         
-        var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
+        // Get params / components except those marked with data or entities. 
+        var components = methodSymbol.Parameters.ToList();
+        components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys 
+        components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data")));    // Remove data annotated params
+        
+        // Create all query array
+        var allArray = components.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
         allArray = allArray.Distinct().ToList();
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
 
+        var data = new StringBuilder();
+        data.Append(',');
+        foreach (var parameter in methodSymbol.Parameters)
+        {
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+                data.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
+        }
+        data.Length--;
+        
+        var getArrays = new StringBuilder().GetArrays(components);
+        var getFirstElements = new StringBuilder().GetFirstElements(components);
+        var getComponents = new StringBuilder().GetComponents(components);
+        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
+        
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
         var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
         var noneTypeArray = new StringBuilder().GetTypeArray(noneAttributeSymbol);
@@ -167,35 +198,35 @@ public static class StringBuilderExtensions
         var template = 
             $$"""
             using System;
-            using System.Collections.Generic;
-            using System.Collections.Specialized;
-            using System.ComponentModel;
-            using System.Linq;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
             using Arch.Core;
             using Arch.Core.Extensions;
             using Arch.Core.Utils;
-            using Collections.Pooled;
-            using JobScheduler;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
-            using System.Runtime.CompilerServices;
             namespace {{methodSymbol.ContainingNamespace}}{
-                public partial class {{methodSymbol.ContainingSymbol.Name}}{
+                public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
                     
-                    private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
+                    private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
                         All = {{allTypeArray}},
                         Any = {{anyTypeArray}},
                         None = {{noneTypeArray}},
                         Exclusive = {{exclusiveTypeArray}}
                     };
 
+                    private {{staticModifier}} bool _{{methodSymbol.Name}}_Initialized;
+                    private {{staticModifier}} Query _{{methodSymbol.Name}}_Query;
+
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public void {{methodSymbol.Name}}Query(){
+                    public {{staticModifier}} void {{methodSymbol.Name}}Query(World world {{data}}){
                      
-                        var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
-                        foreach(ref var chunk in query.GetChunkIterator()){
+                        if(!_{{methodSymbol.Name}}_Initialized){
+                            _{{methodSymbol.Name}}_Query = world.Query(in {{methodSymbol.Name}}_QueryDescription);
+                            _{{methodSymbol.Name}}_Initialized = true;
+                        }
+
+                        foreach(ref var chunk in _{{methodSymbol.Name}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
                             {{getArrays}}
@@ -217,58 +248,76 @@ public static class StringBuilderExtensions
     
     public static StringBuilder AppendQueryWithEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
-        var getArrays = new StringBuilder().GetArrays(methodSymbol.Parameters);
-        var getFirstElements = new StringBuilder().GetFirstElements(methodSymbol.Parameters);
-        var getComponents = new StringBuilder().GetComponents(methodSymbol.Parameters);
-        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
-
+       var staticModifier = methodSymbol.IsStatic ? "static" : "";
+        
+        // Get attributes
         var allAttributeSymbol = methodSymbol.GetAttribute("All");
         var anyAttributeSymbol = methodSymbol.GetAttribute("Any");
         var noneAttributeSymbol = methodSymbol.GetAttribute("None");
         var exclusiveAttributeSymbol = methodSymbol.GetAttribute("Exclusive");
         
-        var allArray = methodSymbol.Parameters.Select(symbol => symbol.Type).ToList();
+        // Get params / components except those marked with data or entities. 
+        var components = methodSymbol.Parameters.ToList();
+        components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys 
+        components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data")));    // Remove data annotated params
+        
+        // Create all query array
+        var allArray = components.Select(symbol => symbol.Type).ToList();
         if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
         allArray = allArray.Distinct().ToList();
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
 
+        var data = new StringBuilder();
+        data.Append(',');
+        foreach (var parameter in methodSymbol.Parameters)
+        {
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+                data.Append($"ref {parameter.Type} {parameter.Type.Name.ToLower()},");
+        }
+        data.Length--;
+        
+        var getArrays = new StringBuilder().GetArrays(components);
+        var getFirstElements = new StringBuilder().GetFirstElements(components);
+        var getComponents = new StringBuilder().GetComponents(components);
+        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
+        
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
         var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
         var noneTypeArray = new StringBuilder().GetTypeArray(noneAttributeSymbol);
         var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveAttributeSymbol);
-        
+
         var template = 
             $$"""
             using System;
-            using System.Collections.Generic;
-            using System.Collections.Specialized;
-            using System.ComponentModel;
-            using System.Linq;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
             using Arch.Core;
             using Arch.Core.Extensions;
             using Arch.Core.Utils;
-            using Collections.Pooled;
-            using JobScheduler;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
-            using System.Runtime.CompilerServices;
             namespace {{methodSymbol.ContainingNamespace}}{
-                public partial class {{methodSymbol.ContainingSymbol.Name}}{
+                public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
                     
-                    private QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{            
+                    private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
                         All = {{allTypeArray}},
                         Any = {{anyTypeArray}},
                         None = {{noneTypeArray}},
-                        Exclusive = {{exclusiveTypeArray}}    
+                        Exclusive = {{exclusiveTypeArray}}
                     };
 
+                    private {{staticModifier}} bool _{{methodSymbol.Name}}_Initialized;
+                    private {{staticModifier}} Query _{{methodSymbol.Name}}_Query;
+
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public void {{methodSymbol.Name}}Query(){
+                    public {{staticModifier}} void {{methodSymbol.Name}}Query(World world {{data}}){
                      
-                        var query = World.Query(in {{methodSymbol.Name}}_QueryDescription);
-                        foreach(ref var chunk in query.GetChunkIterator()){
+                        if(!_{{methodSymbol.Name}}_Initialized){
+                            _{{methodSymbol.Name}}_Query = world.Query(in {{methodSymbol.Name}}_QueryDescription);
+                            _{{methodSymbol.Name}}_Initialized = true;
+                        }
+
+                        foreach(ref var chunk in _{{methodSymbol.Name}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
                             {{getArrays}}
@@ -277,7 +326,7 @@ public static class StringBuilderExtensions
 
                             for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                             {
-                                ref readonly var EntityComponent = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                                 {{getComponents}}
                                 {{methodSymbol.Name}}({{insertParams}});
                             }
@@ -286,7 +335,7 @@ public static class StringBuilderExtensions
                 }
             }
             """;
-        
+
         sb.Append(template);
         return sb;
     }

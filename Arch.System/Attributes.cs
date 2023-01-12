@@ -1,10 +1,20 @@
 ﻿namespace Arch.System.SourceGenerator;
 
 /// <summary>
-///     Marks an method inside a <see cref="BaseSystem{W,T}"/> for being targeted by the source generator.
+///     Marks a method to generate a high performance query for it. 
 /// </summary>
 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
 public class UpdateAttribute : global::System.Attribute
+{
+}
+
+
+/// <summary>
+///     Marks a parameter as "data". This will be taken into account during source generation and will still be passed as a parameter in the query method.
+///     Is not treated as an entity component.
+/// </summary>
+[global::System.AttributeUsage(global::System.AttributeTargets.Parameter)]
+public class DataAttribute : global::System.Attribute
 {
 }
 
