@@ -22,10 +22,12 @@ public class QueryGenerator : IIncrementalGenerator
         var attributes = $$"""
             namespace Arch.System.SourceGenerator
             {
+            #if NET7_0_OR_GREATER
                 {{new StringBuilder().AppendGenericAttributes("All", "All", 25)}}
                 {{new StringBuilder().AppendGenericAttributes("Any", "Any", 25)}}
                 {{new StringBuilder().AppendGenericAttributes("None", "None", 25)}}
                 {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
+            #endif
             }
         """;
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));

@@ -4,51 +4,8 @@ using Microsoft.CodeAnalysis;
 
 namespace Arch.System.SourceGenerator;
 
-public static class StringBuilderExtensions
+public static class QueryUtils
 {
-    
-    public static string RefKindToString(RefKind refKind)
-    {
-        switch (refKind)
-        {
-            case RefKind.None:
-                return "";
-            case RefKind.Ref:
-                return "ref";
-            case RefKind.In:
-                return "in";
-            case RefKind.Out:
-                return "out";
-        }
-        return null;
-    }
-    
-    public static StringBuilder GenericsWithoutBrackets(this StringBuilder sb, int index)
-    {
-        for (var i = 0; i < index; i++)
-            sb.Append($"T{i},");
-        if (sb.Length > 0) sb.Length -= 1;
-
-        return sb;
-    }
-    
-    public static StringBuilder GenericsWithoutBrackets(this StringBuilder sb, ImmutableArray<IParameterSymbol> parameterSymbols)
-    {
-        foreach (var method in parameterSymbols)
-            sb.Append(method.Type.Name+",");
-        if (sb.Length > 0) sb.Length -= 1;
-
-        return sb;
-    }
-    
-    public static StringBuilder GenericsToTypeArray(this StringBuilder sb, int index)
-    {
-        for (var i = 0; i < index; i++)
-            sb.Append($"typeof(T{i}),");
-        if (sb.Length > 0) sb.Length -= 1;
-
-        return sb;
-    }
     
     public static StringBuilder GetArrays(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
@@ -81,7 +38,7 @@ public static class StringBuilderExtensions
     public static StringBuilder InsertParams(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
-            sb.Append($"{RefKindToString(symbol.RefKind)} {symbol.Name.ToLower()},");
+            sb.Append($"{CommonUtils.RefKindToString(symbol.RefKind)} {symbol.Name.ToLower()},");
         
         if(sb.Length > 0) sb.Length--;
         return sb;
@@ -121,7 +78,7 @@ public static class StringBuilderExtensions
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                sb.Append($"{RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Name.ToLower()},");
+                sb.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Name.ToLower()},");
         }
         sb.Length--;
         return sb;
@@ -136,7 +93,7 @@ public static class StringBuilderExtensions
             foreach (var parameter in method.Parameters)
             {
                 if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data"))) continue;
-                data.Append($"{RefKindToString(parameter.RefKind)} Data,");
+                data.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} Data,");
                 break;
             }
             data.Length--;
@@ -144,40 +101,32 @@ public static class StringBuilderExtensions
         }
         return sb;
     }
-    
-    public static StringBuilder AppendGenericAttributes(this StringBuilder sb, string name, string parent, int index)
-    {
-        for (var i = 1; i < index; i++)
-            sb.AppendGenericAttribute(name, parent, i);
-        return sb;
-    }
 
-    public static StringBuilder AppendGenericAttribute(this StringBuilder sb, string name, string parent, int index)
+    public static void GetAttributeTypes(AttributeData data, List<ITypeSymbol> array)
     {
-        var generics = new StringBuilder().GenericsWithoutBrackets(index);
-        var genericsToTypeArray = new StringBuilder().GenericsToTypeArray(index);
-        
-        var template = $$"""
-        public class {{name}}Attribute<{{generics}}> : {{parent}}Attribute
+        if (data is not null && data.AttributeClass.IsGenericType)
         {
-            public {{name}}Attribute(): base({{genericsToTypeArray}}){}
+            array.AddRange(data.AttributeClass.TypeArguments);
         }
-        """;
-
-        sb.AppendLine(template);
-        return sb;
+        else if (data is not null && !data.AttributeClass.IsGenericType)
+        {
+            var constructorArguments = data.ConstructorArguments[0].Values;
+            var constructorArgumentsTypes = constructorArguments.Select(constant => constant.Value as ITypeSymbol).ToList();
+            array.AddRange(constructorArgumentsTypes);
+        }
+        
     }
-
+    
     public static StringBuilder AppendQueryWithoutEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
 
         var staticModifier = methodSymbol.IsStatic ? "static" : "";
         
         // Get attributes
-        var allAttributeSymbol = methodSymbol.GetAttribute("All");
-        var anyAttributeSymbol = methodSymbol.GetAttribute("Any");
-        var noneAttributeSymbol = methodSymbol.GetAttribute("None");
-        var exclusiveAttributeSymbol = methodSymbol.GetAttribute("Exclusive");
+        var allAttributeSymbol = methodSymbol.GetAttributeData("All");
+        var anyAttributeSymbol = methodSymbol.GetAttributeData("Any");
+        var noneAttributeSymbol = methodSymbol.GetAttributeData("None");
+        var exclusiveAttributeSymbol = methodSymbol.GetAttributeData("Exclusive");
         
         // Get params / components except those marked with data or entities. 
         var components = methodSymbol.Parameters.ToList();
@@ -186,9 +135,26 @@ public static class StringBuilderExtensions
         
         // Create all query array
         var allArray = components.Select(symbol => symbol.Type).ToList();
-        if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
+        var anyArray = new List<ITypeSymbol>();
+        var noneArray = new List<ITypeSymbol>();
+        var exclusiveArray = new List<ITypeSymbol>();
+
+        // Get All<...> or All(...) passed types and pass them to the arrays 
+        GetAttributeTypes(allAttributeSymbol, allArray);
+        GetAttributeTypes(anyAttributeSymbol, anyArray);
+        GetAttributeTypes(noneAttributeSymbol, noneArray);
+        GetAttributeTypes(exclusiveAttributeSymbol, exclusiveArray);
+        
+        // Remove doubles and entities 
         allArray = allArray.Distinct().ToList();
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
+        anyArray = anyArray.Distinct().ToList();
+        noneArray = noneArray.Distinct().ToList();
+        exclusiveArray = exclusiveArray.Distinct().ToList();
+        
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity")); 
+        anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         // Generate code
         var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
@@ -198,9 +164,9 @@ public static class StringBuilderExtensions
         var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
         
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
-        var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
-        var noneTypeArray = new StringBuilder().GetTypeArray(noneAttributeSymbol);
-        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveAttributeSymbol);
+        var anyTypeArray = new StringBuilder().GetTypeArray(anyArray);
+        var noneTypeArray = new StringBuilder().GetTypeArray(noneArray);
+        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveArray);
 
         var template = 
             $$"""
