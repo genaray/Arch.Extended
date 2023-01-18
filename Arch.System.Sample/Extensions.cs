@@ -5,7 +5,6 @@ namespace Arch.System.Sample;
 
 public static class RandomExtensions
 {
-    
     /// <summary>
     /// Creates a random vec2 inside the rectangle and returns it
     /// </summary>
