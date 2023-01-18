@@ -8,16 +8,12 @@
 
         <PackageId>Arch.System.SourceGenerator</PackageId>
         <Title>Arch.System.SourceGenerator</Title>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A source generator for arch.system.</Description>
         <PackageReleaseNotes>
-            Parameters marked with data are now included in queries.
-            Generated queries require world as input and optional data parameters. 
-            Some performance improvements, query structs are now cached. 
-            Queries can be generated in all classes now and do not require a basesystem anymore.
-            Out can now be used and a data bug was fixed. 
+            Wrapped generic attributes into preprocessor variables to make them non available for non .Net7 projects. 
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
