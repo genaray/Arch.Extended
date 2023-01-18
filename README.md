@@ -14,7 +14,7 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 # Features & Tools
 - ⚙️ **_[Systems](https://github.com/genaray/Arch.Extended/wiki/Systems-API)_** > By means of systems, it is now easy to organize, reuse and arrange queries. 
 - ✍️ **_[Source Generator](https://github.com/genaray/Arch.Extended/wiki/Source-Generator)_** > Declarative syntax using attributes and source generator, let your queries write themselves! 
-> Check the links and the wiki! 
+> Check the links and the [Wiki](https://github.com/genaray/Arch.Extended/wiki)! 
 
 # Full code sample
 
