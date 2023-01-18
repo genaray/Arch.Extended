@@ -41,7 +41,7 @@ public class MovementSystem : BaseSystem<World, float>
     
     // Generates and filters a query and calls that one automatically on BaseSystem.Update in order
     [Query]
-    [All<Player, Mob>, Any<Idle, Moving>, None<Alive>]
+    [All<Player, Mob>, Any<Idle, Moving>, None<Alive>]  // Attributes also accept non generics :) 
     public void ResetVelocity(ref Velocity vel)
     {
         vel = new Velocity{ X = 0, Y = 0 };
@@ -155,6 +155,12 @@ These can be arranged and used arbitrarily.
 
 `Query` is always required. 
 `All`, `Any`, `None`, `Exclusive`, `Data` are optional and independent from each other. 
+
+There are also non generic versions of those attributes for projects using `.NetStandard2.1` or `.Net6` :) 
+- `[All(typeof(...),...)]`
+- `[Any(typeof(...),...)]`
+- `[None(typeof(...),...)]`
+- `[Exclusive(typeof(...),...)]`
 
 Let us now look at some example.
 
