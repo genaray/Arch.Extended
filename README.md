@@ -11,6 +11,12 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 - 💪 _**MAINTAINED**_ > It's actively being worked on, maintained, and supported!
 - 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
+Download the packages and get started today! 
+```console
+dotnet add package Arch.System --version 1.0.1
+dotnet add package Arch.System.SourceGenerator --version 1.0.5
+```
+
 # Features & Tools
 - ⚙️ **_[Systems](https://github.com/genaray/Arch.Extended/wiki/Systems-API)_** > By means of systems, it is now easy to organize, reuse and arrange queries. 
 - ✍️ **_[Source Generator](https://github.com/genaray/Arch.Extended/wiki/Source-Generator)_** > Declarative syntax using attributes and source generator, let your queries write themselves! 
