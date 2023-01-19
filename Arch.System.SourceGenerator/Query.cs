@@ -178,7 +178,7 @@ public static class QueryUtils
             using Arch.Core.Utils;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
-            namespace {{methodSymbol.ContainingNamespace}}{
+            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? $"namespace {methodSymbol.ContainingNamespace} {{" : "")}}
                 public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
                     
                     private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
@@ -213,7 +213,7 @@ public static class QueryUtils
                         }
                     }
                 }
-            }
+            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? "}" : "")}}
             """;
         sb.Append(template);
         return sb;
@@ -262,7 +262,7 @@ public static class QueryUtils
             using Arch.Core.Utils;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
-            namespace {{methodSymbol.ContainingNamespace}}{
+            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? $"namespace {methodSymbol.ContainingNamespace} {{" : "")}}
                 public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
                     
                     private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
@@ -299,7 +299,7 @@ public static class QueryUtils
                         }
                     }
                 }
-            }
+            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? "}" : "")}}
             """;
 
         sb.Append(template);
