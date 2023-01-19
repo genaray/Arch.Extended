@@ -123,10 +123,10 @@ public static class QueryUtils
         var staticModifier = methodSymbol.IsStatic ? "static" : "";
         
         // Get attributes
-        var allAttributeSymbol = methodSymbol.GetAttributeData("All");
-        var anyAttributeSymbol = methodSymbol.GetAttributeData("Any");
-        var noneAttributeSymbol = methodSymbol.GetAttributeData("None");
-        var exclusiveAttributeSymbol = methodSymbol.GetAttributeData("Exclusive");
+        var allAttributeData = methodSymbol.GetAttributeData("All");
+        var anyAttributeData = methodSymbol.GetAttributeData("Any");
+        var noneAttributeData = methodSymbol.GetAttributeData("None");
+        var exclusiveAttributeData = methodSymbol.GetAttributeData("Exclusive");
         
         // Get params / components except those marked with data or entities. 
         var components = methodSymbol.Parameters.ToList();
@@ -140,10 +140,10 @@ public static class QueryUtils
         var exclusiveArray = new List<ITypeSymbol>();
 
         // Get All<...> or All(...) passed types and pass them to the arrays 
-        GetAttributeTypes(allAttributeSymbol, allArray);
-        GetAttributeTypes(anyAttributeSymbol, anyArray);
-        GetAttributeTypes(noneAttributeSymbol, noneArray);
-        GetAttributeTypes(exclusiveAttributeSymbol, exclusiveArray);
+        GetAttributeTypes(allAttributeData, allArray);
+        GetAttributeTypes(anyAttributeData, anyArray);
+        GetAttributeTypes(noneAttributeData, noneArray);
+        GetAttributeTypes(exclusiveAttributeData, exclusiveArray);
         
         // Remove doubles and entities 
         allArray = allArray.Distinct().ToList();
@@ -224,10 +224,10 @@ public static class QueryUtils
        var staticModifier = methodSymbol.IsStatic ? "static" : "";
         
         // Get attributes
-        var allAttributeSymbol = methodSymbol.GetAttribute("All");
-        var anyAttributeSymbol = methodSymbol.GetAttribute("Any");
-        var noneAttributeSymbol = methodSymbol.GetAttribute("None");
-        var exclusiveAttributeSymbol = methodSymbol.GetAttribute("Exclusive");
+        var attributeData = methodSymbol.GetAttributeData("All");
+        var anyAttributeData = methodSymbol.GetAttributeData("Any");
+        var noneAttributeData = methodSymbol.GetAttributeData("None");
+        var exclusiveAttributeData = methodSymbol.GetAttributeData("Exclusive");
         
         // Get params / components except those marked with data or entities. 
         var components = methodSymbol.Parameters.ToList();
@@ -236,9 +236,26 @@ public static class QueryUtils
         
         // Create all query array
         var allArray = components.Select(symbol => symbol.Type).ToList();
-        if(allAttributeSymbol is not null) allArray.AddRange(allAttributeSymbol.TypeArguments);
+        var anyArray = new List<ITypeSymbol>();
+        var noneArray = new List<ITypeSymbol>();
+        var exclusiveArray = new List<ITypeSymbol>();
+
+        // Get All<...> or All(...) passed types and pass them to the arrays 
+        GetAttributeTypes(attributeData, allArray);
+        GetAttributeTypes(anyAttributeData, anyArray);
+        GetAttributeTypes(noneAttributeData, noneArray);
+        GetAttributeTypes(exclusiveAttributeData, exclusiveArray);
+        
+        // Remove doubles and entities 
         allArray = allArray.Distinct().ToList();
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));  // Do not allow entities inside All
+        anyArray = anyArray.Distinct().ToList();
+        noneArray = noneArray.Distinct().ToList();
+        exclusiveArray = exclusiveArray.Distinct().ToList();
+        
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity")); 
+        anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+        exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         
         // Generate code 
         var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
@@ -248,9 +265,9 @@ public static class QueryUtils
         var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
         
         var allTypeArray = new StringBuilder().GetTypeArray(allArray);
-        var anyTypeArray = new StringBuilder().GetTypeArray(anyAttributeSymbol);
-        var noneTypeArray = new StringBuilder().GetTypeArray(noneAttributeSymbol);
-        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveAttributeSymbol);
+        var anyTypeArray = new StringBuilder().GetTypeArray(anyArray);
+        var noneTypeArray = new StringBuilder().GetTypeArray(noneArray);
+        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveArray);
 
         var template = 
             $$"""
