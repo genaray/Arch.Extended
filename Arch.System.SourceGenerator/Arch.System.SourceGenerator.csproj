@@ -8,12 +8,14 @@
 
         <PackageId>Arch.System.SourceGenerator</PackageId>
         <Title>Arch.System.SourceGenerator</Title>
-        <Version>1.0.5</Version>
+        <Version>1.0.6</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A source generator for arch.system.</Description>
         <PackageReleaseNotes>
             Wrapped generic attributes into preprocessor variables to make them non available for non .Net7 projects. 
+            Supports global namespaces.
+            Fixed Entity queries.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
