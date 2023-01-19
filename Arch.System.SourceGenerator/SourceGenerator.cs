@@ -111,7 +111,7 @@ public class QueryGenerator : IIncrementalGenerator
             var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
             var sb = new StringBuilder();
             var method = entity ? sb.AppendQueryWithEntity(methodSymbol) : sb.AppendQueryWithoutEntity(methodSymbol);
-            context.AddSource($"{methodSymbol.Name}.g.cs",  CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+            context.AddSource($"{methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",  CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
 
         // Creating class that calls the created methods after another.
@@ -134,18 +134,18 @@ public class QueryGenerator : IIncrementalGenerator
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
             using {{typeSymbol.ContainingNamespace}};
-            namespace {{classSymbol.ContainingNamespace}}{
+            {{(classSymbol.ContainingNamespace != null ? $"namespace {classSymbol.ContainingNamespace} {{" : "")}}
                 public partial class {{classSymbol.Name}}{
                         
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public override void Update(in {{typeSymbol.Name}} {{typeSymbol.Name.ToLower()}}){
+                    public override void Update(in {{typeSymbol.ToDisplayString()}} {{typeSymbol.Name.ToLower()}}){
                         {{methodCalls}}
                     }
                 }
-            }
+            {{(classSymbol.ContainingNamespace != null ? "}" : "")}}
             """;
             
-            context.AddSource($"{classSymbol.Name}.g.cs",  CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
+            context.AddSource($"{classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",  CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }
     }
 }
