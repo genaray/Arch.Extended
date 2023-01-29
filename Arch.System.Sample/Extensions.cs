@@ -6,11 +6,11 @@ namespace Arch.System.Sample;
 public static class RandomExtensions
 {
     /// <summary>
-    /// Creates a random vec2 inside the rectangle and returns it
+    ///     Creates a random <see cref="Vector2"/> inside the <see cref="Rectangle"/> and returns it.
     /// </summary>
-    /// <param name="random"></param>
-    /// <param name="rectangle"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <param name="rectangle">A <see cref="Rectangle"/> in which a <see cref="Vector2"/> is generated. </param>
+    /// <returns>The generated <see cref="Vector2"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 NextVector2(this Random random, in Rectangle rectangle)
     {
@@ -18,12 +18,12 @@ public static class RandomExtensions
     }
     
     /// <summary>
-    /// Creates a random vec2 between two floats.
+    ///     Creates a random <see cref="Vector2"/> between two floats.
     /// </summary>
-    /// <param name="random"></param>
-    /// <param name="min"></param>
-    /// <param name="max"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <param name="min">The minimum value.</param>
+    /// <param name="max">The maximum value.</param>
+    /// <returns>A <see cref="Vector2"/> between those to floats.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 NextVector2(this Random random, float min, float max)
     {
@@ -31,12 +31,10 @@ public static class RandomExtensions
     }
     
     /// <summary>
-    /// Creates a random vec2 between two floats.
+    ///     Creates a random <see cref="Color"/>.
     /// </summary>
-    /// <param name="random"></param>
-    /// <param name="min"></param>
-    /// <param name="max"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <returns>A <see cref="Color"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Color NextColor(this Random random)
     {

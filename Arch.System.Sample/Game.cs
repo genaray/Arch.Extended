@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Arch.System.Sample;
 
+/// <summary>
+///     The <see cref="Game"/> which represents the game and implements all the important monogame features.
+/// </summary>
 public class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading

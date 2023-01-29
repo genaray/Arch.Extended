@@ -9,13 +9,31 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Arch.System.Sample;
 
 /// <summary>
-/// The movement system makes the entities move and bounce properly. 
+///     The movement system makes the entities move and bounce properly. 
 /// </summary>
 public partial class MovementSystem : BaseSystem<World, GameTime>
 {
+    
+    /// <summary>
+    ///     A rectangle which specifies the viewport.
+    ///     Needed so that the entities do not wander outside the viewport.
+    /// </summary>
     private readonly Rectangle _viewport;
+    
+    /// <summary>
+    ///     Creates a <see cref="MovementSystem"/> instance.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> used.</param>
+    /// <param name="viewport">The games <see cref="Viewport"/>.</param>
     public MovementSystem(World world, Rectangle viewport) : base(world) { _viewport = viewport;}
 
+    /// <summary>
+    ///     Called for each <see cref="Entity"/> to move it.
+    ///     The calling takes place through the source generated method "MoveQuery" on <see cref="BaseSystem{W,T}.Update"/>.
+    /// </summary>
+    /// <param name="time">The <see cref="GameTime"/>, passed by the "MoveQuery".</param>
+    /// <param name="pos">The <see cref="Position"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
+    /// <param name="vel">The <see cref="Velocity"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
     [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move([Data] GameTime time, ref Position pos, ref Velocity vel)
@@ -23,6 +41,12 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
         pos.Vector2 += time.ElapsedGameTime.Milliseconds * vel.Vector2;
     }
     
+    /// <summary>
+    ///     Called for each <see cref="Entity"/> to move it.
+    ///     The calling takes place through the source generated method "MoveQuery" on <see cref="BaseSystem{W,T}.Update"/>.
+    /// </summary>
+    /// <param name="pos">The <see cref="Position"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
+    /// <param name="vel">The <see cref="Velocity"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
     [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Bounce(ref Position pos, ref Velocity vel)
@@ -42,12 +66,22 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
 }
 
 /// <summary>
-/// Color system, modifies each entities color slowly. 
+///     Color system, modifies each entities color slowly. 
 /// </summary>
 public partial class ColorSystem : BaseSystem<World, GameTime>
 {
+    /// <summary>
+    ///     Creates an <see cref="ColorSystem"/> instance.
+    /// </summary>
+    /// <param name="world"></param>
     public ColorSystem(World world) : base(world) {}
 
+    /// <summary>
+    ///     Called for each <see cref="Entity"/> to change its color.
+    ///     The calling takes place through the source generated method "ChangeColorQuery" on <see cref="BaseSystem{W,T}.Update"/>.
+    /// </summary>
+    /// <param name="time">The <see cref="GameTime"/> Passed by the "MoveQuery".</param>
+    /// <param name="sprite">The <see cref="Sprite"/> of the <see cref="Entity"/>. Passed by the "ChangeColorQuery".</param>
     [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ChangeColor([Data] GameTime time, ref Sprite sprite)
@@ -59,19 +93,38 @@ public partial class ColorSystem : BaseSystem<World, GameTime>
 }
 
 /// <summary>
-/// The draw system, handles the drawing of entity sprites at their position. 
+///     The draw system, handles the drawing of <see cref="Entity"/> sprites at their position. 
 /// </summary>
 public partial class DrawSystem : BaseSystem<World, GameTime>
 {
+    /// <summary>
+    ///     The <see cref="SpriteBatch"/> used for drawing all <see cref="Entity"/>s.
+    /// </summary>
     private readonly SpriteBatch _batch;
+    
+    /// <summary>
+    ///     Creates a <see cref="DrawSystem"/> instance.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> used.</param>
+    /// <param name="batch">The <see cref="SpriteBatch"/> used.</param>
     public DrawSystem(World world, SpriteBatch batch) : base(world) { _batch = batch;}
 
+    /// <summary>
+    ///     Is called before the <see cref="BaseSystem{W,T}.Update"/> to start with the <see cref="SpriteBatch"/> recording.
+    /// </summary>
+    /// <param name="t">The <see cref="GameTime"/>.</param>
     public override void BeforeUpdate(in GameTime t)
     {
         base.BeforeUpdate(in t);
         _batch.Begin();
     }
 
+    /// <summary>
+    ///     Called for each <see cref="Entity"/> to draw it.
+    ///     The calling takes place through the source generated method "DrawQuery" on <see cref="BaseSystem{W,T}.Update"/>.
+    /// </summary>
+    /// <param name="position">The <see cref="Position"/> of the <see cref="Entity"/>. Passed by the "DrawQuery".</param>
+    /// <param name="sprite">The <see cref="Sprite"/> of the <see cref="Entity"/>. Passed by the "DrawQuery".</param>
     [Query]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Draw(ref Position position, ref Sprite sprite)
@@ -79,6 +132,10 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
         _batch.Draw(sprite.Texture2D, position.Vector2, sprite.Color);  // Draw
     }
 
+    /// <summary>
+    ///     Is called after the <see cref="BaseSystem{W,T}.Update"/> to stop the <see cref="SpriteBatch"/> recording.
+    /// </summary>
+    /// <param name="t">The <see cref="GameTime"/>.</param>
     public override void AfterUpdate(in GameTime t)
     {
         base.AfterUpdate(in t);
@@ -91,15 +148,32 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
 /// </summary>
 public partial class DebugSystem : BaseSystem<World, GameTime>
 {
+    /// <summary>
+    ///     A custom <see cref="QueryDescription"/> which targets <see cref="Entity"/>s with <see cref="Position"/> and <see cref="Sprite"/> without <see cref="Velocity"/>.
+    /// </summary>
     private readonly QueryDescription _customQuery = new QueryDescription().WithAll<Position, Sprite>().WithNone<Velocity>();
+    
+    /// <summary>
+    ///     Creates a new <see cref="DebugSystem"/> instance. 
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> used.</param>
     public DebugSystem(World world) : base(world) { }
 
+    /// <summary>
+    ///     Implements <see cref="BaseSystem{W,T}.Update"/> to call the custom Query and the source generated one. 
+    /// </summary>
+    /// <param name="t">The <see cref="GameTime"/>.</param>
     public override void Update(in GameTime t)
     {
         World.Query(in _customQuery, (in Entity entity) => Console.WriteLine($"Custom : {entity}"));  // Manual query
         PrintEntitiesWithoutVelocityQuery(World);  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
     }
 
+    /// <summary>
+    ///     Called for each <see cref="Entity"/> with <see cref="Position"/> and <see cref="Sprite"/> without <see cref="Velocity"/> to print it.
+    ///     The calling takes place through the source generated method "PrintEntitiesWithoutVelocityQuery" on <see cref="DebugSystem.Update"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>. Passed by the "PrintEntitiesWithoutVelocityQuery", you can also pass components or data parameters as usual.</param>
     [Query]
     [All<Position, Sprite>, None<Velocity>]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

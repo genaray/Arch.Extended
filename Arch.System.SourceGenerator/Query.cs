@@ -7,6 +7,12 @@ namespace Arch.System.SourceGenerator;
 public static class QueryUtils
 {
     
+    /// <summary>
+    ///     Appends the arrays of the types specified in the <see cref="parameterSymbols"/> from the chunk.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the arrays for.</param>
+    /// <returns></returns>
     public static StringBuilder GetArrays(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
@@ -16,6 +22,12 @@ public static class QueryUtils
         return sb;
     }
     
+    /// <summary>
+    ///     Appends the first elements of the types specified in the <see cref="parameterSymbols"/> from the previous specified arrays.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the first elements for.</param>
+    /// <returns></returns>
     public static StringBuilder GetFirstElements(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
       
@@ -26,6 +38,12 @@ public static class QueryUtils
         return sb;
     }
     
+    /// <summary>
+    ///     Appends the components of the types specified in the <see cref="parameterSymbols"/> from the previous specified first elements.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the components for.</param>
+    /// <returns></returns>
     public static StringBuilder GetComponents(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
@@ -35,6 +53,13 @@ public static class QueryUtils
         return sb;
     }
     
+    /// <summary>
+    ///     Inserts the types defined in the <see cref="parameterSymbols"/> as parameters in a method.
+    ///     <example>ref position, out velocity,...</example>
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> of <see cref="IParameterSymbol"/>s which we wanna insert.</param>
+    /// <returns></returns>
     public static StringBuilder InsertParams(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
@@ -43,6 +68,13 @@ public static class QueryUtils
         if(sb.Length > 0) sb.Length--;
         return sb;
     }
+    
+    /// <summary>
+    ///     Creates a ComponentType array from the <see cref="parameterSymbols"/> passed through.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/>.</param>
+    /// <param name="parameterSymbols">The <see cref="IList{T}"/> with <see cref="ITypeSymbol"/>s which we wanna create a ComponentType array for.</param>
+    /// <returns></returns>
     public static StringBuilder GetTypeArray(this StringBuilder sb, IList<ITypeSymbol> parameterSymbols)
     {
         if (parameterSymbols.Count == 0)
@@ -62,16 +94,15 @@ public static class QueryUtils
 
         return sb;
     }
-    
-    public static StringBuilder GetTypeArray(this StringBuilder sb, INamedTypeSymbol attributeSymbol)
-    {
-        if (attributeSymbol is not null)
-            sb.GetTypeArray(attributeSymbol.TypeArguments);
-        else sb.AppendLine("Array.Empty<ComponentType>()");
-        
-        return sb;
-    }
 
+
+    /// <summary>
+    ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
+    ///     <example>ref gameTime, out somePassedList,...</example>
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> of <see cref="IParameterSymbol"/>s which will be appended if they are marked with data.</param>
+    /// <returns></returns>
     public static StringBuilder DataParameters(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         sb.Append(',');
@@ -84,6 +115,13 @@ public static class QueryUtils
         return sb;
     }
     
+    /// <summary>
+    ///     Appends method calls made with their important data parameters.
+    ///     <example>someQuery(World, gameTime); ...</example>
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="methodNames">The <see cref="IEnumerable{T}"/> of methods which we wanna call.</param>
+    /// <returns></returns>
     public static StringBuilder CallMethods(this StringBuilder sb, IEnumerable<IMethodSymbol> methodNames)
     {
         foreach (var method in methodNames)
@@ -102,6 +140,12 @@ public static class QueryUtils
         return sb;
     }
 
+    /// <summary>
+    ///     Gets all the types of a <see cref="AttributeData"/> as <see cref="ITypeSymbol"/>s and adds them to a list.
+    ///     If the attribute is generic it will add the generic parameters, if its non generic it will add the non generic types from the constructor.
+    /// </summary>
+    /// <param name="data">The <see cref="AttributeData"/>.</param>
+    /// <param name="array">The <see cref="List{T}"/> where the found <see cref="ITypeSymbol"/>s are added to.</param>
     public static void GetAttributeTypes(AttributeData data, List<ITypeSymbol> array)
     {
         if (data is not null && data.AttributeClass.IsGenericType)
@@ -117,6 +161,12 @@ public static class QueryUtils
         
     }
     
+    /// <summary>
+    ///     Adds a query without an entity for a given annotated method. The attributes of these methods are used to generate the query.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which is annotated for source generation.</param>
+    /// <returns></returns>
     public static StringBuilder AppendQueryWithoutEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
 
@@ -219,6 +269,12 @@ public static class QueryUtils
         return sb;
     }
     
+    /// <summary>
+    ///     Adds a query with an entity for a given annotated method. The attributes of these methods are used to generate the query.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which is annotated for source generation.</param>
+    /// <returns></returns>
     public static StringBuilder AppendQueryWithEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
        var staticModifier = methodSymbol.IsStatic ? "static" : "";
