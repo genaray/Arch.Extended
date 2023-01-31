@@ -102,7 +102,9 @@ namespace Arch.System.SourceGenerator.Tests
                 system.Initialize();
                 CommonArgs args = new CommonArgs(1);
                 //Call Update only, check if the Update data is passed properly
-                // system.Update(args);
+                //The cause of the error is that the Update function of the code generator uses the parameter name "Short Type Name" while the method internally calls Data,
+                //so the real parameter is not passed down. I don't know if this is intentional.
+                system.Update(args);
                 CheckSystemEvent(system, args);
                 Debug.Assert((int)system.GetType().GetField("IsWork").GetValue(system) == 1,"system failed to execute.");
             }
