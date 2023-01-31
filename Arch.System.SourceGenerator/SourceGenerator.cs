@@ -15,7 +15,6 @@ public class QueryGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        _classToMethods = new(512);
         //if (!Debugger.IsAttached) Debugger.Launch();
 
         // Register the generic attributes 
@@ -31,7 +30,6 @@ public class QueryGenerator : IIncrementalGenerator
             }
         """;
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
-        
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
@@ -39,10 +37,10 @@ public class QueryGenerator : IIncrementalGenerator
         ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
 
         // Combine the selected enums with the `Compilation`
-        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.Collect());
+        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.WithComparer(Comparer.Instance).Collect());
         context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Generate(source.Item1, source.Item2, spc));
     }
-    
+
     /// <summary>
     ///     Adds a <see cref="IMethodSymbol"/> to its class.
     ///     Stores them in <see cref="_classToMethods"/>.
@@ -88,7 +86,7 @@ public class QueryGenerator : IIncrementalGenerator
         // we didn't find the attribute we were looking for
         return null;
     }
-    
+
     /// <summary>
     ///     Generates queries and partial classes for the found marked methods.
     /// </summary>
@@ -98,39 +96,47 @@ public class QueryGenerator : IIncrementalGenerator
     private static void Generate(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
-        
-        // Creating methods
-        var distinctEnums = methods.Distinct();
-        foreach (var methodSyntax in distinctEnums)
+        _classToMethods = new(512);
+        foreach (var methodSyntax in methods)
         {
-            var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
-            var methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
+            IMethodSymbol? methodSymbol = null;
+            try
+            {
+                var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+                methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
+            }
+            catch
+            {
+                //not update,skip
+                continue;
+            }
 
             AddMethodToClass(methodSymbol);
 
             var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
             var sb = new StringBuilder();
             var method = entity ? sb.AppendQueryWithEntity(methodSymbol) : sb.AppendQueryWithoutEntity(methodSymbol);
-            context.AddSource($"{methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",  CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+            context.AddSource($"{methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
+                CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
 
         // Creating class that calls the created methods after another.
         foreach (var classToMethod in _classToMethods)
         {
-            
+
             // Get BaseSystem class
             var classSymbol = classToMethod.Key as INamedTypeSymbol;
             var parentSymbol = classSymbol.BaseType;
 
-            if(!parentSymbol.Name.Equals("BaseSystem")) continue;     // Ignore classes which do not derive from BaseSystem
-            if(classSymbol.MemberNames.Contains("Update")) continue;  // Update was implemented by user, no need to do that by source generator. 
-            
+            if (!parentSymbol.Name.Equals("BaseSystem")) continue; // Ignore classes which do not derive from BaseSystem
+            if (classSymbol.MemberNames.Contains("Update")) continue; // Update was implemented by user, no need to do that by source generator. 
+
             // Get generic of BaseSystem
             var typeSymbol = parentSymbol.TypeArguments[1];
-            
+
             var methodCalls = new StringBuilder().CallMethods(classToMethod.Value);
-            var template = 
-            $$"""
+            var template =
+                $$"""
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
             using {{typeSymbol.ContainingNamespace}};
@@ -144,8 +150,24 @@ public class QueryGenerator : IIncrementalGenerator
                 }
             {{(classSymbol.ContainingNamespace != null ? "}" : "")}}
             """;
-            
-            context.AddSource($"{classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",  CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
+
+            context.AddSource($"{classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
+                CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
+        }
+    }
+
+    class Comparer : IEqualityComparer<MethodDeclarationSyntax>
+    {
+        public static readonly Comparer Instance = new Comparer();
+
+        public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y)
+        {
+            return x.Equals(y);
+        }
+
+        public int GetHashCode(MethodDeclarationSyntax obj)
+        {
+            return obj.GetHashCode();
         }
     }
 }
