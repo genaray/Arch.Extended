@@ -6,12 +6,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Arch.System.SourceGenerator;
+namespace Arch.EventBus.SourceGenerator;
 
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
-    private static Dictionary<ISymbol, List<IMethodSymbol>> _classToMethods { get; set; }
+    private static EventBus _eventBus;
+    private static Dictionary<ITypeSymbol, (RefKind, IList<IMethodSymbol>)> _eventTypeToReceivingMethods;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -19,44 +20,41 @@ public class QueryGenerator : IIncrementalGenerator
 
         // Register the generic attributes 
         var attributes = $$"""
-            namespace Arch.System.SourceGenerator
-            {
-            #if NET7_0_OR_GREATER
-                {{new StringBuilder().AppendGenericAttributes("All", "All", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("Any", "Any", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("None", "None", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
-            #endif
+            namespace Arch.EventBus.SourceGenerator
+            {           
+                /// <summary>
+                ///     Marks a method to receive a certain event. 
+                /// </summary>
+                [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
+                public class EventAttribute : global::System.Attribute
+                {
+                    public EventAttribute(int order = -1)
+                    {
+                        Order = order;
+                    }
+
+                    /// <summary>
+                    /// The order of this event. 
+                    /// </summary>
+                    public int Order { get; }
+                }
             }
         """;
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
-        
+
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                 static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
-                 static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.SourceGenerator.QueryAttribute")
+            static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
+            static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.EventBus.SourceGenerator.EventAttribute")
         ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
-
+        
         // Combine the selected enums with the `Compilation`
-        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.WithComparer(Comparer.Instance).Collect());
+        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods =
+            context.CompilationProvider.Combine(methodDeclarations.WithComparer(Comparer.Instance).Collect());
         context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Generate(source.Item1, source.Item2, spc));
     }
-
-    /// <summary>
-    ///     Adds a <see cref="IMethodSymbol"/> to its class.
-    ///     Stores them in <see cref="_classToMethods"/>.
-    /// </summary>
-    /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which will be added/mapped to its class.</param>
-    private static void AddMethodToClass(IMethodSymbol methodSymbol)
-    {
-        if (!_classToMethods.TryGetValue(methodSymbol.ContainingSymbol, out var list))
-        {
-            list = new List<IMethodSymbol>();
-            _classToMethods[methodSymbol.ContainingSymbol] = list;
-        }
-        list.Add(methodSymbol);
-    }
     
+
     /// <summary>
     ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
     /// </summary>
@@ -66,26 +64,62 @@ public class QueryGenerator : IIncrementalGenerator
     private static MethodDeclarationSyntax? GetMethodSymbolIfAttributeof(GeneratorSyntaxContext context, string name)
     {
         // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-        var enumDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
+        var methodDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
 
         // loop through all the attributes on the method
-        foreach (var attributeListSyntax in enumDeclarationSyntax.AttributeLists)
+        foreach (var attributeListSyntax in methodDeclarationSyntax.AttributeLists)
         {
             foreach (var attributeSyntax in attributeListSyntax.Attributes)
             {
                 if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
-                
+
                 var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
                 var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
                 // Is the attribute the [EnumExtensions] attribute?
                 if (fullName != name) continue;
-                return enumDeclarationSyntax;
+                return methodDeclarationSyntax;
             }
         }
 
         // we didn't find the attribute we were looking for
         return null;
+    }
+
+    /// <summary>
+    /// Maps the <see cref="IMethodSymbol"/> to its <see cref="IParameterSymbol"/> for organisation. 
+    /// </summary>
+    /// <param name="methodSymbol"></param>
+    private static void MapMethodToEventType(IMethodSymbol methodSymbol)
+    {
+        var eventType = methodSymbol.Parameters[0];
+        if (_eventTypeToReceivingMethods.TryGetValue(eventType.Type, out var tuple))
+        {
+            tuple.Item2.Add( methodSymbol);
+        }
+        else
+        {
+            tuple.Item1 = eventType.RefKind;
+            tuple.Item2 = new List<IMethodSymbol>{ methodSymbol };
+            _eventTypeToReceivingMethods.Add(eventType.Type, tuple);
+        }
+    }
+    
+    /// <summary>
+    /// Prepares the <see cref="EventBus"/> by convertings the <see cref="_eventTypeToReceivingMethods"/> to the eventbus model. 
+    /// </summary>
+    private static void PrepareEventBus()
+    {
+        foreach (var kvp in _eventTypeToReceivingMethods)
+        {
+            var eventCallMethod = new Method
+            {
+                RefKind = kvp.Value.Item1,
+                EventType = kvp.Key,
+                EventReceivingMethods = kvp.Value.Item2
+            };
+            _eventBus.Methods.Add(eventCallMethod);
+        }
     }
 
     /// <summary>
@@ -98,39 +132,23 @@ public class QueryGenerator : IIncrementalGenerator
     {
         if (methods.IsDefaultOrEmpty) return;
         
+        // Init 
+        _eventBus.Namespace = "Arch.EventBus.SourceGenerator";
+        _eventBus.Methods = new List<Method>(512);
+        _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<IMethodSymbol>)>(512);
+
         // Generate Query methods and map them to their classes
-        _classToMethods = new(512);
         foreach (var methodSyntax in methods)
         {
-            IMethodSymbol? methodSymbol = null;
-            try
-            {
-                var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
-                methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
-            }
-            catch
-            {
-                //not update,skip
-                continue;
-            }
+            var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            var methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
 
-            AddMethodToClass(methodSymbol);
-            
-            var sb = new StringBuilder();
-            var method = sb.AppendQueryMethod(methodSymbol);
-            context.AddSource($"{methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
-                CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+            MapMethodToEventType(methodSymbol);
         }
-
-        // Creating class that calls the created methods after another.
-        foreach (var classToMethod in _classToMethods)
-        {
-            var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
-            if (string.IsNullOrEmpty(template)) continue;
-            
-            context.AddSource($"{(classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
-                CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
-        }
+        
+        PrepareEventBus();
+        var template = new StringBuilder().AppendEventBus(ref _eventBus);
+        context.AddSource($"EventBus.g.cs", CSharpSyntaxTree.ParseText(template.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
     }
 
     /// <summary>

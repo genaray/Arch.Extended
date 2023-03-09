@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System", "Arch.System\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System.SourceGenerator.Tests", "Arch.System.SourceGenerator.Tests\Arch.System.SourceGenerator.Tests.csproj", "{DA87653A-AA46-4E31-AE34-4DD28E228511}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.EventBus.SourceGenerator", "Arch.EventBus.SourceGenerator\Arch.EventBus.SourceGenerator.csproj", "{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

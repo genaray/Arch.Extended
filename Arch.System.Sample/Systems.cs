@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.EventBus.SourceGenerator;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;

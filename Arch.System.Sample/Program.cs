@@ -1,4 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
+
+using Arch.EventBus.SourceGenerator;
+using Microsoft.Xna.Framework;
 using Game = Arch.System.Sample.Game;
 
 
