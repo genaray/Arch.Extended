@@ -96,6 +96,8 @@ public class QueryGenerator : IIncrementalGenerator
     private static void Generate(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
+        
+        // Generate Query methods and map them to their classes
         _classToMethods = new(512);
         foreach (var methodSyntax in methods)
         {
@@ -112,10 +114,9 @@ public class QueryGenerator : IIncrementalGenerator
             }
 
             AddMethodToClass(methodSymbol);
-
-            var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
+            
             var sb = new StringBuilder();
-            var method = entity ? sb.AppendQueryWithEntity(methodSymbol) : sb.AppendQueryWithoutEntity(methodSymbol);
+            var method = sb.AppendQueryMethod(methodSymbol);
             context.AddSource($"{methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
                 CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
@@ -123,39 +124,17 @@ public class QueryGenerator : IIncrementalGenerator
         // Creating class that calls the created methods after another.
         foreach (var classToMethod in _classToMethods)
         {
-
-            // Get BaseSystem class
-            var classSymbol = classToMethod.Key as INamedTypeSymbol;
-            var parentSymbol = classSymbol.BaseType;
-
-            if (!parentSymbol.Name.Equals("BaseSystem")) continue; // Ignore classes which do not derive from BaseSystem
-            if (classSymbol.MemberNames.Contains("Update")) continue; // Update was implemented by user, no need to do that by source generator. 
-
-            // Get generic of BaseSystem
-            var typeSymbol = parentSymbol.TypeArguments[1];
-
-            var methodCalls = new StringBuilder().CallMethods(classToMethod.Value);
-            var template =
-                $$"""
-            using System.Runtime.CompilerServices;
-            using System.Runtime.InteropServices;
-            using {{typeSymbol.ContainingNamespace}};
-            {{(classSymbol.ContainingNamespace != null ? $"namespace {classSymbol.ContainingNamespace} {{" : "")}}
-                public partial class {{classSymbol.Name}}{
-                        
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public override void Update(in {{typeSymbol.ToDisplayString()}} {{typeSymbol.Name.ToLower()}}){
-                        {{methodCalls}}
-                    }
-                }
-            {{(classSymbol.ContainingNamespace != null ? "}" : "")}}
-            """;
-
-            context.AddSource($"{classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
+            var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
+            if (string.IsNullOrEmpty(template)) continue;
+            
+            context.AddSource($"{(classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)}.g.cs",
                 CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }
     }
 
+    /// <summary>
+    /// Compares <see cref="MethodDeclarationSyntax"/>s to remove duplicates. 
+    /// </summary>
     class Comparer : IEqualityComparer<MethodDeclarationSyntax>
     {
         public static readonly Comparer Instance = new Comparer();

@@ -160,126 +160,17 @@ public static class QueryUtils
         }
         
     }
-    
-    /// <summary>
-    ///     Adds a query without an entity for a given annotated method. The attributes of these methods are used to generate the query.
-    /// </summary>
-    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
-    /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which is annotated for source generation.</param>
-    /// <returns></returns>
-    public static StringBuilder AppendQueryWithoutEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
-    {
 
-        var staticModifier = methodSymbol.IsStatic ? "static" : "";
-        
-        // Get attributes
-        var allAttributeData = methodSymbol.GetAttributeData("All");
-        var anyAttributeData = methodSymbol.GetAttributeData("Any");
-        var noneAttributeData = methodSymbol.GetAttributeData("None");
-        var exclusiveAttributeData = methodSymbol.GetAttributeData("Exclusive");
-        
-        // Get params / components except those marked with data or entities. 
-        var components = methodSymbol.Parameters.ToList();
-        components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys 
-        components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data")));    // Remove data annotated params
-        
-        // Create all query array
-        var allArray = components.Select(symbol => symbol.Type).ToList();
-        var anyArray = new List<ITypeSymbol>();
-        var noneArray = new List<ITypeSymbol>();
-        var exclusiveArray = new List<ITypeSymbol>();
-
-        // Get All<...> or All(...) passed types and pass them to the arrays 
-        GetAttributeTypes(allAttributeData, allArray);
-        GetAttributeTypes(anyAttributeData, anyArray);
-        GetAttributeTypes(noneAttributeData, noneArray);
-        GetAttributeTypes(exclusiveAttributeData, exclusiveArray);
-        
-        // Remove doubles and entities 
-        allArray = allArray.Distinct().ToList();
-        anyArray = anyArray.Distinct().ToList();
-        noneArray = noneArray.Distinct().ToList();
-        exclusiveArray = exclusiveArray.Distinct().ToList();
-        
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity")); 
-        anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
-        noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
-        exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
-
-        // Generate code
-        var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
-        var getArrays = new StringBuilder().GetArrays(components);
-        var getFirstElements = new StringBuilder().GetFirstElements(components);
-        var getComponents = new StringBuilder().GetComponents(components);
-        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
-        
-        var allTypeArray = new StringBuilder().GetTypeArray(allArray);
-        var anyTypeArray = new StringBuilder().GetTypeArray(anyArray);
-        var noneTypeArray = new StringBuilder().GetTypeArray(noneArray);
-        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveArray);
-
-        var template = 
-            $$"""
-            using System;
-            using System.Runtime.CompilerServices;
-            using System.Runtime.InteropServices;
-            using Arch.Core;
-            using Arch.Core.Extensions;
-            using Arch.Core.Utils;
-            using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
-            using Component = Arch.Core.Utils.Component;
-            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? $"namespace {methodSymbol.ContainingNamespace} {{" : "")}}
-                public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
-                    
-                    private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
-                        All = {{allTypeArray}},
-                        Any = {{anyTypeArray}},
-                        None = {{noneTypeArray}},
-                        Exclusive = {{exclusiveTypeArray}}
-                    };
-
-                    private {{staticModifier}} bool _{{methodSymbol.Name}}_Initialized;
-                    private {{staticModifier}} Query _{{methodSymbol.Name}}_Query;
-
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{methodSymbol.Name}}Query(World world {{data}}){
-                     
-                        if(!_{{methodSymbol.Name}}_Initialized){
-                            _{{methodSymbol.Name}}_Query = world.Query(in {{methodSymbol.Name}}_QueryDescription);
-                            _{{methodSymbol.Name}}_Initialized = true;
-                        }
-
-                        foreach(ref var chunk in _{{methodSymbol.Name}}_Query.GetChunkIterator()){
-                            
-                            var chunkSize = chunk.Size;
-                            {{getArrays}}
-                            {{getFirstElements}}
-
-                            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
-                            {
-                                {{getComponents}}
-                                {{methodSymbol.Name}}({{insertParams}});
-                            }
-                        }
-                    }
-                }
-            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? "}" : "")}}
-            """;
-        sb.Append(template);
-        return sb;
-    }
-    
     /// <summary>
     ///     Adds a query with an entity for a given annotated method. The attributes of these methods are used to generate the query.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="methodSymbol">The <see cref="IMethodSymbol"/> which is annotated for source generation.</param>
     /// <returns></returns>
-    public static StringBuilder AppendQueryWithEntity(this StringBuilder sb, IMethodSymbol methodSymbol)
+    public static StringBuilder AppendQueryMethod(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
-       var staticModifier = methodSymbol.IsStatic ? "static" : "";
-        
         // Get attributes
+        var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
         var attributeData = methodSymbol.GetAttributeData("All");
         var anyAttributeData = methodSymbol.GetAttributeData("Any");
         var noneAttributeData = methodSymbol.GetAttributeData("None");
@@ -312,18 +203,51 @@ public static class QueryUtils
         anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
+
+        // Create data modell and generate it
+        var queryMethod = new QueryMethod
+        {
+            IsGlobalNamespace = methodSymbol.ContainingNamespace.IsGlobalNamespace,
+            Namespace = methodSymbol.ContainingNamespace.ToString(),
+            ClassName = methodSymbol.ContainingSymbol.Name,
+            
+            IsStatic = methodSymbol.IsStatic,
+            IsEntityQuery = entity,
+            MethodName = methodSymbol.Name,
+            
+            Parameters = methodSymbol.Parameters,
+            Components = components,
+            
+            AllFilteredTypes = allArray,
+            AnyFilteredTypes = anyArray,
+            NoneFilteredTypes = noneArray,
+            ExclusiveFilteredTypes = exclusiveArray
+        };
+        
+        return sb.AppendQueryMethod(ref queryMethod);
+    }
+
+    /// <summary>
+    ///     Adds a query with an entity for a given annotated method. The attributes of these methods are used to generate the query.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="queryMethod">The <see cref="QueryMethod"/> which is generated.</param>
+    /// <returns></returns>
+    public static StringBuilder AppendQueryMethod(this StringBuilder sb, ref QueryMethod queryMethod)
+    {
+        var staticModifier = queryMethod.IsStatic ? "static" : "";
         
         // Generate code 
-        var data = new StringBuilder().DataParameters(methodSymbol.Parameters);
-        var getArrays = new StringBuilder().GetArrays(components);
-        var getFirstElements = new StringBuilder().GetFirstElements(components);
-        var getComponents = new StringBuilder().GetComponents(components);
-        var insertParams = new StringBuilder().InsertParams(methodSymbol.Parameters);
+        var data = new StringBuilder().DataParameters(queryMethod.Parameters);
+        var getArrays = new StringBuilder().GetArrays(queryMethod.Components);
+        var getFirstElements = new StringBuilder().GetFirstElements(queryMethod.Components);
+        var getComponents = new StringBuilder().GetComponents(queryMethod.Components);
+        var insertParams = new StringBuilder().InsertParams(queryMethod.Parameters);
         
-        var allTypeArray = new StringBuilder().GetTypeArray(allArray);
-        var anyTypeArray = new StringBuilder().GetTypeArray(anyArray);
-        var noneTypeArray = new StringBuilder().GetTypeArray(noneArray);
-        var exclusiveTypeArray = new StringBuilder().GetTypeArray(exclusiveArray);
+        var allTypeArray = new StringBuilder().GetTypeArray(queryMethod.AllFilteredTypes);
+        var anyTypeArray = new StringBuilder().GetTypeArray(queryMethod.AnyFilteredTypes);
+        var noneTypeArray = new StringBuilder().GetTypeArray(queryMethod.NoneFilteredTypes);
+        var exclusiveTypeArray = new StringBuilder().GetTypeArray(queryMethod.ExclusiveFilteredTypes);
 
         var template = 
             $$"""
@@ -335,47 +259,104 @@ public static class QueryUtils
             using Arch.Core.Utils;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
-            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? $"namespace {methodSymbol.ContainingNamespace} {{" : "")}}
-                public {{staticModifier}} partial class {{methodSymbol.ContainingSymbol.Name}}{
+            {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
+                public {{staticModifier}} partial class {{queryMethod.ClassName}}{
                     
-                    private {{staticModifier}} QueryDescription {{methodSymbol.Name}}_QueryDescription = new QueryDescription{
+                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
                         All = {{allTypeArray}},
                         Any = {{anyTypeArray}},
                         None = {{noneTypeArray}},
                         Exclusive = {{exclusiveTypeArray}}
                     };
 
-                    private {{staticModifier}} bool _{{methodSymbol.Name}}_Initialized;
-                    private {{staticModifier}} Query _{{methodSymbol.Name}}_Query;
+                    private {{staticModifier}} bool _{{queryMethod.MethodName}}_Initialized;
+                    private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{methodSymbol.Name}}Query(World world {{data}}){
+                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
-                        if(!_{{methodSymbol.Name}}_Initialized){
-                            _{{methodSymbol.Name}}_Query = world.Query(in {{methodSymbol.Name}}_QueryDescription);
-                            _{{methodSymbol.Name}}_Initialized = true;
+                        if(!_{{queryMethod.MethodName}}_Initialized){
+                            _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
+                            _{{queryMethod.MethodName}}_Initialized = true;
                         }
 
-                        foreach(ref var chunk in _{{methodSymbol.Name}}_Query.GetChunkIterator()){
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
                             {{getArrays}}
-                            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);" : "")}}
                             {{getFirstElements}}
 
                             for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                             {
-                                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                                {{(queryMethod.IsEntityQuery ? "ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
                                 {{getComponents}}
-                                {{methodSymbol.Name}}({{insertParams}});
+                                {{queryMethod.MethodName}}({{insertParams}});
                             }
                         }
                     }
                 }
-            {{(!methodSymbol.ContainingNamespace.IsGlobalNamespace ? "}" : "")}}
+            {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
             """;
 
         sb.Append(template);
         return sb;
+    }
+
+    /// <summary>
+    ///     Adds a basesystem that calls a bunch of query methods. 
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="classToMethod">The <see cref="KeyValuePair{TKey,TValue}"/> which maps all query methods to a common class containing them.</param>
+    /// <returns></returns>
+    public static StringBuilder AppendBaseSystem(this StringBuilder sb, KeyValuePair<ISymbol, List<IMethodSymbol>> classToMethod)
+    {
+        // Get BaseSystem class
+        var classSymbol = classToMethod.Key as INamedTypeSymbol;
+        var parentSymbol = classSymbol.BaseType;
+
+        if (!parentSymbol.Name.Equals("BaseSystem")) return sb; // Ignore classes which do not derive from BaseSystem
+        if (classSymbol.MemberNames.Contains("Update")) return sb; // Update was implemented by user, no need to do that by source generator. 
+        
+        // Get generic of BaseSystem
+        var typeSymbol = parentSymbol.TypeArguments[1];
+
+        // Generate basesystem.
+        var baseSystem = new BaseSystem
+        {
+            Namespace = classSymbol.ContainingNamespace != null ? classSymbol.ContainingNamespace.ToString() : string.Empty,
+            GenericType = typeSymbol,
+            GenericTypeNamespace = typeSymbol.ContainingNamespace.ToString(),
+            Name = classSymbol.Name,
+            QueryMethods = classToMethod.Value,
+        };
+        return sb.AppendBaseSystem(ref baseSystem);
+    }
+    
+    /// <summary>
+    ///     Adds a basesystem that calls a bunch of query methods. 
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
+    /// <param name="baseSystem">The <see cref="BaseSystem"/> which is generated.</param>
+    /// <returns></returns>
+    public static StringBuilder AppendBaseSystem(this StringBuilder sb, ref BaseSystem baseSystem)
+    {
+        var methodCalls = new StringBuilder().CallMethods(baseSystem.QueryMethods);
+        var template =
+            $$"""
+            using System.Runtime.CompilerServices;
+            using System.Runtime.InteropServices;
+            using {{baseSystem.GenericTypeNamespace}};
+            {{(baseSystem.Namespace != string.Empty ? $"namespace {baseSystem.Namespace} {{" : "")}}
+                public partial class {{baseSystem.Name}}{
+                        
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public override void Update(in {{baseSystem.GenericType.ToDisplayString()}} {{baseSystem.GenericType.Name.ToLower()}}){
+                        {{methodCalls}}
+                    }
+                }
+            {{(baseSystem.Namespace != string.Empty ? "}" : "")}}
+            """;
+        return sb.Append(template);
     }
 }
