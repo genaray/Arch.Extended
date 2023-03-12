@@ -69,6 +69,11 @@ public struct QueryMethod
     public string MethodName { get; set; }
     
     /// <summary>
+    /// The entity parameter, if its an entity query. 
+    /// </summary>
+    public IParameterSymbol EntityParameter { get; set; }
+    
+    /// <summary>
     /// All parameters within the query method, not only the components. Also Entity and Data annotated ones.
     /// <remarks>public void Query([Data] float time, in Entity entity, ...);</remarks>
     /// </summary>

@@ -174,12 +174,12 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     ///     Called for each <see cref="Entity"/> with <see cref="Position"/> and <see cref="Sprite"/> without <see cref="Velocity"/> to print it.
     ///     The calling takes place through the source generated method "PrintEntitiesWithoutVelocityQuery" on <see cref="DebugSystem.Update"/>.
     /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>. Passed by the "PrintEntitiesWithoutVelocityQuery", you can also pass components or data parameters as usual.</param>
+    /// <param name="en">The <see cref="Entity"/>. Passed by the "PrintEntitiesWithoutVelocityQuery", you can also pass components or data parameters as usual.</param>
     [Query]
     [All<Position, Sprite>, None<Velocity>]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void PrintEntitiesWithoutVelocity(in Entity entity)
+    public void PrintEntitiesWithoutVelocity(in Entity en)
     {
-        Console.WriteLine(entity);
+        Console.WriteLine(en);
     }
 }

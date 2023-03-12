@@ -169,8 +169,12 @@ public static class QueryUtils
     /// <returns></returns>
     public static StringBuilder AppendQueryMethod(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
-        // Get attributes
+
+        // Check for entity param
         var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
+        var entityParam = entity ? methodSymbol.Parameters.First(symbol => symbol.Type.Name.Equals("Entity")) : null;
+
+        // Get attributes
         var attributeData = methodSymbol.GetAttributeData("All");
         var anyAttributeData = methodSymbol.GetAttributeData("Any");
         var noneAttributeData = methodSymbol.GetAttributeData("None");
@@ -215,6 +219,7 @@ public static class QueryUtils
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,
             
+            EntityParameter = entityParam,
             Parameters = methodSymbol.Parameters,
             Components = components,
             
@@ -289,7 +294,7 @@ public static class QueryUtils
 
                             for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                             {
-                                {{(queryMethod.IsEntityQuery ? "ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
+                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
                                 {{getComponents}}
                                 {{queryMethod.MethodName}}({{insertParams}});
                             }
