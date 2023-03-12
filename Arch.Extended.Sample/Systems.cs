@@ -1,13 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
+using Arch.Bus;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.EventBus.SourceGenerator;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
-namespace Arch.System.Sample;
+namespace Arch.Extended;
 
 /// <summary>
 ///     The movement system makes the entities move and bounce properly. 
@@ -181,5 +182,28 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     public void PrintEntitiesWithoutVelocity(in Entity en)
     {
         Console.WriteLine(en);
+    }
+}
+
+/// <summary>
+/// A event handler class using the source generated eventbus to intercept and react to events to decouple logic. 
+/// </summary>
+public class EventHandler
+{
+
+    /// <summary>
+    /// Listens for <see cref="ValueTuple{T1,T2}"/> events with a <see cref="World"/> and <see cref="KeyboardState"/> to check if the delte key was pressed.
+    /// If thats the case, it will remove the <see cref="Velocity"/> component from all of them. 
+    /// </summary>
+    /// <param name="tuple"></param>
+    [Event]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void OnDeleteStopEntities(ref (World world, KeyboardState state) tuple)
+    {
+        if (!tuple.state.IsKeyDown(Keys.Delete)) return;
+        
+        // Query for velocity entities and remove their velocity to make them stop moving. 
+        var queryDesc = new QueryDescription().WithAll<Velocity>();
+        tuple.world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
     }
 }

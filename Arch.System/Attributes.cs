@@ -1,4 +1,4 @@
-﻿namespace Arch.System.SourceGenerator;
+﻿namespace Arch.System;
 
 /// <summary>
 ///     Marks a method to generate a high performance query for it. 

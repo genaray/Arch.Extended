@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Arch.EventBus.SourceGenerator;
+namespace Arch.Bus;
 
 /// <summary>
 /// The EventBus model
@@ -37,7 +37,13 @@ public struct Method
     /// <summary>
     /// A list of methods which this <see cref="Method"/> redirects the event to.
     /// </summary>
-    public IList<IMethodSymbol> EventReceivingMethods;
+    public IList<ReceivingMethod> EventReceivingMethods;
+}
+
+public struct ReceivingMethod
+{
+    public IMethodSymbol MethodSymbol;
+    public int Order;
 }
 
 public static class EventBusExtensions
@@ -66,16 +72,16 @@ public static class EventBusExtensions
     }
 
     /// <summary>
-    ///     Appends calls to all event receiving method.
-    ///     <remarks>SomeMethod(...); OtherMethod(...); ...</remarks>
+    ///     Appends all methods redirecting events.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/>.</param>
-    /// <param name="callMethod">The <see cref="Method"/> the event call which methods will be called after one another.</param>
+    /// <param name="callMethods">The <see cref="IList{T}"/> containing the <see cref="Method"/>s redirecting the event and calling the methods. </param>
     /// <returns></returns>
-    public static StringBuilder AppendEventMethod(this StringBuilder sb, Method callMethod)
+    public static StringBuilder AppendEventMethods(this StringBuilder sb, IList<Method> callMethods)
     {
-        foreach (var eventReceivingMethod in callMethod.EventReceivingMethods){
-            sb.AppendLine($"{eventReceivingMethod.ContainingSymbol}.{eventReceivingMethod.Name}({RefKindToString(callMethod.RefKind)} {callMethod.EventType.Name.ToLower()});");
+        foreach (var eventCallMethod in callMethods)
+        {
+            sb.AppendEventMethod(eventCallMethod);
         }
         return sb;
     }
@@ -86,18 +92,31 @@ public static class EventBusExtensions
     /// <param name="sb">The <see cref="StringBuilder"/>.</param>
     /// <param name="callMethods">The <see cref="IList{T}"/> containing the <see cref="Method"/>s redirecting the event and calling the methods. </param>
     /// <returns></returns>
-    public static StringBuilder AppendEventMethod(this StringBuilder sb, IList<Method> callMethods)
+    public static StringBuilder AppendEventMethod(this StringBuilder sb, Method callMethod)
     {
-        foreach (var eventCallMethod in callMethods)
-        {
-            var callMethodsInOrder = new StringBuilder().AppendEventMethod(eventCallMethod);
-            var template = $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Send({{RefKindToString(eventCallMethod.RefKind)}} {{eventCallMethod.EventType.ToDisplayString()}} {{eventCallMethod.EventType.Name.ToLower()}}){
-                {{callMethodsInOrder}}
-            }
-            """;
-            sb.AppendLine(template);
+        var callMethodsInOrder = new StringBuilder().MethodCalls(callMethod);
+        var template = $$"""
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Send({{RefKindToString(callMethod.RefKind)}} {{callMethod.EventType.ToDisplayString()}} {{callMethod.EventType.Name.ToLower()}}){
+            {{callMethodsInOrder}}
+        }
+        """;
+        sb.AppendLine(template);
+        return sb;
+    }
+    
+    
+    /// <summary>
+    ///     Appends calls to all event receiving method.
+    ///     <remarks>SomeMethod(...); OtherMethod(...); ...</remarks>
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/>.</param>
+    /// <param name="callMethod">The <see cref="Method"/> the event call which methods will be called after one another.</param>
+    /// <returns></returns>
+    public static StringBuilder MethodCalls(this StringBuilder sb, Method callMethod)
+    {
+        foreach (var eventReceivingMethod in callMethod.EventReceivingMethods){
+            sb.AppendLine($"{eventReceivingMethod.MethodSymbol.ContainingSymbol}.{eventReceivingMethod.MethodSymbol.Name}({RefKindToString(callMethod.RefKind)} {callMethod.EventType.Name.ToLower()});");
         }
         return sb;
     }
@@ -110,7 +129,7 @@ public static class EventBusExtensions
     /// <returns></returns>
     public static StringBuilder AppendEventBus(this StringBuilder sb, ref EventBus eventBus)
     {
-        var callerMethods = new StringBuilder().AppendEventMethod(eventBus.Methods);
+        var callerMethods = new StringBuilder().AppendEventMethods(eventBus.Methods);
         var template = $$"""
         using System.Runtime.CompilerServices;
         namespace {{eventBus.Namespace}};

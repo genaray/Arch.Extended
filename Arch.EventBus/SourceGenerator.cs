@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Arch.EventBus.SourceGenerator;
+namespace Arch.Bus;
 
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
     private static EventBus _eventBus;
-    private static Dictionary<ITypeSymbol, (RefKind, IList<IMethodSymbol>)> _eventTypeToReceivingMethods;
+    private static Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)> _eventTypeToReceivingMethods;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -20,7 +20,7 @@ public class QueryGenerator : IIncrementalGenerator
 
         // Register the generic attributes 
         var attributes = $$"""
-            namespace Arch.EventBus.SourceGenerator
+            namespace Arch.Bus
             {           
                 /// <summary>
                 ///     Marks a method to receive a certain event. 
@@ -28,7 +28,7 @@ public class QueryGenerator : IIncrementalGenerator
                 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
                 public class EventAttribute : global::System.Attribute
                 {
-                    public EventAttribute(int order = -1)
+                    public EventAttribute(int order = 0)
                     {
                         Order = order;
                     }
@@ -45,7 +45,7 @@ public class QueryGenerator : IIncrementalGenerator
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
             static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
-            static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.EventBus.SourceGenerator.EventAttribute")
+            static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.Bus.EventAttribute")
         ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
         
         // Combine the selected enums with the `Compilation`
@@ -93,14 +93,16 @@ public class QueryGenerator : IIncrementalGenerator
     private static void MapMethodToEventType(IMethodSymbol methodSymbol)
     {
         var eventType = methodSymbol.Parameters[0];
+        var param = methodSymbol.GetAttributes()[0].ConstructorArguments[0];
         if (_eventTypeToReceivingMethods.TryGetValue(eventType.Type, out var tuple))
         {
-            tuple.Item2.Add( methodSymbol);
+            var receivingMethod = new ReceivingMethod{ MethodSymbol = methodSymbol, Order = (int)param.Value };
+            tuple.Item2.Add( receivingMethod);
         }
         else
         {
             tuple.Item1 = eventType.RefKind;
-            tuple.Item2 = new List<IMethodSymbol>{ methodSymbol };
+            tuple.Item2 = new List<ReceivingMethod>{ new() { MethodSymbol = methodSymbol, Order = (int)param.Value } };
             _eventTypeToReceivingMethods.Add(eventType.Type, tuple);
         }
     }
@@ -110,6 +112,7 @@ public class QueryGenerator : IIncrementalGenerator
     /// </summary>
     private static void PrepareEventBus()
     {
+        // Translate mapping to the model
         foreach (var kvp in _eventTypeToReceivingMethods)
         {
             var eventCallMethod = new Method
@@ -118,6 +121,7 @@ public class QueryGenerator : IIncrementalGenerator
                 EventType = kvp.Key,
                 EventReceivingMethods = kvp.Value.Item2
             };
+            eventCallMethod.EventReceivingMethods = eventCallMethod.EventReceivingMethods.OrderBy(method => method.Order).ToList();
             _eventBus.Methods.Add(eventCallMethod);
         }
     }
@@ -133,9 +137,9 @@ public class QueryGenerator : IIncrementalGenerator
         if (methods.IsDefaultOrEmpty) return;
         
         // Init 
-        _eventBus.Namespace = "Arch.EventBus.SourceGenerator";
+        _eventBus.Namespace = "Arch.Bus";
         _eventBus.Methods = new List<Method>(512);
-        _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<IMethodSymbol>)>(512);
+        _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)>(512);
 
         // Generate Query methods and map them to their classes
         foreach (var methodSyntax in methods)

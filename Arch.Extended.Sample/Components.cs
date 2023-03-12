@@ -1,8 +1,7 @@
-﻿
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Arch.System.Sample;
+namespace Arch.Extended;
 
 /// <summary>
 ///     The position of an entity.

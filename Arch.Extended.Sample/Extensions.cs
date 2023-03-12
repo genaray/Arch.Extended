@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 
-namespace Arch.System.Sample;
+namespace Arch.Extended;
 
 public static class RandomExtensions
 {

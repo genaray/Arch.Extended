@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>11</LangVersion>
+        <RootNamespace>Arch.Bus</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

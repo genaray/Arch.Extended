@@ -1,10 +1,12 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Bus;
+using Arch.System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Arch.System.Sample;
+namespace Arch.Extended;
 
 /// <summary>
 ///     The <see cref="Game"/> which represents the game and implements all the important monogame features.
@@ -82,13 +84,12 @@ public class Game : Microsoft.Xna.Framework.Game
 
     protected override void Update(GameTime gameTime)
     {
+        // Exit game on press
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
-        if (Keyboard.GetState().IsKeyDown(Keys.Delete))
-        {
-            // Query for velocity entities and remove their velocity to make them stop moving. 
-            var queryDesc = new QueryDescription().WithAll<Velocity>();
-            _world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
-        }
+        
+        // Forward keyboard state as an event to another handles by using the eventbus
+        var @event = new ValueTuple<World, KeyboardState>(_world, Keyboard.GetState());
+        EventBus.Send(ref @event);
         
         // Update systems
         _systems.BeforeUpdate(in gameTime);

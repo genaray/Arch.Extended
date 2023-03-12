@@ -158,7 +158,6 @@ public static class QueryUtils
             var constructorArgumentsTypes = constructorArguments.Select(constant => constant.Value as ITypeSymbol).ToList();
             array.AddRange(constructorArgumentsTypes);
         }
-        
     }
 
     /// <summary>
