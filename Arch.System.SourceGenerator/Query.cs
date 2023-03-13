@@ -208,11 +208,12 @@ public static class QueryUtils
         exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
         // Create data modell and generate it
+        var className = methodSymbol.ContainingSymbol.ToString();
         var queryMethod = new QueryMethod
         {
             IsGlobalNamespace = methodSymbol.ContainingNamespace.IsGlobalNamespace,
             Namespace = methodSymbol.ContainingNamespace.ToString(),
-            ClassName = methodSymbol.ContainingSymbol.Name,
+            ClassName = className.Substring(className.LastIndexOf('.')+1),
             
             IsStatic = methodSymbol.IsStatic,
             IsEntityQuery = entity,
