@@ -21,6 +21,7 @@ dotnet add package Arch.EventBus --version 1.0.0
 # Features & Tools
 - ⚙️ **_[Systems](https://github.com/genaray/Arch.Extended/wiki/Systems-API)_** > By means of systems, it is now easy to organize, reuse and arrange queries. 
 - ✍️ **_[Source Generator](https://github.com/genaray/Arch.Extended/wiki/Source-Generator)_** > Declarative syntax using attributes and source generator, let your queries write themselves! 
+- ✉️ **_[EventBus](https://github.com/genaray/Arch.Extended/wiki/EventBus)_** > A source generated EventBus, send Events with high-performance!
 > Check the links and the [Wiki](https://github.com/genaray/Arch.Extended/wiki)! 
 
 # Full code sample
