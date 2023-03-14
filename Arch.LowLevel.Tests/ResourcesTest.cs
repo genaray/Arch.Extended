@@ -1,3 +1,4 @@
+
 using static NUnit.Framework.Assert;
 
 namespace Arch.LowLevel.Tests;
@@ -81,5 +82,20 @@ public class ResourcesTest
         var newHandle = resources.Add("NewString");
         That(newHandle.Id, Is.EqualTo(0));
         That(resources.Count, Is.EqualTo(1));
+    }
+    
+    /// <summary>
+    ///     Checks if <see cref="Resources{T}"/> is capable of validating a <see cref="Handle{T}"/>.
+    /// </summary>
+    [Test]
+    public void ResourcesHandleValid()
+    {
+        // Check add
+        var resources = new Resources<string>(IntPtr.Size, capacity: 64);
+        var handle = resources.Add("Handle");
+        Handle<string> someHandle = Handle<string>.NULL;
+        
+        That(resources.IsValid(handle), Is.EqualTo(true));
+        That(resources.IsValid(someHandle), Is.EqualTo(false));
     }
 }

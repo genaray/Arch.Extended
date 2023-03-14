@@ -1,10 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFrameworks>net7.0; net6.0; netstandard2.1</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+
+        <PackageId>Arch.LowLevel</PackageId>
+        <Title>Arch.LowLevel</Title>
+        <Version>1.0.1</Version>
+        <Authors>genaray</Authors>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <Description>LowLevel tools for arch.</Description>
+        <PackageReleaseNotes>
+            Added Handle validation and a null handle.
+        </PackageReleaseNotes>
+        <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
+
+        <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/genaray/Arch.Extended.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <IsPackable>true</IsPackable>
+
+        <LangVersion>11</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Copyright>Apache2.0</Copyright>
+        <PackageLicenseUrl></PackageLicenseUrl>
     </PropertyGroup>
 
 </Project>

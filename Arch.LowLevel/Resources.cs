@@ -180,10 +180,24 @@ public class JaggedArray<T>
 /// <typeparam name="T">The type of the managed resource.</typeparam>
 public readonly record struct Handle<T>
 {
+    
+    /// <summary>
+    ///     A null <see cref="Handle{T}"/> which is invalid and used for camparison.
+    /// </summary>
+    public static readonly Handle<T> NULL = new(-1);
+    
     /// <summary>
     ///     The id, its index inside a <see cref="Resources{T}"/> array.
     /// </summary>
-    public readonly int Id;
+    public readonly int Id = -1;
+
+    /// <summary>
+    ///     Public default constructor.
+    /// </summary>
+    public Handle()
+    {
+        Id = -1;
+    }
 
     /// <summary>
     ///      Initializes a new instance of the <see cref="Handle{T}" /> class.
@@ -267,6 +281,17 @@ public sealed class Resources<T> : IDisposable
         return handle;
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="Handle{T}"/> is valid.
+    /// </summary>
+    /// <param name="handle">The <see cref="Handle{T}"/>.</param>
+    /// <returns>True or false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsValid(in Handle<T> handle)
+    {
+        return handle.Id > -1 && handle.Id <= _array.Capacity;
+    }
+    
     /// <summary>
     ///     Returns a resource for the given <see cref="Handle{T}"/>.
     /// </summary>
