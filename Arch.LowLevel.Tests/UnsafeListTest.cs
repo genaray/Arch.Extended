@@ -3,7 +3,7 @@ using static NUnit.Framework.Assert;
 namespace Arch.LowLevel.Tests;
 
 /// <summary>
-///     Checks <see cref="Resources{T}"/> and HashCode related methods.
+///     Checks <see cref="UnsafeList{T}"/> related methods.
 /// </summary>
 [TestFixture]
 public class UnsafeListTest

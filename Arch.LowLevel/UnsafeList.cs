@@ -29,7 +29,11 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         Count = 0;
         Capacity = capacity;
+#if NET6_0_OR_GREATER
+        _array = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * capacity));
+#else
         _array = (T*)Marshal.AllocHGlobal(sizeof(T) * capacity);
+#endif
     }
 
     /// <summary>
@@ -202,11 +206,21 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
 
         var requiredBytes = sizeof(T) * min;
         var oldArray = _array;
-        var newArray = Marshal.AllocHGlobal(requiredBytes);
+
+#if NET6_0_OR_GREATER
+        var newArray = (IntPtr)NativeMemory.Alloc((nuint)requiredBytes);
+#else
+        var newArray = (IntPtr)Marshal.AllocHGlobal(requiredBytes);
+#endif
         
         // Copy & Free
         Buffer.MemoryCopy(oldArray, (T*)newArray, requiredBytes, Count * sizeof(T));
+        
+#if NET6_0_OR_GREATER
+        NativeMemory.Free(oldArray);
+#else
         Marshal.FreeHGlobal((IntPtr)oldArray);
+#endif
 
         _array = (T*)newArray;
         Capacity = min;
@@ -221,11 +235,21 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         var requiredBytes = sizeof(T) * Count;
         var oldArray = _array;
-        var newArray = Marshal.AllocHGlobal(requiredBytes);
+
+#if NET6_0_OR_GREATER
+        var newArray = (IntPtr)NativeMemory.Alloc((nuint)requiredBytes);
+#else
+        var newArray = (IntPtr)Marshal.AllocHGlobal(requiredBytes);
+#endif
         
         // Copy & free
         Buffer.MemoryCopy(oldArray, (T*)newArray, requiredBytes, Count * sizeof(T));
+        
+#if NET6_0_OR_GREATER
+        NativeMemory.Free(oldArray);
+#else
         Marshal.FreeHGlobal((IntPtr)oldArray);
+#endif
 
         _array = (T*)newArray;
         Capacity = Count;
@@ -270,7 +294,21 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
+#if NET6_0_OR_GREATER
+        NativeMemory.Free(_array);
+#else
         Marshal.FreeHGlobal((IntPtr)_array);
+#endif
+    }
+    
+    /// <summary>
+    ///     Converts this <see cref="UnsafeList{T}"/> instance into a <see cref="Span{T}"/>.
+    /// </summary>
+    /// <returns>A new instance of <see cref="Span{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<T> AsSpan()
+    {
+        return new Span<T>(_array, Count);
     }
 
     /// <summary>
@@ -320,105 +358,6 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     }
 }
 
-/// <summary>
-///     The <see cref="Enumerator{T}"/> is a basic implementation of the <see cref="IEnumerator{T}"/> interface for the <see cref="UnsafeList{T}"/>.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public unsafe struct Enumerator<T> : IEnumerator<T> where T : unmanaged
-{
-    private readonly T* _list;
-    private readonly int _count;
-    private int _index;
-
-    /// <summary>
-    ///     Creates an instance of the <see cref="Enumerator{T}"/>.
-    /// </summary>
-    /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Enumerator(T* list, int count)
-    {
-        _list = list;
-        _count = count;
-        _index = 0;
-    }
-
-    /// <summary>
-    ///     Returns the current item.
-    /// </summary>
-    public T Current => _list[_index-1];
-
-    /// <summary>
-    ///     Returns the current item.
-    /// </summary>
-    object IEnumerator.Current => _list[_index-1];
-
-    /// <summary>
-    ///     Disposes this enumerator.
-    /// </summary>
-    public void Dispose() { }   // nop
-
-    /// <summary>
-    ///     Moves to the next item.
-    /// </summary>
-    /// <returns></returns>
-    public bool MoveNext()
-    {
-        return unchecked(_index++ < _count);
-    }
-
-    /// <summary>
-    ///     Resets the enumerator.
-    /// </summary>
-    public void Reset()
-    {
-        _index = 0;
-    }
-}
-
-/// <summary>
-///     The <see cref="Enumerator{T}"/> is a basic implementation of the <see cref="IEnumerator{T}"/> interface for the <see cref="UnsafeList{T}"/>.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public unsafe struct UnsafeEnumerator<T> where T : unmanaged
-{
-    private readonly T* _list;
-    private readonly int _count;
-    private int _index;
-
-    /// <summary>
-    ///     Creates an instance of the <see cref="Enumerator{T}"/>.
-    /// </summary>
-    /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal UnsafeEnumerator(T* list, int count)
-    {
-        _list = list;
-        _count = count;
-        _index = 0;
-    }
-
-    /// <summary>
-    ///     Returns the current item.
-    /// </summary>
-    public ref T Current => ref _list[_index-1];
-
-    /// <summary>
-    ///     Moves to the next item.
-    /// </summary>
-    /// <returns></returns>
-    public bool MoveNext()
-    {
-        return unchecked(_index++ < _count);
-    }
-
-    /// <summary>
-    ///     Resets the enumerator.
-    /// </summary>
-    public void Reset()
-    {
-        _index = 0;
-    }
-}
 
 /// <summary>
 ///     A debug view for the <see cref="UnsafeList{T}"/>.
