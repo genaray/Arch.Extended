@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -9,6 +10,7 @@ namespace Arch.LowLevel;
 ///     represents an unsafe allocated array of unmanaged items.
 /// </summary>
 /// <typeparam name="T">The unmanaged generic.</typeparam>
+[DebuggerTypeProxy(typeof(UnsafeArrayDebugView<>))]
 public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 {
 
@@ -152,5 +154,27 @@ public unsafe struct UnsafeArray
             source[index] = value;
         }
     }
+}
 
+/// <summary>
+///     A debug view for the <see cref="UnsafeArray{T}"/>.
+/// </summary>
+/// <typeparam name="T">The unmanaged type.</typeparam>
+internal class UnsafeArrayDebugView<T> where T : unmanaged
+{
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private readonly UnsafeArray<T> _entity;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    public T[] Items
+    {
+        get
+        {
+            var items = new T[_entity.Count];
+            _entity.AsSpan().CopyTo(items);
+            return items;
+        }
+    }
+
+    public UnsafeArrayDebugView(UnsafeArray<T> entity) => _entity = entity;
 }
