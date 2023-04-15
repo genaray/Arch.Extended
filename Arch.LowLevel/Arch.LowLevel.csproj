@@ -11,12 +11,12 @@
 
         <PackageId>Arch.LowLevel</PackageId>
         <Title>Arch.LowLevel</Title>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>LowLevel tools for arch.</Description>
         <PackageReleaseNotes>
-            Added Handle validation and a null handle.
+            Added UnsafeArray and slightly faster memory allocation.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 

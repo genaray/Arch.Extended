@@ -6,22 +6,7 @@ namespace Arch.System.SourceGenerator;
 
 public static class QueryUtils
 {
-    
-    /// <summary>
-    ///     Appends the arrays of the types specified in the <see cref="parameterSymbols"/> from the chunk.
-    /// </summary>
-    /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
-    /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the arrays for.</param>
-    /// <returns></returns>
-    public static StringBuilder GetArrays(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
-    {
-        foreach (var symbol in parameterSymbols)
-            if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
-                sb.AppendLine($"var {symbol.Type.Name.ToLower()}Array = chunk.GetArray<{symbol.Type}>();");
 
-        return sb;
-    }
-    
     /// <summary>
     ///     Appends the first elements of the types specified in the <see cref="parameterSymbols"/> from the previous specified arrays.
     /// </summary>
@@ -32,8 +17,8 @@ public static class QueryUtils
     {
       
         foreach (var symbol in parameterSymbols)
-            if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref ArrayExtensions.DangerousGetReference({symbol.Type.Name.ToLower()}Array);");
+            if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
+                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type}>();");
 
         return sb;
     }
@@ -244,7 +229,6 @@ public static class QueryUtils
         
         // Generate code 
         var data = new StringBuilder().DataParameters(queryMethod.Parameters);
-        var getArrays = new StringBuilder().GetArrays(queryMethod.Components);
         var getFirstElements = new StringBuilder().GetFirstElements(queryMethod.Components);
         var getComponents = new StringBuilder().GetComponents(queryMethod.Components);
         var insertParams = new StringBuilder().InsertParams(queryMethod.Parameters);
@@ -288,11 +272,10 @@ public static class QueryUtils
                         foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
-                            {{getArrays}}
-                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);" : "")}}
+                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
 
-                            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                            foreach(var entityIndex in chunk)
                             {
                                 {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
                                 {{getComponents}}
