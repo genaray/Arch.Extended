@@ -101,6 +101,15 @@ public class Group<T> : ISystem<T>
     }
 
     /// <summary>
+    ///     Creates an instance with an array of <see cref="ISystem{T}"/>'s that will belong to this group.
+    /// </summary>
+    /// <param name="systems">An <see cref="ISystem{T}"/> array.</param>
+    public Group(IEnumerable<ISystem<T>> systems)
+    {
+        _systems = new List<ISystem<T>>(systems);
+    }
+
+    /// <summary>
     ///     Adds several new <see cref="ISystem{T}"/>'s to this group.
     /// </summary>
     /// <param name="systems">An <see cref="ISystem{T}"/> array.</param>
