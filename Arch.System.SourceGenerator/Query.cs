@@ -301,11 +301,29 @@ public static class QueryUtils
     {
         // Get BaseSystem class
         var classSymbol = classToMethod.Key as INamedTypeSymbol;
-        var parentSymbol = classSymbol.BaseType;
 
-        if (!parentSymbol.Name.Equals("BaseSystem")) return sb; // Ignore classes which do not derive from BaseSystem
-        if (classSymbol.MemberNames.Contains("Update")) return sb; // Update was implemented by user, no need to do that by source generator. 
-        
+        INamedTypeSymbol? parentSymbol = null;
+        var implementsUpdate = false;
+        var type = classSymbol;
+        while (type != null)
+        {
+            // Update was implemented by user, no need to do that by source generator.
+            if (type.MemberNames.Contains("Update"))
+                implementsUpdate = true;
+
+            type = type.BaseType;
+
+            // Ignore classes which do not derive from BaseSystem
+            if (type?.Name == "BaseSystem")
+            {
+                parentSymbol = type;
+                break;
+            }
+        }
+
+        if (parentSymbol == null || implementsUpdate)
+            return sb;
+
         // Get generic of BaseSystem
         var typeSymbol = parentSymbol.TypeArguments[1];
 
