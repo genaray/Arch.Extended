@@ -3,29 +3,29 @@
 namespace Arch.System;
 
 /// <summary>
-///     An interface providing several methods for a system.
+///     An interface providing several methods for a system. 
 /// </summary>
 /// <typeparam name="T">The type passed to each method. For example a delta time or some other data.</typeparam>
 public interface ISystem<T> : IDisposable
 {
-
+    
     /// <summary>
     ///     Initializes a system, before its first ever run.
     /// </summary>
     void Initialize();
-
+    
     /// <summary>
     ///     Runs before <see cref="Update"/>.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
     void BeforeUpdate(in T t);
-
+    
     /// <summary>
     ///     Updates the system.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
     void Update(in T t);
-
+    
     /// <summary>
     ///     Runs after <see cref="Update"/>.
     /// </summary>
@@ -42,18 +42,18 @@ public abstract class BaseSystem<W, T> : ISystem<T>
 {
 
     private T _data;
-
+    
     /// <summary>
-    ///     Creates an instance.
+    ///     Creates an instance. 
     /// </summary>
     /// <param name="world">The <see cref="World"/>.</param>
     protected BaseSystem(W world)
     {
         World = world;
     }
-
+ 
     /// <summary>
-    ///     The world instance.
+    ///     The world instance. 
     /// </summary>
     public W World { get; private set; }
 
@@ -87,7 +87,7 @@ public class Group<T> : ISystem<T>
 {
 
     /// <summary>
-    /// All <see cref="ISystem{T}"/>'s in this group.
+    /// All <see cref="ISystem{T}"/>'s in this group. 
     /// </summary>
     private readonly List<ISystem<T>> _systems;
 
@@ -101,7 +101,7 @@ public class Group<T> : ISystem<T>
     }
 
     /// <summary>
-    ///     Creates an instance with an enumerable of <see cref="ISystem{T}"/>'s that will belong to this group.
+    ///     Creates an instance with an array of <see cref="ISystem{T}"/>'s that will belong to this group.
     /// </summary>
     /// <param name="systems">An <see cref="IEnumerable{T}"/> of <see cref="ISystem{T}"/>.</param>
     public Group(IEnumerable<ISystem<T>> systems)
@@ -119,7 +119,7 @@ public class Group<T> : ISystem<T>
         _systems.AddRange(systems);
         return this;
     }
-
+    
     /// <summary>
     ///     Adds an single <see cref="ISystem{T}"/> to this group by its generic.
     ///     Automaticly initializes it properly. Must be contructorless.
@@ -131,7 +131,7 @@ public class Group<T> : ISystem<T>
         _systems.Add(new G());
         return this;
     }
-
+    
     /// <summary>
     ///     Initializes all <see cref="ISystem{T}"/>'s in this <see cref="Group{T}"/>.
     /// </summary>
