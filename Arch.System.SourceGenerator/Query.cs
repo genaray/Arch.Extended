@@ -311,9 +311,19 @@ public static class QueryUtils
             if (type.MemberNames.Contains("Update"))
                 implementsUpdate = true;
 
-        if (!parentSymbol.Name.Equals("BaseSystem")) return sb; // Ignore classes which do not derive from BaseSystem
-        if (classSymbol.MemberNames.Contains("Update")) return sb; // Update was implemented by user, no need to do that by source generator. 
-        
+            type = type.BaseType;
+
+            // Ignore classes which do not derive from BaseSystem
+            if (type?.Name == "BaseSystem")
+            {
+                parentSymbol = type;
+                break;
+            }
+        }
+
+        if (parentSymbol == null || implementsUpdate)
+            return sb;
+
         // Get generic of BaseSystem
         var typeSymbol = parentSymbol.TypeArguments[1];
 
