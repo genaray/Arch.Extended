@@ -4,42 +4,46 @@ using Microsoft.CodeAnalysis;
 namespace Arch.Bus;
 
 /// <summary>
-/// The EventBus model
+///     The EventBus model
 /// </summary>
 public struct EventBus
 {
     /// <summary>
-    /// The namespace.
+    ///     The namespace.
     /// </summary>
     public string Namespace { get; set; }
     
     /// <summary>
-    /// The <see cref="Method"/>s of the <see cref="EventBus"/> "redirecting" the event.
+    ///     The <see cref="Method"/>s of the <see cref="EventBus"/> "redirecting" the event.
     /// </summary>
     public IList<Method> Methods;
 }
 
 /// <summary>
-/// A method inside the eventbus redirecting the event towards the receivers. 
+///     A method inside the eventbus redirecting the event towards the receivers. 
 /// </summary>
 public struct Method
 {
     /// <summary>
-    /// The <see cref="RefKind"/> this method accepts as a param.
+    ///     The <see cref="RefKind"/> this method accepts as a param.
     /// </summary>
     public RefKind RefKind;
     
     /// <summary>
-    /// The Event type as a <see cref="ITypeSymbol"/> that is being passed to the method and being redirected.
+    ///     The Event type as a <see cref="ITypeSymbol"/> that is being passed to the method and being redirected.
     /// </summary>
     public ITypeSymbol EventType;
     
     /// <summary>
-    /// A list of methods which this <see cref="Method"/> redirects the event to.
+    ///     A list of methods which this <see cref="Method"/> redirects the event to.
     /// </summary>
     public IList<ReceivingMethod> EventReceivingMethods;
 }
 
+/// <summary>
+///     The <see cref="ReceivingMethod"/> struct
+///     represents a method that receives the event (and is marked by the event tag) with its order. 
+/// </summary>
 public struct ReceivingMethod
 {
     public IMethodSymbol MethodSymbol;
