@@ -87,28 +87,30 @@ public class QueryGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Maps the <see cref="IMethodSymbol"/> to its <see cref="IParameterSymbol"/> for organisation. 
+    ///     Maps the <see cref="IMethodSymbol"/> to its <see cref="IParameterSymbol"/> for organisation. 
     /// </summary>
     /// <param name="methodSymbol"></param>
     private static void MapMethodToEventType(IMethodSymbol methodSymbol)
     {
         var eventType = methodSymbol.Parameters[0];
         var param = methodSymbol.GetAttributes()[0].ConstructorArguments[0];
+        
+        // Either append or create a new receiving method with a new list.
         if (_eventTypeToReceivingMethods.TryGetValue(eventType.Type, out var tuple))
         {
-            var receivingMethod = new ReceivingMethod{ MethodSymbol = methodSymbol, Order = (int)param.Value };
+            var receivingMethod = new ReceivingMethod{ Static = methodSymbol.IsStatic, MethodSymbol = methodSymbol, Order = (int)param.Value };
             tuple.Item2.Add( receivingMethod);
         }
         else
         {
             tuple.Item1 = eventType.RefKind;
-            tuple.Item2 = new List<ReceivingMethod>{ new() { MethodSymbol = methodSymbol, Order = (int)param.Value } };
+            tuple.Item2 = new List<ReceivingMethod>{ new() { Static = methodSymbol.IsStatic,  MethodSymbol = methodSymbol, Order = (int)param.Value } };
             _eventTypeToReceivingMethods.Add(eventType.Type, tuple);
         }
     }
     
     /// <summary>
-    /// Prepares the <see cref="EventBus"/> by convertings the <see cref="_eventTypeToReceivingMethods"/> to the eventbus model. 
+    ///     Prepares the <see cref="EventBus"/> by convertings the <see cref="_eventTypeToReceivingMethods"/> to the eventbus model. 
     /// </summary>
     private static void PrepareEventBus()
     {

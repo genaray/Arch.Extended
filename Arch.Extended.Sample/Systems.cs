@@ -183,6 +183,18 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     {
         Console.WriteLine(en);
     }
+
+    [Event]
+    public void OnEvent(ref int someEvent)
+    {
+        
+    }
+    
+    [Event(order:1)]
+    public void OnOtherEvent(ref int someOtherEvent)
+    {
+        
+    }
 }
 
 /// <summary>
@@ -205,5 +217,11 @@ public class EventHandler
         // Query for velocity entities and remove their velocity to make them stop moving. 
         var queryDesc = new QueryDescription().WithAll<Velocity>();
         tuple.world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
+    }
+    
+    [Event(order: 0)]
+    public static void OnOtherEvent(ref int someOtherEvent)
+    {
+        
     }
 }

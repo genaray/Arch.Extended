@@ -46,6 +46,13 @@ public struct Method
 /// </summary>
 public struct ReceivingMethod
 {
+
+    /// <summary>
+    ///     If the receiving method is static.
+    ///     If not, we are targeting instances and need to handle them differently during generation. 
+    /// </summary>
+    public bool Static;
+    
     /// <summary>
     ///     The method symbol of the static event receiver which should be called.
     /// </summary>
@@ -106,7 +113,11 @@ public static class EventBusExtensions
     public static StringBuilder AppendEventMethod(this StringBuilder sb, Method callMethod)
     {
         var callMethodsInOrder = new StringBuilder().MethodCalls(callMethod);
+        var instanceReceiverLists = new StringBuilder().InstanceReceiverLists(callMethod);
+        
         var template = $$"""
+        {{instanceReceiverLists}}
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Send({{RefKindToString(callMethod.RefKind)}} {{callMethod.EventType.ToDisplayString()}} {{callMethod.EventType.Name.ToLower()}}){
             {{callMethodsInOrder}}
@@ -126,8 +137,53 @@ public static class EventBusExtensions
     /// <returns></returns>
     public static StringBuilder MethodCalls(this StringBuilder sb, Method callMethod)
     {
-        foreach (var eventReceivingMethod in callMethod.EventReceivingMethods){
-            sb.AppendLine($"{eventReceivingMethod.MethodSymbol.ContainingSymbol}.{eventReceivingMethod.MethodSymbol.Name}({RefKindToString(callMethod.RefKind)} {callMethod.EventType.Name.ToLower()});");
+        // Loop over every found method receiver
+        foreach (var eventReceivingMethod in callMethod.EventReceivingMethods)
+        {
+            var containingSymbol = eventReceivingMethod.MethodSymbol.ContainingSymbol;
+            var methodName = eventReceivingMethod.MethodSymbol.Name;
+            var passEvent = $"{RefKindToString(callMethod.RefKind)} {callMethod.EventType.Name.ToLower()}";
+            
+            // If static, call directly... if non static, loop over the instances for this event and call them one by one.
+            if (eventReceivingMethod.Static)
+            {
+                sb.AppendLine($"{containingSymbol}.{methodName}({passEvent});");   
+            }
+            else
+            {
+                var instanceList = $"{containingSymbol.Name}_{methodName}_{callMethod.EventType}";
+                var template = $$"""
+                    for(var index = 0; index < {{instanceList}}.Count; index++)
+                    {
+                        {{instanceList}}[index].{{methodName}}({{passEvent}});
+                    }
+                """;
+                sb.AppendLine(template);
+            }
+        }
+        return sb;
+    }
+    
+    /// <summary>
+    ///     Appends lists for a certain <see cref="Method"/> containing one list for each instance (non static) receiving a method.
+    ///     <remarks>List&lt;SomeInstance&gt; SomeInstance_OnSomeEvent_EventType; ...</remarks>
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/>.</param>
+    /// <param name="callMethod">The <see cref="Method"/> the event call which methods will be called after one another.</param>
+    /// <returns></returns>
+    public static StringBuilder InstanceReceiverLists(this StringBuilder sb, Method callMethod)
+    {
+        foreach (var eventReceivingMethod in callMethod.EventReceivingMethods)
+        {
+            var containingSymbol = eventReceivingMethod.MethodSymbol.ContainingSymbol;
+            var methodName = eventReceivingMethod.MethodSymbol.Name;
+
+            if (eventReceivingMethod.Static)
+            {
+                continue;
+            }
+            
+            sb.AppendLine($"public static List<{containingSymbol}> {containingSymbol.Name}_{methodName}_{callMethod.EventType};");
         }
         return sb;
     }
