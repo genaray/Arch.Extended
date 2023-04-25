@@ -46,7 +46,14 @@ public struct Method
 /// </summary>
 public struct ReceivingMethod
 {
+    /// <summary>
+    ///     The method symbol of the static event receiver which should be called.
+    /// </summary>
     public IMethodSymbol MethodSymbol;
+    
+    /// <summary>
+    ///     Its order. 
+    /// </summary>
     public int Order;
 }
 
