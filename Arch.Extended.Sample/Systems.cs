@@ -154,12 +154,15 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     ///     A custom <see cref="QueryDescription"/> which targets <see cref="Entity"/>s with <see cref="Position"/> and <see cref="Sprite"/> without <see cref="Velocity"/>.
     /// </summary>
     private readonly QueryDescription _customQuery = new QueryDescription().WithAll<Position, Sprite>().WithNone<Velocity>();
-    
+
     /// <summary>
     ///     Creates a new <see cref="DebugSystem"/> instance. 
     /// </summary>
     /// <param name="world">The <see cref="World"/> used.</param>
-    public DebugSystem(World world) : base(world) { }
+    public DebugSystem(World world) : base(world)
+    {
+        Hook();
+    }
 
     /// <summary>
     ///     Implements <see cref="BaseSystem{W,T}.Update"/> to call the custom Query and the source generated one. 
@@ -184,23 +187,23 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
         Console.WriteLine(en);
     }
 
-    [Event]
-    public void OnEvent(ref int someEvent)
+    /// <summary>
+    ///     Receives dispatched keyboard events and if the a key was pressed, prints it.
+    ///     Runs before any other event receiver of this kind.
+    /// </summary>
+    /// <param name="tuple">The event listened to.</param>
+    [Event(order: 0)]
+    public void OnKeyboardEventPrint(ref (World world, KeyboardState state) tuple)
     {
-        
-    }
-    
-    [Event(order:1)]
-    public void OnOtherEvent(ref int someOtherEvent)
-    {
-        
+        if (!tuple.state.IsKeyDown(Keys.A)) return;
+        Console.WriteLine($"Key a was pressed.");
     }
 }
 
 /// <summary>
 /// A event handler class using the source generated eventbus to intercept and react to events to decouple logic. 
 /// </summary>
-public class EventHandler
+public static class EventHandler
 {
 
     /// <summary>
@@ -208,7 +211,7 @@ public class EventHandler
     /// If thats the case, it will remove the <see cref="Velocity"/> component from all of them. 
     /// </summary>
     /// <param name="tuple"></param>
-    [Event]
+    [Event(order: 1)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void OnDeleteStopEntities(ref (World world, KeyboardState state) tuple)
     {
@@ -217,11 +220,5 @@ public class EventHandler
         // Query for velocity entities and remove their velocity to make them stop moving. 
         var queryDesc = new QueryDescription().WithAll<Velocity>();
         tuple.world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
-    }
-    
-    [Event(order: 0)]
-    public static void OnOtherEvent(ref int someOtherEvent)
-    {
-        
     }
 }

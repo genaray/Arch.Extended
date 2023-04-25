@@ -144,6 +144,10 @@ public static class EventBusExtensions
             var methodName = eventReceivingMethod.MethodSymbol.Name;
             var passEvent = $"{RefKindToString(callMethod.RefKind)} {callMethod.EventType.Name.ToLower()}";
             
+            // Remove weird chars to also support value tuples flawlessly, otherwhise they are listed like (World world, int int) in code which destroys everything
+            var eventType = callMethod.EventType.ToString();
+            eventType = eventType.Replace("(","").Replace(")","").Replace(".","_").Replace(",","_").Replace(" ","");
+            
             // If static, call directly... if non static, loop over the instances for this event and call them one by one.
             if (eventReceivingMethod.Static)
             {
@@ -151,7 +155,7 @@ public static class EventBusExtensions
             }
             else
             {
-                var instanceList = $"{containingSymbol.Name}_{methodName}_{callMethod.EventType}";
+                var instanceList = $"{containingSymbol.Name}_{methodName}_{eventType}";
                 var template = $$"""
                     for(var index = 0; index < {{instanceList}}.Count; index++)
                     {
@@ -177,13 +181,17 @@ public static class EventBusExtensions
         {
             var containingSymbol = eventReceivingMethod.MethodSymbol.ContainingSymbol;
             var methodName = eventReceivingMethod.MethodSymbol.Name;
-
+            
+            // Remove weird chars to also support value tuples flawlessly, otherwhise they are listed like (World world, int int) in code which destroys everything
+            var eventType = callMethod.EventType.ToString();
+            eventType = eventType.Replace("(","").Replace(")","").Replace(".","_").Replace(",","_").Replace(" ","");
+            
             if (eventReceivingMethod.Static)
             {
                 continue;
             }
             
-            sb.AppendLine($"public static List<{containingSymbol}> {containingSymbol.Name}_{methodName}_{callMethod.EventType};");
+            sb.AppendLine($"public static List<{containingSymbol}> {containingSymbol.Name}_{methodName}_{eventType} = new List<{containingSymbol}>(128);");
         }
         return sb;
     }

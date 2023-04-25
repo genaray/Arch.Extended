@@ -12,7 +12,10 @@ namespace Arch.Bus;
 public class QueryGenerator : IIncrementalGenerator
 {
     private static EventBus _eventBus;
+    private static Hooks _hooks;
+    
     private static Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)> _eventTypeToReceivingMethods;
+    private static Dictionary<ITypeSymbol, IList<EventHook>> _containingTypeToReceivingMethods;
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -94,18 +97,39 @@ public class QueryGenerator : IIncrementalGenerator
     {
         var eventType = methodSymbol.Parameters[0];
         var param = methodSymbol.GetAttributes()[0].ConstructorArguments[0];
-        
+        var receivingMethod = new ReceivingMethod{ Static = methodSymbol.IsStatic, MethodSymbol = methodSymbol, Order = (int)param.Value };
+
         // Either append or create a new receiving method with a new list.
         if (_eventTypeToReceivingMethods.TryGetValue(eventType.Type, out var tuple))
         {
-            var receivingMethod = new ReceivingMethod{ Static = methodSymbol.IsStatic, MethodSymbol = methodSymbol, Order = (int)param.Value };
-            tuple.Item2.Add( receivingMethod);
+            tuple.Item2.Add(receivingMethod);
         }
         else
         {
             tuple.Item1 = eventType.RefKind;
-            tuple.Item2 = new List<ReceivingMethod>{ new() { Static = methodSymbol.IsStatic,  MethodSymbol = methodSymbol, Order = (int)param.Value } };
+            tuple.Item2 = new List<ReceivingMethod>{receivingMethod};
             _eventTypeToReceivingMethods.Add(eventType.Type, tuple);
+        }
+    }
+    
+    /// <summary>
+    ///     Maps the <see cref="IMethodSymbol"/> to its <see cref="ITypeSymbol"/> for organisation. 
+    /// </summary>
+    /// <param name="methodSymbol"></param>
+    private static void MapMethodToContainingType(IMethodSymbol methodSymbol)
+    {
+        var eventType = methodSymbol.Parameters[0];
+        var receivingMethod = new EventHook{ EventType = eventType.Type, MethodSymbol = methodSymbol, };
+
+        // Either append or create a new receiving method with a new list.
+        if (_containingTypeToReceivingMethods.TryGetValue(methodSymbol.ContainingType, out var tuple))
+        {
+            tuple.Add(receivingMethod);
+        }
+        else
+        {
+            var list = new List<EventHook>{receivingMethod};
+            _containingTypeToReceivingMethods.Add(methodSymbol.ContainingType, list);
         }
     }
     
@@ -127,6 +151,30 @@ public class QueryGenerator : IIncrementalGenerator
             _eventBus.Methods.Add(eventCallMethod);
         }
     }
+    
+    /// <summary>
+    ///     Prepares the <see cref="Hooks"/> by convertings the <see cref="_containingTypeToReceivingMethods"/> to the hooks model. 
+    /// </summary>
+    private static void PrepareHooks()
+    {
+        // Translate mapping to the model
+        foreach (var kvp in _containingTypeToReceivingMethods)
+        {
+
+            // Skip static classes since they need no hooks
+            if (kvp.Key.IsStatic)
+            {
+                continue;
+            }
+            
+            var hook = new ClassHooks
+            {
+                PartialClass = kvp.Key,
+                EventHooks = kvp.Value
+            };
+            _hooks.Instances.Add(hook);
+        }
+    }
 
     /// <summary>
     ///     Generates queries and partial classes for the found marked methods.
@@ -142,7 +190,10 @@ public class QueryGenerator : IIncrementalGenerator
         _eventBus.Namespace = "Arch.Bus";
         _eventBus.Methods = new List<Method>(512);
         _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)>(512);
-
+        
+        _hooks.Instances = new List<ClassHooks>(512);
+        _containingTypeToReceivingMethods = new Dictionary<ITypeSymbol, IList<EventHook>>(512);
+        
         // Generate Query methods and map them to their classes
         foreach (var methodSyntax in methods)
         {
@@ -150,11 +201,17 @@ public class QueryGenerator : IIncrementalGenerator
             var methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
 
             MapMethodToEventType(methodSymbol);
+            MapMethodToContainingType(methodSymbol);
         }
         
         PrepareEventBus();
+        PrepareHooks();
+        
         var template = new StringBuilder().AppendEventBus(ref _eventBus);
+        var hooks = new StringBuilder().AppendHooks(ref _hooks);
+        
         context.AddSource($"EventBus.g.cs", CSharpSyntaxTree.ParseText(template.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+        context.AddSource($"Hooks.g.cs", CSharpSyntaxTree.ParseText(hooks.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
     }
 
     /// <summary>
