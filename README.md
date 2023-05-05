@@ -15,7 +15,7 @@ Download the packages and get started today!
 ```console
 dotnet add package Arch.System --version 1.0.2
 dotnet add package Arch.System.SourceGenerator --version 1.1.0
-dotnet add package Arch.EventBus --version 1.0.0
+dotnet add package Arch.EventBus --version 1.0.1
 dotnet add package Arch.LowLevel --version 1.0.2
 ```
 
