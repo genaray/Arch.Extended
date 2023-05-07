@@ -1,10 +1,14 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Bus;
+using Arch.Persistence;
 using Arch.System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Utf8Json;
+using Utf8Json.Formatters;
+using Utf8Json.Resolvers;
 
 namespace Arch.Extended;
 
@@ -80,6 +84,24 @@ public class Game : Microsoft.Xna.Framework.Game
                 new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
             );
         }
+        
+
+        CompositeResolver.RegisterAndSetAsDefault(
+            new IJsonFormatter[] 
+            {
+                new WorldFormatter(),
+                new ArchetypeFormatter(),
+                new ChunkFormatter(),
+                new ComponentTypeFormatter(),
+                new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
+                new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
+            }, 
+            new[] {
+                EnumResolver.UnderlyingValue,
+                StandardResolver.AllowPrivateExcludeNullSnakeCase
+            }
+        );
+        var worldJson = JsonSerializer.ToJsonString(_world);
     }
 
     protected override void Update(GameTime gameTime)
@@ -88,7 +110,7 @@ public class Game : Microsoft.Xna.Framework.Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
         
         // Forward keyboard state as an event to another handles by using the eventbus
-        var @event = new ValueTuple<World, KeyboardState>(_world, Keyboard.GetState());
+        var @event = (_world, Keyboard.GetState());
         EventBus.Send(ref @event);
         
         // Update systems

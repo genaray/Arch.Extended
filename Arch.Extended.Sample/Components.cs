@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Arch.Extended;
@@ -55,6 +56,7 @@ public struct Sprite
     /// <summary>
     ///     The <see cref="Texture2D"/> used.
     /// </summary>
+    [IgnoreDataMember]
     public Texture2D Texture2D;
     
     /// <summary>
