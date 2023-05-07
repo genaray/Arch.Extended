@@ -9,12 +9,11 @@
 
         <PackageId>Arch.EventBus</PackageId>
         <Title>Arch.EventBus</Title>
-        <Version>1.0.0</Version>
+        <Version>1.0.2</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A basic EventBus using source generation.</Description>
-        <PackageReleaseNotes>
-            Release.
+        <PackageReleaseNotes>Fixed some issues with source generation.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 

@@ -207,9 +207,11 @@ public static class EventBusExtensions
         var callerMethods = new StringBuilder().AppendEventMethods(eventBus.Methods);
         var template = $$"""
         using System.Runtime.CompilerServices;
-        namespace {{eventBus.Namespace}};
-        public partial class EventBus{
-            {{callerMethods}}
+        using System.Collections.Generic;
+        namespace {{eventBus.Namespace}}{
+            public partial class EventBus{
+                {{callerMethods}}
+            }
         }
         """;
         return sb.Append(template);
