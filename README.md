@@ -23,6 +23,7 @@ dotnet add package Arch.LowLevel --version 1.0.2
 - ⚙️ **_[Systems](https://github.com/genaray/Arch.Extended/wiki/Systems-API)_** > By means of systems, it is now easy to organize, reuse and arrange queries. 
 - ✍️ **_[Source Generator](https://github.com/genaray/Arch.Extended/wiki/Source-Generator)_** > Declarative syntax using attributes and source generator, let your queries write themselves! 
 - ✉️ **_[EventBus](https://github.com/genaray/Arch.Extended/wiki/EventBus)_** > A source generated EventBus, send Events with high-performance!
+- 👾 **_[LowLevel](https://github.com/genaray/Arch.Extended/wiki/Lowlevel-&-Resource-Management)_** > Low-level utils and data structures to get rid of GC pressure!
 > Check the links and the [Wiki](https://github.com/genaray/Arch.Extended/wiki)! 
 
 # Full code sample
