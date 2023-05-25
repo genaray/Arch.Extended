@@ -1,8 +1,11 @@
 ﻿using Arch.Core;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 using Utf8Json;
 
 namespace Arch.Persistence;
+
+// WORK IN PROGRESS
 
 public class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 {
@@ -29,7 +32,23 @@ public class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 
     public ComponentType Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
     {
-        throw new NotImplementedException();
+        reader.ReadIsBeginObject();
+
+        reader.ReadPropertyName();
+        var id = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadPropertyName();
+        var type = formatterResolver.GetFormatter<Type>().Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+
+        reader.ReadPropertyName();
+        var bytesize = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadIsEndObject();
+
+        return new ComponentType((int)id, type, (int)bytesize, false);
     }
 }
 
@@ -40,7 +59,9 @@ public class WorldFormatter : IJsonFormatter<World>
     {
         var archetypes = value.Archetypes;
         var archetypeFormatter = formatterResolver.GetFormatter<IList<Archetype>>();
-
+        var intArrayFormatter = formatterResolver.GetFormatter<int[][]>();
+        var slotFormatter = formatterResolver.GetFormatter<(int,int)[][]>();
+        
         writer.WriteBeginObject();
         
         // Write world property, the amount of entities in it
@@ -49,7 +70,14 @@ public class WorldFormatter : IJsonFormatter<World>
         writer.WriteValueSeparator();
         
         // Write entity info
-        //writer.WritePropertyName("entityInfos");
+        writer.WritePropertyName("versions");
+        intArrayFormatter.Serialize(ref writer, value.GetVersions(), formatterResolver);
+        writer.WriteValueSeparator();
+        
+        // Write slots
+        writer.WritePropertyName("slots");
+        slotFormatter.Serialize(ref writer, value.GetSlots(), formatterResolver);
+        writer.WriteValueSeparator();
 
         // Write archetypes
         writer.WritePropertyName("archetypesSize");
@@ -65,7 +93,39 @@ public class WorldFormatter : IJsonFormatter<World>
 
     public World Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
     {
-        throw new NotImplementedException();
+        var world = World.Create();
+        var intArrayFormatter = formatterResolver.GetFormatter<int[][]>();
+        var slotFormatter = formatterResolver.GetFormatter<(int,int)[][]>();
+        var archetypeFormatter = formatterResolver.GetFormatter<List<Archetype>>();
+        
+        reader.ReadIsBeginObject();
+        
+        reader.ReadPropertyName();
+        var size = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+
+        reader.ReadPropertyName();
+        var versions = intArrayFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadPropertyName();
+        var slots = slotFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadPropertyName();
+        var archetypeSize = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+
+        reader.ReadPropertyName();
+        var archetypes = archetypeFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        
+        // Forward values to the world 
+        world.SetVersions(versions);
+        world.SetSlots(slots);
+        
+        reader.ReadIsEndObject();
+        return world;
     }
 }
 
@@ -112,7 +172,30 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
 
     public Archetype Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
     {
-        throw new NotImplementedException();
+        
+        var typeFormatter = formatterResolver.GetFormatter<ComponentType[]>();
+        var chunkFormatter = formatterResolver.GetFormatter<Chunk>() as ChunkFormatter;
+        
+        reader.ReadIsBeginObject();
+
+        reader.ReadPropertyName();
+        var types = typeFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadPropertyName();
+        var size = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadPropertyName();
+        var chunkSize = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+
+        reader.ReadPropertyName();
+        var chunks = chunkFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        
+        reader.ReadIsEndObject();
+        return null;
     }
 }
 

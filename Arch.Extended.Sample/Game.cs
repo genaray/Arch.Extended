@@ -102,6 +102,7 @@ public class Game : Microsoft.Xna.Framework.Game
             }
         );
         var worldJson = JsonSerializer.ToJsonString(_world);
+        JsonSerializer.Deserialize<World>(worldJson);
     }
 
     protected override void Update(GameTime gameTime)
