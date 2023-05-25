@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using Arch.Core;
+
+[assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
 namespace Arch.Relationships;
 
 /// <summary>
@@ -69,8 +71,8 @@ public static class WorldRelationshipExtensions
         ref var buffer = ref world.AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
 
-        var targetComp = new ArchRelationshipComponent(buffer);
-        ref var targetBuffer = ref world.AddOrGetRelationships<ArchRelationshipComponent>(target);
+        var targetComp = new InRelationships(buffer);
+        ref var targetBuffer = ref world.AddOrGetRelationships<InRelationships>(target);
         targetBuffer.Add(in targetComp, source);
     }
     
@@ -103,16 +105,16 @@ public static class WorldRelationshipExtensions
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <returns>The relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ref EntityRelationshipBuffer<T> AddOrGetRelationships<T>(this World world, Entity source)
+    internal static ref Relationship<T> AddOrGetRelationships<T>(this World world, Entity source)
     {
-        ref var component = ref world.TryGetRef<EntityRelationshipBuffer<T>>(source, out var exists);
+        ref var component = ref world.TryGetRef<Relationship<T>>(source, out var exists);
         if (exists)
         {
             return ref component;
         }
 
-        world.Add(source, new EntityRelationshipBuffer<T>());
-        return ref world.Get<EntityRelationshipBuffer<T>>(source);
+        world.Add(source, new Relationship<T>());
+        return ref world.Get<Relationship<T>>(source);
     }
 
     /// <summary>
@@ -132,6 +134,18 @@ public static class WorldRelationshipExtensions
         }
 
         return relationships.Elements.ContainsKey(target);
+    }
+    
+    /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain relationship.
+    /// </summary>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <returns>True if it has the desired relationship, otherwise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool HasRelationship<T>(this World world, Entity source)
+    {
+        return world.Has<Relationship<T>>(source);
     }
 
     /// <summary>
@@ -176,9 +190,9 @@ public static class WorldRelationshipExtensions
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal static ref EntityRelationshipBuffer<T> GetRelationships<T>(this World world, Entity source)
+    internal static ref Relationship<T> GetRelationships<T>(this World world, Entity source)
     {
-        return ref world.Get<EntityRelationshipBuffer<T>>(source);
+        return ref world.Get<Relationship<T>>(source);
     }
 
     /// <summary>
@@ -189,7 +203,7 @@ public static class WorldRelationshipExtensions
     /// <param name="relationships">The found relationships.</param>
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal static bool TryGetRelationships<T>(this World world, Entity source, out EntityRelationshipBuffer<T> relationships)
+    internal static bool TryGetRelationships<T>(this World world, Entity source, out Relationship<T> relationships)
     {
         return world.TryGet(source, out relationships);
     }
@@ -203,9 +217,9 @@ public static class WorldRelationshipExtensions
     /// <param name="exists">True if it exists, otherwise false.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal static ref EntityRelationshipBuffer<T> TryGetRefRelationships<T>(this World world, Entity source, out bool exists)
+    internal static ref Relationship<T> TryGetRefRelationships<T>(this World world, Entity source, out bool exists)
     {
-        return ref world.TryGetRef<EntityRelationshipBuffer<T>>(source, out exists);
+        return ref world.TryGetRef<Relationship<T>>(source, out exists);
     }
 
     /// <summary>
@@ -222,15 +236,15 @@ public static class WorldRelationshipExtensions
 
         if (buffer.Count == 0)
         {
-            world.Remove<EntityRelationshipBuffer<T>>(source);
+            world.Remove<Relationship<T>>(source);
         }
 
-        ref var targetBuffer = ref world.GetRelationships<ArchRelationshipComponent>(target);
+        ref var targetBuffer = ref world.GetRelationships<InRelationships>(target);
         targetBuffer.Remove(source);
 
         if (targetBuffer.Count == 0)
         {
-            world.Remove<EntityRelationshipBuffer<ArchRelationshipComponent>>(target);
+            world.Remove<Relationship<InRelationships>>(target);
         }
     }
 }

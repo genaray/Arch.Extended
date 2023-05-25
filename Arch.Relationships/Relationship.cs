@@ -4,7 +4,7 @@ using Arch.Core;
 namespace Arch.Relationships;
 
 /// <summary>
-///     Interface implemented by <see cref="EntityRelationshipBuffer{T}"/>.
+///     Interface implemented by <see cref="Relationship{T}"/>.
 /// </summary>
 internal interface IBuffer
 {
@@ -42,7 +42,7 @@ internal interface IBuffer
 ///     A buffer storing relationships of <see cref="Entity"/> and <see cref="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the second relationship element.</typeparam>
-internal class EntityRelationshipBuffer<T> : IBuffer
+internal class Relationship<T> : IBuffer
 {
     /// <summary>
     ///     Its relations. 
@@ -50,10 +50,10 @@ internal class EntityRelationshipBuffer<T> : IBuffer
     internal readonly SortedList<Entity, T> Elements;
 
     /// <summary>
-    ///     Initializes a new instance of an <see cref="EntityRelationshipBuffer{T}"/>.
+    ///     Initializes a new instance of an <see cref="Relationship{T}"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal EntityRelationshipBuffer()
+    internal Relationship()
     {
         Elements = new SortedList<Entity, T>(IBuffer.Comparer);
     }
@@ -87,7 +87,7 @@ internal class EntityRelationshipBuffer<T> : IBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IBuffer.Destroy(World world, Entity source)
     {
-        world.Remove<EntityRelationshipBuffer<T>>(source);
+        world.Remove<Relationship<T>>(source);
     }
 
     /// <inheritdoc cref="IBuffer.Destroy(World, Entity)"/>

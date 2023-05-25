@@ -39,6 +39,19 @@ public static class EntityRelationshipExtensions
     }
     
     /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain relationship.
+    /// </summary>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <returns>True if it has the desired relationship, otherwise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool HasRelationship<T>(this in Entity source)
+    {
+        var world = World.Worlds[source.WorldId];
+        return world.HasRelationship<T>(source);
+    }
+    
+    /// <summary>
     ///     Returns a relationship of an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>

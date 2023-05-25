@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Persistence", "Arch.Pe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Relationships", "Arch.Relationships\Arch.Relationships.csproj", "{533453B9-957E-401E-B639-DC81DD0265EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Relationships.Tests", "Arch.Relationships.Tests\Arch.Relationships.Tests.csproj", "{EDAFD1B8-5FC3-4002-B2AD-5B976B809D1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{533453B9-957E-401E-B639-DC81DD0265EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{533453B9-957E-401E-B639-DC81DD0265EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{533453B9-957E-401E-B639-DC81DD0265EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDAFD1B8-5FC3-4002-B2AD-5B976B809D1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDAFD1B8-5FC3-4002-B2AD-5B976B809D1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDAFD1B8-5FC3-4002-B2AD-5B976B809D1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDAFD1B8-5FC3-4002-B2AD-5B976B809D1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
