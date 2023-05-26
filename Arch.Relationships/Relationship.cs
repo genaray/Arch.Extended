@@ -110,4 +110,14 @@ internal class Relationship<T> : IBuffer
     {
         ((IBuffer) this).Remove(target);
     }
+    
+    /// <summary>
+    ///     Creates a new <see cref="SortedListEnumerator{TKey,TValue}"/>.
+    /// </summary>
+    /// <returns>The new <see cref="SortedListEnumerator{TKey,TValue}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SortedListEnumerator<Entity,T> GetEnumerator()
+    {
+        return new SortedListEnumerator<Entity,T>(Elements);
+    }
 };
