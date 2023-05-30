@@ -91,7 +91,7 @@ public static class WorldRelationshipExtensions
         ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
         if (exists)
         {
-            return relationships.Elements[target];
+            return relationships.Get(target);
         }
 
         world.AddRelationship(source, target, in relationship);
@@ -116,6 +116,20 @@ public static class WorldRelationshipExtensions
         world.Add(source, new Relationship<T>());
         return ref world.Get<Relationship<T>>(source);
     }
+    
+    /// <summary>
+    ///     Sets the existing relationship data.
+    /// </summary>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
+    /// <param name="relationship">The new data.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default)
+    {
+        ref var relationships = ref world.GetRelationships<T>(source);
+        relationships.Set(target, relationship);
+    }
 
     /// <summary>
     ///     Checks if an <see cref="Entity"/> has a certain relationship.
@@ -133,7 +147,7 @@ public static class WorldRelationshipExtensions
             return false;
         }
 
-        return relationships.Elements.ContainsKey(target);
+        return relationships.Contains(target);
     }
     
     /// <summary>
@@ -159,7 +173,7 @@ public static class WorldRelationshipExtensions
     public static T GetRelationship<T>(this World world, Entity source, Entity target)
     {
         ref var relationships = ref world.GetRelationships<T>(source);
-        return relationships.Elements[target];
+        return relationships.Get(target);
     }
 
     /// <summary>
@@ -181,7 +195,7 @@ public static class WorldRelationshipExtensions
             return false;
         }
 
-        return relationships.Elements.TryGetValue(target, out relationship);
+        return relationships.TryGetValue(target, out relationship);
     }
     /// <summary>
     ///     Returns all relationships of the given type of an <see cref="Entity"/>.

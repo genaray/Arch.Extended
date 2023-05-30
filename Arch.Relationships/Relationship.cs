@@ -82,21 +82,51 @@ internal class Relationship<T> : IBuffer
     {
         Elements.Add(target, relationship);
     }
-
-    /// <inheritdoc/>
+    
+    /// <summary>
+    ///     Sets the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="data">The data to store.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IBuffer.Destroy(World world, Entity source)
+    public void Set(Entity entity, T data = default)
     {
-        world.Remove<Relationship<T>>(source);
+        Elements[entity] = data;
     }
-
-    /// <inheritdoc cref="IBuffer.Destroy(World, Entity)"/>
+    
+    /// <summary>
+    ///     Determines whether the given <see cref="Relationship{T}"/> contains the passed <see cref="Entity"/> or not.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>True or false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Destroy(World world, Entity source)
+    public bool Contains(Entity entity)
     {
-        ((IBuffer) this).Destroy(world, source);
+        return Elements.ContainsKey(entity);
     }
-
+    
+    /// <summary>
+    ///     Returns the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>The stored <see cref="T"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T Get(Entity entity)
+    {
+        return Elements[entity];
+    }
+    
+    /// <summary>
+    ///     Returns the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>The stored <see cref="T"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetValue(Entity entity, out T value)
+    {
+        return Elements.TryGetValue(entity, out value);
+    }
+    
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IBuffer.Remove(Entity target)
@@ -111,6 +141,20 @@ internal class Relationship<T> : IBuffer
         ((IBuffer) this).Remove(target);
     }
     
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IBuffer.Destroy(World world, Entity source)
+    {
+        world.Remove<Relationship<T>>(source);
+    }
+
+    /// <inheritdoc cref="IBuffer.Destroy(World, Entity)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Destroy(World world, Entity source)
+    {
+        ((IBuffer) this).Destroy(world, source);
+    }
+
     /// <summary>
     ///     Creates a new <see cref="SortedListEnumerator{TKey,TValue}"/>.
     /// </summary>

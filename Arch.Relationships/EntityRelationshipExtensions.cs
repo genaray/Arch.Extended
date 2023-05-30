@@ -23,6 +23,19 @@ public static class EntityRelationshipExtensions
         var world = World.Worlds[source.WorldId];
         world.AddRelationship(source, target, relationship);
     }
+    
+    /// <summary>
+    ///     Sets a relationship to the <see cref="Entity"/> by updating its relationship data.
+    /// </summary>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="relationship">The relationship instance.</param>
+    public static void SetRelationship<T>(this in Entity source, Entity target, T relationship = default)
+    {
+        var world = World.Worlds[source.WorldId];
+        world.SetRelationship(source, target, relationship);
+    }
 
     /// <summary>
     ///     Checks if an <see cref="Entity"/> has a certain relationship.

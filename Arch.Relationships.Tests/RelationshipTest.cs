@@ -72,6 +72,27 @@ public class RelationshipTest
     }
     
     /// <summary>
+    ///     Checks if relationships were set correctly.
+    /// </summary>
+    [Test]
+    public void RelationshipData()
+    {
+        var source = _world.Create();
+        var target = _world.Create();
+        var dummy = _world.Create();
+        
+        source.AddRelationship(target, 5);
+        source.AddRelationship(dummy, 100);
+        
+        var data = source.GetRelationship<int>(target);
+        That(data, Is.EqualTo(5));
+        
+        source.SetRelationship(target, 10);
+        data = source.GetRelationship<int>(target);
+        That(data, Is.EqualTo(10));
+    }
+    
+    /// <summary>
     ///     Checks if relationships were removed correctly.
     /// </summary>
     [Test]
