@@ -204,7 +204,7 @@ public static class WorldRelationshipExtensions
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal static ref Relationship<T> GetRelationships<T>(this World world, Entity source)
+    public static ref Relationship<T> GetRelationships<T>(this World world, Entity source)
     {
         return ref world.Get<Relationship<T>>(source);
     }

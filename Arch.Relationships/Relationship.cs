@@ -42,7 +42,7 @@ internal interface IBuffer
 ///     A buffer storing relationships of <see cref="Entity"/> and <see cref="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the second relationship element.</typeparam>
-internal class Relationship<T> : IBuffer
+public class Relationship<T> : IBuffer
 {
     /// <summary>
     ///     Its relations. 
