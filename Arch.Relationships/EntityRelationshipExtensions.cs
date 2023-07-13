@@ -79,6 +79,20 @@ public static class EntityRelationshipExtensions
     }
     
     /// <summary>
+    ///     Returns a relationship of an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
+    /// <returns>The <see cref="Relationship{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ref Relationship<T> GetRelationships<T>(this in Entity source)
+    {
+        var world = World.Worlds[source.WorldId];
+        return ref world.GetRelationships<T>(source);
+    }
+    
+    /// <summary>
     ///     Tries to return an <see cref="Entity"/>s relationship of the specified type.
     ///     Will copy the relationship if its a struct.
     /// </summary>
