@@ -6,7 +6,7 @@ using System.Text;
 namespace Arch.LowLevel;
 
 /// <summary>
-///     The struct <see cref="UnsafeStack{T}"/> represents a native unmanaged list.
+///     The struct <see cref="UnsafeStack{T}"/> represents a native unmanaged stack.
 ///     Can easily be stored in unmanaged structs. 
 /// </summary>
 /// <typeparam name="T">The generic type stored in the stack.</typeparam>
