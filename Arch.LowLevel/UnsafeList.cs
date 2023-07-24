@@ -76,6 +76,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
+        EnsureCapacity(Count);
         this[Count] = item;
         Count++;
     }
@@ -229,7 +230,6 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     /// <summary>
     ///     Trims the capacity of this <see cref="UnsafeList{T}"/> to release unused memory.
     /// </summary>
-    /// <param name="min"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TrimExcess()
     {
