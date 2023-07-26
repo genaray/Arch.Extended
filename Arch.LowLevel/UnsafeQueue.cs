@@ -57,7 +57,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Enqueue(T item)
     {
-        if (_count == _capacity)
+        if (Count == Capacity)
         {
             EnsureCapacity(_capacity * 2);
         }
@@ -120,12 +120,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void EnsureCapacity(int newCapacity)
     {
-        if (newCapacity < _count)
-        {
-            throw new ArgumentException("New capacity must be greater than or equal to the current count.");
-        }
-
-        if (newCapacity == _capacity)
+        if (newCapacity <= _capacity)
         {
             return;
         }

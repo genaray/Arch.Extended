@@ -72,7 +72,11 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
-        EnsureCapacity(Count);
+        if (Count == Capacity)
+        {
+            EnsureCapacity(Capacity * 2);
+        }
+        
         this[Count] = item;
         Count++;
     }
@@ -203,7 +207,10 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void EnsureCapacity(int min)
     {
-        if (min <= Count) return;
+        if (min <= Count)
+        {
+            return;
+        }
         
         var oldArray = _array;
         var newArray = new UnsafeArray<T>(min);

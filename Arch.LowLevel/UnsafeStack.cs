@@ -91,11 +91,11 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Push(T value)
     {
-        if (_count >= _capacity)
+        if (Count == Capacity)
         {
-            EnsureCapacity(_capacity + 1);
+            EnsureCapacity(_capacity * 2);
         }
-
+        
         _stack[_count] = value;
         _count++;
     }

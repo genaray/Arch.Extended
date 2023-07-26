@@ -2,6 +2,7 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Arch.LowLevel;
 
@@ -115,6 +116,22 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     public static implicit operator T*(UnsafeArray<T> instance)
     {
         return instance._ptr;
+    }
+    
+    /// <summary>
+    ///     Converts this <see cref="UnsafeArray{T}"/> to a string.
+    /// </summary>
+    /// <returns>The string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override string ToString()
+    {
+        var items = new StringBuilder();
+        foreach (ref var item in this)
+        {
+            items.Append($"{item},");
+        }
+        items.Length--;
+        return $"UnsafeArray<{typeof(T).Name}>[{Count}]{{{items}}}";
     }
 }
 
