@@ -127,13 +127,6 @@ public class UnsafeListTest
     [Test]
     public void UnsafeListTrimExcess()
     {
-        
-        var list = new UnsafeList<int>(10);
-        for (int i = 0; i < 100; i++)
-        {
-            list.Add(i);
-        }
-        /*
         using var list = new UnsafeList<int>(16);
         list.Add(0);
         list.Add(1);
@@ -141,7 +134,7 @@ public class UnsafeListTest
         
         That(list.Capacity, Is.EqualTo(2));
         That(list.IndexOf(0), Is.EqualTo(0));
-        That(list.IndexOf(1), Is.EqualTo(1));*/
+        That(list.IndexOf(1), Is.EqualTo(1));
     }
     
     /// <summary>
