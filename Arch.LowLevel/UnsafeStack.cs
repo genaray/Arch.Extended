@@ -123,14 +123,14 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <returns>The item.</returns>
     /// <exception cref="InvalidOperationException">If the stack is empty.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T Peek()
+    public ref T Peek()
     {
         if (_count == 0)
         {
             throw new InvalidOperationException("Stack is empty.");
         }
 
-        return _stack[_count - 1];
+        return ref _stack[_count - 1];
     }
     
     /// <summary>

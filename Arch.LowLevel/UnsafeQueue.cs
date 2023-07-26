@@ -92,14 +92,14 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     /// <returns>The item.</returns>
     /// <exception cref="InvalidOperationException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T Peek()
+    public ref T Peek()
     {
         if (_count == 0)
         {
             throw new InvalidOperationException("Queue is empty");
         }
 
-        return _queue[_frontIndex];
+        return ref _queue[_frontIndex];
     }
     
     /// <summary>
