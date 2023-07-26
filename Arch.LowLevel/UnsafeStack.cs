@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,6 +12,7 @@ namespace Arch.LowLevel;
 ///     Can easily be stored in unmanaged structs. 
 /// </summary>
 /// <typeparam name="T">The generic type stored in the stack.</typeparam>
+[DebuggerTypeProxy(typeof(UnsafeStackDebugView<>))]
 public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unmanaged  
 {
     private const int DefaultCapacity = 4;
@@ -17,7 +20,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <summary>
     ///     The stack pointer.
     /// </summary>
-    private T* _stack;
+    private UnsafeArray<T> _stack;
     
     /// <summary>
     ///     Its capacity.
@@ -36,16 +39,13 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     public UnsafeStack(int capacity = DefaultCapacity)
     {
         if (capacity <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be greater than 0.");
+        }
 
-        this._capacity = capacity;
+        _stack = new UnsafeArray<T>(capacity);
+        _capacity = capacity;
         _count = 0;
-
-#if NET6_0_OR_GREATER
-        _stack = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * capacity));
-#else
-        _stack = (T*)Marshal.AllocHGlobal(sizeof(T) * capacity);
-#endif
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
             EnsureCapacity(_capacity + 1);
         }
 
-        *(_stack + _count) = value;
+        _stack[_count] = value;
         _count++;
     }
 
@@ -114,7 +114,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
         }
 
         _count--;
-        return *(_stack + _count);
+        return _stack[_count];
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
             throw new InvalidOperationException("Stack is empty.");
         }
 
-        return *(_stack + _count - 1);
+        return _stack[_count - 1];
     }
     
     /// <summary>
@@ -151,21 +151,10 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
             newCapacity = min;
         }
 
-#if NET6_0_OR_GREATER
-        var newStack = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * newCapacity));
-#else
-        var newStack = (T*)Marshal.AllocHGlobal(sizeof(T) * newCapacity);
-#endif
-        
-        var tempPointer = _stack;
-        var newStackPointer = newStack;
-
-        while (tempPointer < _stack + _count)
-        {
-            *newStackPointer = *tempPointer;
-            newStackPointer++;
-            tempPointer++;
-        }
+        // Create new stack and copy elements
+        var newStack = new UnsafeArray<T>(newCapacity);
+        UnsafeArray.Copy(ref _stack, 0, ref newStack,0, _count);
+        _stack.Dispose();
 
         _capacity = newCapacity;
         _stack = newStack;
@@ -183,22 +172,11 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
             return;
         }
         
-#if NET6_0_OR_GREATER
-        var newStack = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * newCapacity));
-#else
-            var newStack = (T*)Marshal.AllocHGlobal(sizeof(T) * newCapacity);
-#endif
-            
-        var tempPointer = _stack;
-        var newStackPointer = newStack;
-
-        while (tempPointer < _stack + _count)
-        {
-            *newStackPointer = *tempPointer;
-            newStackPointer++;
-            tempPointer++;
-        }
-
+        // Create new stack and copy elements
+        var newStack = new UnsafeArray<T>(newCapacity);
+        UnsafeArray.Copy(ref _stack, 0, ref newStack,0, _count);
+        _stack.Dispose();
+        
         _capacity = newCapacity;
         _stack = newStack;
     }
@@ -219,17 +197,14 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(_stack);
-#else
-        Marshal.FreeHGlobal((IntPtr)_stack);
-#endif
+        _stack.Dispose();
     }
     
     /// <summary>
     ///     Converts this <see cref="UnsafeStack{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="Span{T}"/>.</returns>
+    [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan()
     {
@@ -281,4 +256,27 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
         items.Length--;
         return $"UnsafeStack<{typeof(T).Name}>[{Count}]{{{items}}}";
     }
+}
+
+/// <summary>
+///     A debug view for the <see cref="UnsafeQueue{T}"/>.
+/// </summary>
+/// <typeparam name="T">The unmanaged type.</typeparam>
+internal class UnsafeStackDebugView<T> where T : unmanaged
+{
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private readonly UnsafeStack<T> _entity;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    public T[] Items
+    {
+        get
+        {
+            var items = new T[_entity.Count];
+            _entity.AsSpan().CopyTo(items);
+            return items;
+        }
+    }
+
+    public UnsafeStackDebugView(UnsafeStack<T> entity) => _entity = entity;
 }

@@ -106,6 +106,38 @@ public class UnsafeListTest
     }
     
     /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of ensuring capacity.
+    /// </summary>
+    [Test]
+    public void UnsafeListEnsureCapacity()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.EnsureCapacity(16);
+        list.Add(0);
+        list.Add(1);
+        
+        That(list.Capacity, Is.EqualTo(16));
+        That(list.IndexOf(0), Is.EqualTo(0));
+        That(list.IndexOf(1), Is.EqualTo(1));
+    }
+    
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of trimming capacity.
+    /// </summary>
+    [Test]
+    public void UnsafeListTrimExcess()
+    {
+        using var list = new UnsafeList<int>(16);
+        list.Add(0);
+        list.Add(1);
+        list.TrimExcess();
+        
+        That(list.Capacity, Is.EqualTo(2));
+        That(list.IndexOf(0), Is.EqualTo(0));
+        That(list.IndexOf(1), Is.EqualTo(1));
+    }
+    
+    /// <summary>
     ///     Checks if <see cref="UnsafeList{T}"/> is capable of iterating with its enumerators.
     /// </summary>
     [Test]

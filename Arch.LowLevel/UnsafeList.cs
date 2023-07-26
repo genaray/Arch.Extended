@@ -19,7 +19,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     /// <summary>
     ///     The array pointer.
     /// </summary>
-    private T* _array;
+    private UnsafeArray<T> _array;
     
     /// <summary>
     ///     Creates an instance of the <see cref="UnsafeList{T}"/>.
@@ -29,11 +29,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         Count = 0;
         Capacity = capacity;
-#if NET6_0_OR_GREATER
-        _array = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * capacity));
-#else
-        _array = (T*)Marshal.AllocHGlobal(sizeof(T) * capacity);
-#endif
+        _array = new UnsafeArray<T>(capacity);
     }
 
     /// <summary>
@@ -96,12 +92,15 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         }
         
         // Resize if the list is actually full
-        if(Capacity == Count+1) {
+        if(Capacity == Count+1) 
+        {
             EnsureCapacity(Capacity + 1);
         }
 
-        if(index < Count) {
-            Buffer.MemoryCopy(_array+index, _array+index+1,Capacity-Count,Capacity-Count);
+        if(index < Count) 
+        {
+            //Buffer.MemoryCopy(_array+index, _array+index+1,Capacity-Count,Capacity-Count);
+            UnsafeArray.Copy(ref _array, index, ref _array, index+1, Capacity-Count);
         }
         
         _array[index] = item;
@@ -125,7 +124,8 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         Count--;
         if (index < Count) 
         {
-            Buffer.MemoryCopy(_array+(index+1), _array+index,Count-index,Count-index);
+            //Buffer.MemoryCopy(_array+(index+1), _array+index,Count-index,Count-index);
+            UnsafeArray.Copy(ref _array, index + 1, ref _array, index, Count - index);
         }
         this[Count] = default;
     }
@@ -204,26 +204,15 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     public void EnsureCapacity(int min)
     {
         if (min <= Count) return;
-
-        var requiredBytes = sizeof(T) * min;
+        
         var oldArray = _array;
-
-#if NET6_0_OR_GREATER
-        var newArray = (IntPtr)NativeMemory.Alloc((nuint)requiredBytes);
-#else
-        var newArray = (IntPtr)Marshal.AllocHGlobal(requiredBytes);
-#endif
+        var newArray = new UnsafeArray<T>(min);
         
         // Copy & Free
-        Buffer.MemoryCopy(oldArray, (T*)newArray, requiredBytes, Count * sizeof(T));
-        
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(oldArray);
-#else
-        Marshal.FreeHGlobal((IntPtr)oldArray);
-#endif
+        UnsafeArray.Copy(ref oldArray, 0, ref newArray,0, Count);
+        oldArray.Dispose();
 
-        _array = (T*)newArray;
+        _array = newArray;
         Capacity = min;
     }
     
@@ -233,25 +222,14 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TrimExcess()
     {
-        var requiredBytes = sizeof(T) * Count;
         var oldArray = _array;
-
-#if NET6_0_OR_GREATER
-        var newArray = (IntPtr)NativeMemory.Alloc((nuint)requiredBytes);
-#else
-        var newArray = (IntPtr)Marshal.AllocHGlobal(requiredBytes);
-#endif
+        var newArray = new UnsafeArray<T>(Count);
         
         // Copy & free
-        Buffer.MemoryCopy(oldArray, (T*)newArray, requiredBytes, Count * sizeof(T));
+        UnsafeArray.Copy(ref oldArray, 0, ref newArray,0, Count);
+        oldArray.Dispose();
         
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(oldArray);
-#else
-        Marshal.FreeHGlobal((IntPtr)oldArray);
-#endif
-
-        _array = (T*)newArray;
+        _array = newArray;
         Capacity = Count;
     }
     
@@ -294,11 +272,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(_array);
-#else
-        Marshal.FreeHGlobal((IntPtr)_array);
-#endif
+        _array.Dispose();
     }
     
     /// <summary>

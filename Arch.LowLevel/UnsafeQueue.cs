@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using Arch.LowLevel;
 
 /// <summary>
@@ -9,21 +12,23 @@ using Arch.LowLevel;
 ///     Can easily be stored in unmanaged structs. 
 /// </summary>
 /// <typeparam name="T">The generic type stored in the queue.</typeparam>
+[DebuggerTypeProxy(typeof(UnsafeQueueDebugView<>))]
 public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unmanaged
 {
-    private T* _queue;
+    private UnsafeArray<T> _queue;
     private int _capacity;
     private int _frontIndex;
     private int _count;
 
     public UnsafeQueue(int capacity)
     {
-#if NET6_0_OR_GREATER
-        _queue = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * capacity));
-#else
-        _queue = (T*)Marshal.AllocHGlobal(sizeof(T) * capacity);
-#endif
-        this._capacity = capacity;
+        if (capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be greater than 0.");
+        }
+        
+        _queue = new UnsafeArray<T>(capacity);
+        _capacity = capacity;
         _frontIndex =  _count = 0;
     }
     
@@ -124,13 +129,8 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
         {
             return;
         }
-        
-#if NET6_0_OR_GREATER
-        var newBuffer = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * newCapacity));
-#else
-        var newBuffer = (T*)Marshal.AllocHGlobal(sizeof(T) * newCapacity);
-#endif
-        
+
+        var newBuffer = new UnsafeArray<T>(newCapacity);
         if (_count > 0)
         {
             var firstChunkCount = Math.Min(_count, _capacity - _frontIndex);
@@ -139,20 +139,16 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
             // Copy elements in front->rear order to the new buffer
             if (firstChunkCount > 0)
             {
-                Buffer.MemoryCopy(_queue + _frontIndex, newBuffer, sizeof(T) * firstChunkCount, sizeof(T) * firstChunkCount);
+                UnsafeArray.Copy(ref _queue, _frontIndex, ref newBuffer, 0, firstChunkCount);
             }
 
             if (secondChunkCount > 0)
             {
-                Buffer.MemoryCopy(_queue, newBuffer + firstChunkCount, sizeof(T) * secondChunkCount, sizeof(T) * secondChunkCount);
+                UnsafeArray.Copy(ref _queue, 0, ref newBuffer, firstChunkCount, secondChunkCount);
             }
         }
         
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(_queue);
-#else
-        Marshal.FreeHGlobal((IntPtr)_queue);
-#endif
+        _queue.Dispose();
         
         _queue = newBuffer;
         _capacity = newCapacity;
@@ -174,12 +170,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
- 
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(_queue);
-#else
-        Marshal.FreeHGlobal((IntPtr)_queue);
-#endif
+        _queue.Dispose();
         _capacity = _frontIndex  = _count = 0;
     }
     
@@ -187,6 +178,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     ///     Converts this <see cref="UnsafeQueue{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="Span{T}"/>.</returns>
+    [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan()
     {
@@ -222,4 +214,43 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     {
         return new Enumerator<T>(_queue, Count);
     }
+    
+    /// <summary>
+    ///     Converts this <see cref="UnsafeStack{T}"/> to a string.
+    /// </summary>
+    /// <returns>The string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override string ToString()
+    {
+        var items = new StringBuilder();
+        foreach (ref var item in this)
+        {
+            items.Append($"{item},");
+        }
+        items.Length--;
+        return $"UnsafeQueue<{typeof(T).Name}>[{Count}]{{{items}}}";
+    }
+}
+
+/// <summary>
+///     A debug view for the <see cref="UnsafeQueue{T}"/>.
+/// </summary>
+/// <typeparam name="T">The unmanaged type.</typeparam>
+internal class UnsafeQueueDebugView<T> where T : unmanaged
+{
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private readonly UnsafeQueue<T> _entity;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    public T[] Items
+    {
+        get
+        {
+            var items = new T[_entity.Count];
+            _entity.AsSpan().CopyTo(items);
+            return items;
+        }
+    }
+
+    public UnsafeQueueDebugView(UnsafeQueue<T> entity) => _entity = entity;
 }

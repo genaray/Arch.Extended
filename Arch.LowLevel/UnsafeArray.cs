@@ -130,12 +130,12 @@ public unsafe struct UnsafeArray
     /// <param name="length">The length indicating the amount of items being copied.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal static void Copy<T>(ref UnsafeArray<T> source, int index, ref UnsafeArray<T> destination, int destinationIndex, int length) where T : unmanaged
+    public static void Copy<T>(ref UnsafeArray<T> source, int index, ref UnsafeArray<T> destination, int destinationIndex, int length) where T : unmanaged
     {
         var size = sizeof(T);
         var bytes = size * length;
-        var sourcePtr = (void*)(source._ptr + (size*index));
-        var destinationPtr = (void*)(destination._ptr + (size*destinationIndex));
+        var sourcePtr = (void*)(source._ptr + index);
+        var destinationPtr = (void*)(destination._ptr + destinationIndex);
         Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
     }
 
@@ -147,7 +147,7 @@ public unsafe struct UnsafeArray
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
+    public static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
     {
         for (int index = 0; index < source.Count; index++)
         {
