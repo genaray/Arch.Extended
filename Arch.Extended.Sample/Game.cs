@@ -93,6 +93,7 @@ public class Game : Microsoft.Xna.Framework.Game
                 new ArchetypeFormatter(),
                 new ChunkFormatter(),
                 new ComponentTypeFormatter(),
+                new ArrayFormatter(),
                 new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
                 new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
             }, 
