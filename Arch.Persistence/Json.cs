@@ -1,4 +1,5 @@
 ﻿using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 using Utf8Json;
@@ -9,12 +10,14 @@ namespace Arch.Persistence;
 
 public static class ArchSerializer
 {
+
+    private static SingleEntityFormatter SingleEntityFormatter { get; } = new ();
+    
     /// <summary>
     ///     The static constructor gets called during compile time to setup the serializer. 
     /// </summary>
     public static void Initialize(params IJsonFormatter[] formatters)
     {
-
         var requiredFormatters = new IJsonFormatter[]
         {
             new WorldFormatter(),
@@ -22,6 +25,7 @@ public static class ArchSerializer
             new ChunkFormatter(),
             new ComponentTypeFormatter(),
             new ArrayFormatter(),
+            new SlotFormatter(),
             new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
             new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
         };
@@ -34,7 +38,6 @@ public static class ArchSerializer
                 StandardResolver.AllowPrivateExcludeNullSnakeCase
             }
         );
-        
     }
 
     /// <summary>
@@ -46,6 +49,14 @@ public static class ArchSerializer
     {
         return JsonSerializer.ToJsonString(world);
     }
+
+    /*
+    public static string Serialize(World world, Entity entity)
+    {
+        SingleEntityFormatter.World = world;
+        var writer = new JsonWriter(JsonSerializer..GetBuffer());
+        return SingleEntityFormatter.Serialize(ref writer, entity, CompositeResolver.Instance);
+    }*/
     
     /// <summary>
     ///     Deserializes the given json <see cref="string"/> to a <see cref="World"/>.
@@ -55,6 +66,85 @@ public static class ArchSerializer
     public static World Deserialize(string jsonWorld)
     {
         return JsonSerializer.Deserialize<World>(jsonWorld);
+    }
+}
+
+/// <summary>
+///     The <see cref="SingleEntityFormatter"/> class
+///     is a <see cref="IJsonFormatter{Entity}"/> to (de)serialize a single <see cref="Entity"/>to or from json.
+/// </summary>
+public class SingleEntityFormatter : IJsonFormatter<Entity>
+{
+    
+    /// <summary>
+    ///     The <see cref="World"/> the entity belongs to. 
+    /// </summary>
+    public World World { get; set; }
+    
+    public void Serialize(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
+    {
+        writer.WriteBeginObject();
+        
+        // Write id
+        writer.WritePropertyName("id");
+        writer.WriteInt32(value.Id);
+        writer.WriteValueSeparator();
+        
+        // Write world
+        writer.WritePropertyName("worldId");
+        writer.WriteInt32(value.WorldId);
+        writer.WriteValueSeparator();
+        
+        // Write components
+        var componentTypes = value.GetComponentTypes();
+        writer.WriteBeginArray();
+        foreach (ref var type in componentTypes.AsSpan())
+        {
+            var cmp = value.Get(type);
+            JsonSerializer.NonGeneric.Serialize(ref writer, cmp, formatterResolver);
+            writer.WriteValueSeparator();
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    public Entity Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+    {
+        reader.ReadIsBeginObject();
+
+        reader.ReadPropertyName();
+        var entityId = reader.ReadInt32();
+        
+        
+        reader.ReadIsEndObject();
+        return Entity.Null;
+    }
+}
+
+/// <summary>
+///     The <see cref="SlotFormatter"/> class
+///     is a <see cref="IJsonFormatter{Tuple}"/> to (de)serialize <see cref="Slot"/>-<see cref="Tuple{T,K}"/>s to or from json.
+/// </summary>
+public class SlotFormatter : IJsonFormatter<ValueTuple<int, int>>
+{
+    public void Serialize(ref JsonWriter writer, ValueTuple<int, int> value, IJsonFormatterResolver formatterResolver)
+    {
+        writer.WriteBeginObject();
+        writer.WriteInt32(value.Item1);
+        writer.WriteValueSeparator();
+        writer.WriteInt32(value.Item2);
+        writer.WriteEndObject();
+    }
+
+    public ValueTuple<int, int> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+    {
+        reader.ReadIsBeginObject();
+        var itemOne = reader.ReadInt32();
+        reader.ReadIsValueSeparator();
+        var itemTwo = reader.ReadInt32();
+        reader.ReadIsEndObject();
+
+        return new(itemOne, itemTwo);
     }
 }
 
@@ -175,7 +265,6 @@ public class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 /// </summary>
 public class WorldFormatter : IJsonFormatter<World>
 {
-
     public void Serialize(ref JsonWriter writer, World value, IJsonFormatterResolver formatterResolver)
     {
         var archetypes = value.Archetypes;
@@ -451,7 +540,8 @@ public class ChunkFormatter : IJsonFormatter<Chunk>
         // Updating World.EntityInfoStorage to their new archetype
         for (var index = 0; index < entities.Length; index++)
         {
-            ref var entity = ref entities[index];
+            ref var entity = ref chunk.Entity(index);
+            entity = DangerousEntityExtensions.CreateEntityStruct(entity.Id, World.Id);
             World.SetArchetype(entity, Archetype);
         }
         

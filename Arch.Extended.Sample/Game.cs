@@ -70,9 +70,9 @@ public class Game : Microsoft.Xna.Framework.Game
             );
         }
         
+        // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
         ArchSerializer.Initialize(new SpriteSerializer{GraphicsDevice = GraphicsDevice});
         var worldJson = ArchSerializer.Serialize(_world);
-        World.Destroy(_world);
         _world = ArchSerializer.Deserialize(worldJson);
         
         // Create systems, running in order
