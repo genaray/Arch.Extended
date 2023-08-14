@@ -58,6 +58,11 @@ public struct Sprite
     /// </summary>
     [IgnoreDataMember]
     public Texture2D Texture2D;
+
+    /// <summary>
+    ///     The id of the texture, for serialisation. 
+    /// </summary>
+    public byte TextureId;
     
     /// <summary>
     ///     The <see cref="Color"/> used. 

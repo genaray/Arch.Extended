@@ -41,10 +41,7 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         // Setup texture and randomness
         _random = new Random();
-        _texture2D = new Texture2D(GraphicsDevice, 10, 10);
-        var data = new Color[10*10];
-        for(var i=0; i < data.Length; ++i) data[i] = Color.White;
-        _texture2D.SetData(data);
+        _texture2D = TextureExtensions.CreateSquareTexture(GraphicsDevice, 10);
 
         base.Initialize();
     }
@@ -63,6 +60,21 @@ public class Game : Microsoft.Xna.Framework.Game
         _world = World.Create();
         _jobScheduler = new("SampleWorkerThreads");
         
+        // Spawn in entities with position, velocity and sprite
+        for (var index = 0; index < 1000; index++)
+        {
+            _world.Create(
+                new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
+                new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
+                new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
+            );
+        }
+        
+        ArchSerializer.Initialize(new SpriteSerializer{GraphicsDevice = GraphicsDevice});
+        var worldJson = ArchSerializer.Serialize(_world);
+        World.Destroy(_world);
+        _world = ArchSerializer.Deserialize(worldJson);
+        
         // Create systems, running in order
         _systems = new Group<GameTime>(
             new MovementSystem(_world, GraphicsDevice.Viewport.Bounds),
@@ -74,36 +86,6 @@ public class Game : Microsoft.Xna.Framework.Game
         // Initialize systems
         _systems.Initialize();
         _drawSystem.Initialize();
-    
-        // Spawn in entities with position, velocity and sprite
-        for (var index = 0; index < 1000; index++)
-        {
-            _world.Create(
-                new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
-                new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
-                new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
-            );
-        }
-        
-
-        CompositeResolver.RegisterAndSetAsDefault(
-            new IJsonFormatter[] 
-            {
-                new WorldFormatter(),
-                new ArchetypeFormatter(),
-                new ChunkFormatter(),
-                new ComponentTypeFormatter(),
-                new ArrayFormatter(),
-                new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
-                new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
-            }, 
-            new[] {
-                EnumResolver.UnderlyingValue,
-                StandardResolver.AllowPrivateExcludeNullSnakeCase
-            }
-        );
-        var worldJson = JsonSerializer.ToJsonString(_world);
-        JsonSerializer.Deserialize<World>(worldJson);
     }
 
     protected override void Update(GameTime gameTime)

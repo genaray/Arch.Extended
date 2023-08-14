@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Arch" Version="1.2.6.1-alpha" />
+      <PackageReference Include="Arch" Version="1.2.6.4-alpha" />
       <PackageReference Include="Utf8Json" Version="1.3.7" />
     </ItemGroup>
 
