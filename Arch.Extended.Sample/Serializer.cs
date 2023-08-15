@@ -27,8 +27,7 @@ public class SpriteSerializer : IJsonFormatter<Sprite>
         // Write texture id
         writer.WritePropertyName("textureId");
         writer.WriteUInt16(value.TextureId);
-        writer.WriteValueSeparator();
-        
+
         writer.WriteEndObject();
     }
 
@@ -44,8 +43,7 @@ public class SpriteSerializer : IJsonFormatter<Sprite>
         // Read textureid
         reader.ReadPropertyName();
         var textureId = reader.ReadUInt16();
-        reader.ReadIsValueSeparator();
-        
+
         // Create color and texture
         var color = new Color { PackedValue = packedColor };
         Texture2D texture = textureId switch
