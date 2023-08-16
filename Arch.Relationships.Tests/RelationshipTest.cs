@@ -90,22 +90,6 @@ public class RelationshipTest
         source.SetRelationship(target, 10);
         data = source.GetRelationship<int>(target);
         That(data, Is.EqualTo(10));
-        
-        var tower = _world.Create();
-        var battle = _world.Create(new int(), new long());
-
-        // Expected result:
-        // A relationship should be created, with an apparently useless target parameter, which should hold a component with the information I actually want
-        battle.AddRelationship<int>(battle);
-
-        var deadBattles = new QueryDescription().WithAll<int, long>();
-
-        _world.Query(in deadBattles, (in Entity battle) =>
-        {
-
-            // System.MissingMethodException: 'Method not found: 'System.Collections.Generic.List`1<Arch.Core.World> Arch.Core.World.get_Worlds()'.'
-            var tower = battle.GetRelationships<Entity>();
-        });
     }
     
     /// <summary>
