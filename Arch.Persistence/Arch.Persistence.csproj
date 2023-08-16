@@ -5,6 +5,20 @@
         <Nullable>enable</Nullable>
         <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
         <LangVersion>11</LangVersion>
+
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Title>Arch.Persistence</Title>
+        <Description>A Persistence-Framework for Arch.</Description>
+        <Copyright>Apache2.0</Copyright>
+        <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/genaray/Arch.Extended.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

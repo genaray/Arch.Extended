@@ -6,6 +6,11 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
         <PackageId>Arch.System.SourceGenerator</PackageId>
         <Title>Arch.System.SourceGenerator</Title>
         <Version>1.1.0</Version>

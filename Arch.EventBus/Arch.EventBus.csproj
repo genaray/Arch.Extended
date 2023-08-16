@@ -7,6 +7,10 @@
         <LangVersion>11</LangVersion>
         <RootNamespace>Arch.Bus</RootNamespace>
 
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+
         <PackageId>Arch.EventBus</PackageId>
         <Title>Arch.EventBus</Title>
         <Version>1.0.2</Version>

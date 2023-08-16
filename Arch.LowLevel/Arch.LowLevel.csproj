@@ -8,15 +8,16 @@
 
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <PackageId>Arch.LowLevel</PackageId>
         <Title>Arch.LowLevel</Title>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>LowLevel tools for arch.</Description>
-        <PackageReleaseNotes>
-            Added UnsafeArray and slightly faster memory allocation.
+        <PackageReleaseNotes>Added UnsafeQueue and UnsafeStack and some other small changes.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
