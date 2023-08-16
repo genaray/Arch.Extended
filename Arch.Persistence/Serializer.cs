@@ -100,6 +100,7 @@ public static class ArchSerializer
     
     /// <summary>
     ///     Deserializes the given json <see cref="string"/> to a <see cref="World"/>.
+    ///     <remarks>The deserialized <see cref="Entity"/> will receive a new id and a new worldId.</remarks>
     /// </summary>
     /// <param name="world">The <see cref="World"/> to deserialize the entity into.</param>
     /// <param name="jsonEntity">The json <see cref="string"/> of the entity to deserialize.</param>
