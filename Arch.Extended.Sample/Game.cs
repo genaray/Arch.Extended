@@ -5,6 +5,7 @@ using Arch.Core.Extensions;
 using Arch.Bus;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Persistence;
+using Arch.Relationships;
 using Arch.System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -72,11 +73,13 @@ public class Game : Microsoft.Xna.Framework.Game
         // Spawn in entities with position, velocity and sprite
         for (var index = 0; index < 1000; index++)
         {
-            _world.Create(
+            var entity = _world.Create(
                 new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
                 new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
                 new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
             );
+            
+            entity.AddRelationship(entity, 1);
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.

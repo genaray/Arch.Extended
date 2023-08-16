@@ -11,6 +11,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Arch.EventBus\Arch.EventBus.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\Arch.Persistence\Arch.Persistence.csproj" />
+      <ProjectReference Include="..\Arch.Relationships\Arch.Relationships.csproj" />
       <ProjectReference Include="..\Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\Arch.System\Arch.System.csproj" />
     </ItemGroup>

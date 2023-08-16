@@ -1,4 +1,6 @@
-﻿namespace Arch.Relationships;
+﻿using Arch.Core.Utils;
+
+namespace Arch.Relationships;
 
 /// <summary>
 ///     Component holding a reference to the buffer that its owning entity is being
@@ -9,7 +11,7 @@ internal readonly struct InRelationships
     /// <summary>
     ///     The buffer holding a relationship with the owning entity of this component.
     /// </summary>
-    internal readonly IBuffer Relationships;
+    internal readonly (int,ComponentType) Relationships;
 
     internal InRelationships(IBuffer relationships)
     {

@@ -123,7 +123,7 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
     }
 }
 
-public class EntityFormatter : IJsonFormatter<Entity>
+public class EntityFormatter : IJsonFormatter<Entity>, IObjectPropertyNameFormatter<Entity>
 {
     
     /// <summary>
@@ -142,6 +142,23 @@ public class EntityFormatter : IJsonFormatter<Entity>
         // Read id
         var id = reader.ReadInt32();
         return DangerousEntityExtensions.CreateEntityStruct(id, WorldId);
+    }
+
+    public void SerializeToPropertyName(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
+    {
+        writer.WritePropertyName("key");
+        Serialize(ref writer, value, formatterResolver);
+        writer.WriteValueSeparator();
+        writer.WriteString("value");
+    }
+
+    public Entity DeserializeFromPropertyName(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+    {
+        reader.ReadPropertyName();
+        var entity = Deserialize(ref reader, formatterResolver);
+        reader.ReadIsValueSeparator();
+        reader.ReadString();
+        return entity;
     }
 }
 

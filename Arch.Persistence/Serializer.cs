@@ -52,7 +52,9 @@ public static class ArchSerializer
             Formatters.Concat(custFormatters).ToArray(), 
             new[] {
                 EnumResolver.UnderlyingValue,
-                StandardResolver.AllowPrivateExcludeNullSnakeCase
+                StandardResolver.AllowPrivateExcludeNullSnakeCase,
+                BuiltinResolver.Instance,
+                DynamicGenericResolver.Instance
             }
         );
         
@@ -60,7 +62,7 @@ public static class ArchSerializer
             SingleEntityFormatters.Concat(custFormatters).ToArray(),
             new[] {
                 EnumResolver.UnderlyingValue,
-                StandardResolver.AllowPrivateExcludeNullSnakeCase
+                StandardResolver.AllowPrivateExcludeNullSnakeCase,
             }
         );
     }
