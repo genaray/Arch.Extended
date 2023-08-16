@@ -19,8 +19,9 @@ public static class ArchSerializer
         new WorldFormatter(),
         new ArchetypeFormatter(),
         new ChunkFormatter(),
-        new ComponentTypeFormatter(),
         new ArrayFormatter(),
+        new ComponentTypeFormatter(),
+        new EntityFormatter(),
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };

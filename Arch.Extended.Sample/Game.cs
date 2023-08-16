@@ -1,6 +1,7 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Bus;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Persistence;
 using Arch.System;
 using Microsoft.Xna.Framework;
@@ -66,12 +67,14 @@ public class Game : Microsoft.Xna.Framework.Game
             _world.Create(
                 new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
                 new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
-                new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
+                new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() },
+                DangerousEntityExtensions.CreateEntityStruct(60,0).Reference()
             );
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
         ArchSerializer.Initialize(new SpriteSerializer{GraphicsDevice = GraphicsDevice});
+        //var str = ArchSerializer.Serialize(_world, DangerousEntityExtensions.CreateEntityStruct(10, 0));
         var worldJson = ArchSerializer.Serialize(_world);
         _world = ArchSerializer.Deserialize(worldJson);
         

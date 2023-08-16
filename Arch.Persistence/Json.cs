@@ -115,6 +115,28 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
     }
 }
 
+public class EntityFormatter : IJsonFormatter<Entity>
+{
+    
+    /// <summary>
+    ///     The <see cref="World.Id"/> all deserialized <see cref="Entity"/>s will belong to.
+    ///     <remarks>Due to the nature of deserialisation and changing world landscape we need to assign new WorldIds to the deserialized entities.</remarks>
+    /// </summary>
+    public int WorldId { get; set; }
+    
+    public void Serialize(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
+    {
+        writer.WriteInt32(value.Id);
+    }
+
+    public Entity Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+    {
+        // Read id
+        var id = reader.ReadInt32();
+        return DangerousEntityExtensions.CreateEntityStruct(id, WorldId);
+    }
+}
+
 /// <summary>
 ///     The <see cref="ArrayFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Array}"/> to (de)serialize <see cref="Array"/>s to or from json.
@@ -239,16 +261,15 @@ public class WorldFormatter : IJsonFormatter<World>
 {
     public void Serialize(ref JsonWriter writer, World value, IJsonFormatterResolver formatterResolver)
     {
-        var archetypes = value.Archetypes;
-        var archetypeFormatter = formatterResolver.GetFormatter<IList<Archetype>>();
-        var intArrayFormatter = formatterResolver.GetFormatter<int[][]>();
+        var archetypeFormatter = formatterResolver.GetFormatter<Archetype>();
+        var versionsFormatter = formatterResolver.GetFormatter<int[][]>();
         var slotFormatter = formatterResolver.GetFormatter<(int,int)[][]>();
-        
+
         writer.WriteBeginObject();
 
         // Write entity info
         writer.WritePropertyName("versions");
-        intArrayFormatter.Serialize(ref writer, value.GetVersions(), formatterResolver);
+        versionsFormatter.Serialize(ref writer, value.GetVersions(), formatterResolver);
         writer.WriteValueSeparator();
         
         // Write slots
@@ -257,34 +278,59 @@ public class WorldFormatter : IJsonFormatter<World>
         writer.WriteValueSeparator();
 
         writer.WritePropertyName("archetypes");
-        archetypeFormatter.Serialize(ref writer, archetypes, formatterResolver);
+        writer.WriteBeginArray();
+        foreach(var archetype in value)
+        {
+            archetypeFormatter.Serialize(ref writer, archetype, formatterResolver);
+            writer.WriteValueSeparator();
+        }
 
+        // Cut last value seperator
+        if (value.Archetypes.Count > 0)
+        {
+            writer.AdvanceOffset(-1);
+        }
+        writer.WriteEndArray();
         writer.WriteEndObject();
     }
 
     public World Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
     {
+        // Create world and setup formatter
         var world = World.Create();
-        var intArrayFormatter = formatterResolver.GetFormatter<int[][]>();
+        var archetypeFormatter = formatterResolver.GetFormatter<Archetype>() as ArchetypeFormatter;
+        var versionsFormatter = formatterResolver.GetFormatter<int[][]>();
         var slotFormatter = formatterResolver.GetFormatter<(int,int)[][]>();
-        var archetypeFormatter = formatterResolver.GetFormatter<List<Archetype>>();
-        ArchetypeFormatter.World = world;
+        var entityFormatter = formatterResolver.GetFormatter<Entity>() as EntityFormatter;
+        entityFormatter.WorldId = world.Id;
+        archetypeFormatter.World = world;
         
         reader.ReadIsBeginObject();
 
+        // Read versions
         reader.ReadPropertyName();
-        var versions = intArrayFormatter.Deserialize(ref reader, formatterResolver);
+        var versions = versionsFormatter.Deserialize(ref reader, formatterResolver);
         reader.ReadIsValueSeparator();
         
+        // Read slots
         reader.ReadPropertyName();
         var slots = slotFormatter.Deserialize(ref reader, formatterResolver);
         reader.ReadIsValueSeparator();
 
+        // Read archetypes
+        var count = 0;
+        var archetypes = new List<Archetype>();
+        
         reader.ReadPropertyName();
-        var archetypes = archetypeFormatter.Deserialize(ref reader, formatterResolver);
+        reader.ReadIsBeginArray();
+        while (!reader.ReadIsEndArrayWithSkipValueSeparator(ref count))
+        {
+            var archetype = archetypeFormatter.Deserialize(ref reader, formatterResolver);
+            archetypes.Add(archetype);
+        }
+        
+        // Forward values to the world
         world.SetArchetypes(archetypes);
-
-        // Forward values to the world 
         world.SetVersions(versions);
         world.SetSlots(slots);
         world.EnsureCapacity(versions.Length);
@@ -304,16 +350,15 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
     /// <summary>
     ///     The <see cref="World"/> which is being used by this formatter during serialisation/deserialisation. 
     /// </summary>
-    public static World World { get; set; }
+    public World World { get; set; }
     
     public void Serialize(ref JsonWriter writer, Archetype value, IJsonFormatterResolver formatterResolver)
     {
-        // Get formatters
+        // Setup formatters
         var types = value.Types;
+        var chunks = value.Chunks;
         var typeFormatter = formatterResolver.GetFormatter<ComponentType[]>();
         var lookupFormatter = formatterResolver.GetFormatter<int[]>();
-        
-        var chunks = value.Chunks;
         var chunkFormatter = formatterResolver.GetFormatter<Chunk>() as ChunkFormatter;
         chunkFormatter.Types = types;
         
@@ -375,10 +420,10 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
         // Archetype chunk size and list
         reader.ReadPropertyName();
         var chunkSize = reader.ReadUInt32();
-        var chunks = new List<Chunk>((int)chunkSize);
         reader.ReadIsValueSeparator();
 
         // Create archetype
+        var chunks = new List<Chunk>((int)chunkSize);
         var archetype = DangerousArchetypeExtensions.CreateArchetype(types.ToArray());
         archetype.SetSize((int)chunkSize);
         
@@ -397,10 +442,10 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
             chunks.Add(chunk);
             reader.ReadIsValueSeparator();
         }
-        archetype.SetChunks(chunks);
-        reader.ReadIsEndArray();
-        reader.ReadIsValueSeparator();
         
+        archetype.SetChunks(chunks);
+        
+        reader.ReadIsEndArray();
         reader.ReadIsEndObject();
         return archetype;
     }
