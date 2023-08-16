@@ -30,11 +30,15 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
         writer.WritePropertyName("id");
         writer.WriteInt32(value.Id);
         writer.WriteValueSeparator();
+
+#if !PURE_ECS
         
         // Write world
         writer.WritePropertyName("worldId");
         writer.WriteInt32(value.WorldId);
         writer.WriteValueSeparator();
+        
+#endif
 
         // Write size
         var componentTypes = value.GetComponentTypes();
@@ -75,10 +79,14 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
         var entityId = reader.ReadInt32();
         reader.ReadIsValueSeparator();
 
+#if !PURE_ECS
+        
         // Read world id
         reader.ReadPropertyName();
         var worldId = reader.ReadInt32();
         reader.ReadIsValueSeparator();
+        
+#endif
 
         // Read size
         reader.ReadPropertyName();
