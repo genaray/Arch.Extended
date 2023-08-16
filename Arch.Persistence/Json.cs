@@ -20,7 +20,7 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
     /// <summary>
     ///     The <see cref="EntityWorld"/> the entity belongs to. 
     /// </summary>
-    public static World EntityWorld { get; set; }
+    internal static World EntityWorld { get; set; }
     
     public void Serialize(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
     {
@@ -122,7 +122,7 @@ public class EntityFormatter : IJsonFormatter<Entity>
     ///     The <see cref="World.Id"/> all deserialized <see cref="Entity"/>s will belong to.
     ///     <remarks>Due to the nature of deserialisation and changing world landscape we need to assign new WorldIds to the deserialized entities.</remarks>
     /// </summary>
-    public int WorldId { get; set; }
+    internal int WorldId { get; set; }
     
     public void Serialize(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
     {
@@ -350,7 +350,7 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
     /// <summary>
     ///     The <see cref="World"/> which is being used by this formatter during serialisation/deserialisation. 
     /// </summary>
-    public World World { get; set; }
+    internal World World { get; set; }
     
     public void Serialize(ref JsonWriter writer, Archetype value, IJsonFormatterResolver formatterResolver)
     {
@@ -462,25 +462,25 @@ public class ChunkFormatter : IJsonFormatter<Chunk>
     ///     The <see cref="Archetype"/> the current (de)serialized <see cref="Chunk"/> belongs to.
     ///     Since chunks do not know this, we need to pass this information along it. 
     /// </summary>
-    public World World { get; set; }
+    internal World World { get; set; }
     
     /// <summary>
     ///     The <see cref="Archetype"/> the current (de)serialized <see cref="Chunk"/> belongs to.
     ///     Since chunks do not know this, we need to pass this information along it. 
     /// </summary>
-    public Archetype Archetype { get; set; }
+    internal Archetype Archetype { get; set; }
     
     /// <summary>
     ///     The types used in the <see cref="Chunk"/> in each <see cref="Chunk"/> (de)serialized by this formatter.
     ///     <remarks>Since <see cref="Chunk"/> does not have a reference to them and its controlled by its <see cref="Archetype"/>.</remarks>
     /// </summary>
-    public ComponentType[] Types { get; set; } = Array.Empty<ComponentType>();
+    internal ComponentType[] Types { get; set; } = Array.Empty<ComponentType>();
 
     /// <summary>
     ///     The lookup array used by each <see cref="Chunk"/> (de)serialized by this formatter.
     ///     <remarks>Since <see cref="Chunk"/> does not have a reference to them and its controlled by its <see cref="Archetype"/>.</remarks>
     /// </summary>
-    public int[] LookupArray { get; set; } = Array.Empty<int>();
+    internal int[] LookupArray { get; set; } = Array.Empty<int>();
     
     public void Serialize(ref JsonWriter writer, Chunk value, IJsonFormatterResolver formatterResolver)
     {
