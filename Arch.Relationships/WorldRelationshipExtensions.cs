@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using Arch.Core;
+using Arch.Core.Utils;
 
 [assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
 namespace Arch.Relationships;
@@ -71,8 +72,8 @@ public static class WorldRelationshipExtensions
         ref var buffer = ref world.AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
 
-        var targetComp = new InRelationships(buffer);
-        ref var targetBuffer = ref world.AddOrGetRelationships<InRelationships>(target);
+        var targetComp = new InRelationship(Component<Relationship<T>>.ComponentType);
+        ref var targetBuffer = ref world.AddOrGetRelationships<InRelationship>(target);
         targetBuffer.Add(in targetComp, source);
     }
     
@@ -253,12 +254,12 @@ public static class WorldRelationshipExtensions
             world.Remove<Relationship<T>>(source);
         }
 
-        ref var targetBuffer = ref world.GetRelationships<InRelationships>(target);
+        ref var targetBuffer = ref world.GetRelationships<InRelationship>(target);
         targetBuffer.Remove(source);
 
         if (targetBuffer.Count == 0)
         {
-            world.Remove<Relationship<InRelationships>>(target);
+            world.Remove<Relationship<InRelationship>>(target);
         }
     }
 }

@@ -79,7 +79,7 @@ public class Game : Microsoft.Xna.Framework.Game
                 new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
             );
             
-            entity.AddRelationship(entity, 1);
+            entity.AddRelationship(DangerousEntityExtensions.CreateEntityStruct(Random.Shared.Next(0,index),0), 1);
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.

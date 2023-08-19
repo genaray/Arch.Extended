@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Arch.Core;
+using Arch.Core.Extensions.Dangerous;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Relationships;
@@ -11,18 +13,18 @@ namespace Arch.Relationships;
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
-public struct SortedListEnumerator<TKey, TValue> 
+public struct SortedListEnumerator<TValue> 
 {
-    private SortedList<TKey, TValue> sortedList;
+    private SortedList<Entity, TValue> sortedList;
     private int currentIndex;
 
-    public SortedListEnumerator(SortedList<TKey, TValue> list)
+    public SortedListEnumerator(SortedList<Entity, TValue> list)
     {
         sortedList = list;
         currentIndex = -1;
     }
 
-    public KeyValuePair<TKey, TValue> Current
+    public KeyValuePair<Entity, TValue> Current
     {
         get
         {
@@ -31,7 +33,7 @@ public struct SortedListEnumerator<TKey, TValue>
                 
             var key = sortedList.Keys[currentIndex];
             var value = sortedList.Values[currentIndex];
-            return new KeyValuePair<TKey, TValue>(key, value);
+            return new KeyValuePair<Entity, TValue>(key, value);
         }
     }
     

@@ -54,7 +54,7 @@ public static class ArchSerializer
                 EnumResolver.UnderlyingValue,
                 StandardResolver.AllowPrivateExcludeNullSnakeCase,
                 BuiltinResolver.Instance,
-                DynamicGenericResolver.Instance
+                DynamicGenericResolver.Instance,
             }
         );
         

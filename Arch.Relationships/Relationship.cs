@@ -4,15 +4,11 @@ using Arch.Core;
 namespace Arch.Relationships;
 
 /// <summary>
-///     Interface implemented by <see cref="Relationship{T}"/>.
+///     The <see cref="IRelationship"/> interface
+///     is an interface that provides all methods required to act as a relationship.
 /// </summary>
-internal interface IBuffer
+internal interface IRelationship
 {
-    /// <summary>
-    ///     Comparer used to sort <see cref="Entity"/> relationships.
-    /// </summary>
-    internal static readonly Comparer<Entity> Comparer = Comparer<Entity>.Create((a, b) => a.Id.CompareTo(b.Id));
-
     /// <summary>
     ///     The amount of relationships currently in the buffer.
     /// </summary>
@@ -42,8 +38,9 @@ internal interface IBuffer
 ///     A buffer storing relationships of <see cref="Entity"/> and <see cref="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the second relationship element.</typeparam>
-public class Relationship<T> : IBuffer
+public class Relationship<T> : IRelationship
 {
+
     /// <summary>
     ///     Its relations. 
     /// </summary>
@@ -55,21 +52,21 @@ public class Relationship<T> : IBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Relationship()
     {
-        Elements = new SortedList<Entity, T>(IBuffer.Comparer);
+        Elements = new SortedList<Entity, T>();
     }
-
+    
     /// <inheritdoc/>
-    int IBuffer.Count
+    int IRelationship.Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Elements.Count;
     }
 
-    /// <inheritdoc cref="IBuffer.Count"/>
+    /// <inheritdoc cref="IRelationship.Count"/>
     internal int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ((IBuffer) this).Count;
+        get => ((IRelationship) this).Count;
     }
 
     /// <summary>
@@ -129,30 +126,30 @@ public class Relationship<T> : IBuffer
     
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IBuffer.Remove(Entity target)
+    void IRelationship.Remove(Entity target)
     {
         Elements.Remove(target);
     }
 
-    /// <inheritdoc cref="IBuffer.Remove(Entity)"/>
+    /// <inheritdoc cref="IRelationship.Remove(Entity)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Remove(Entity target)
     {
-        ((IBuffer) this).Remove(target);
+        ((IRelationship) this).Remove(target);
     }
     
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IBuffer.Destroy(World world, Entity source)
+    void IRelationship.Destroy(World world, Entity source)
     {
         world.Remove<Relationship<T>>(source);
     }
 
-    /// <inheritdoc cref="IBuffer.Destroy(World, Entity)"/>
+    /// <inheritdoc cref="IRelationship.Destroy(World, Entity)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Destroy(World world, Entity source)
     {
-        ((IBuffer) this).Destroy(world, source);
+        ((IRelationship) this).Destroy(world, source);
     }
 
     /// <summary>
@@ -160,8 +157,8 @@ public class Relationship<T> : IBuffer
     /// </summary>
     /// <returns>The new <see cref="SortedListEnumerator{TKey,TValue}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SortedListEnumerator<Entity,T> GetEnumerator()
+    public SortedListEnumerator<T> GetEnumerator()
     {
-        return new SortedListEnumerator<Entity,T>(Elements);
+        return new SortedListEnumerator<T>(Elements);
     }
 };
