@@ -18,8 +18,9 @@
         <RepositoryUrl>https://github.com/genaray/Arch.Extended.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
-        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <PackageReleaseNotes>Relationships now use less memory and are serializable.</PackageReleaseNotes>
         <Authors>genaray</Authors>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>

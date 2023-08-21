@@ -13,7 +13,8 @@ internal readonly struct InRelationship
 {
     /// <summary>
     ///     The id of the <see cref="Relationship{T}"/>-Component that this <see cref="InRelationship"/> points to.
-    ///     Basically the <see cref="Relationship{T}"/> the <see cref="Entity"/> is in. 
+    ///     Basically the <see cref="Relationship{T}"/> the <see cref="Entity"/> is in.
+    ///     TODO: Uhmm... how the heck do we convert the Id back to the <see cref="ComponentType"/>?
     /// </summary>
     public readonly int ComponentTypeId;
 
