@@ -73,13 +73,11 @@ public class Game : Microsoft.Xna.Framework.Game
         // Spawn in entities with position, velocity and sprite
         for (var index = 0; index < 1000; index++)
         {
-            var entity = _world.Create(
+            _world.Create(
                 new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
                 new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
                 new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
             );
-            
-            entity.AddRelationship(DangerousEntityExtensions.CreateEntityStruct(Random.Shared.Next(0,index),0), 1);
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
