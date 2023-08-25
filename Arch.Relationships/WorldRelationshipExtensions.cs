@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 
 [assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
@@ -24,12 +25,13 @@ public static class WorldRelationshipExtensions
     }
 
     /// <summary>
-    /// Cleans up all relations of the passed <see cref="Entity"/>.
+    ///     Cleans up all relations of the passed <see cref="Entity"/>.
+    ///     TODO: Without allocating stuff while still staying serializable? 
     /// </summary>
     /// <param name="entity"></param>
-    private static void CleanupRelationships(this World world, in Entity entity)
+    public static void CleanupRelationships(this World world, in Entity entity)
     {
-        ref var relationships = ref world.TryGetRefRelationships<ArchRelationshipComponent>(entity, out var exists);
+        ref var relationships = ref world.TryGetRefRelationships<InRelationship>(entity, out var exists);
 
         if (!exists)
         {
@@ -38,16 +40,20 @@ public static class WorldRelationshipExtensions
 
         foreach (var (target, relationship) in relationships.Elements)
         {
-            var buffer = relationship.Relationships;
-            buffer.Remove(entity);
-
-            if (buffer.Count == 0)
+            var id = relationship.ComponentTypeId;
+            var componentType = new ComponentType(id, null, 0, false);
+            
+            // Remove entity from relationship. 
+            var cmp = target.Get(componentType) as IRelationship;
+            cmp.Remove(entity);
+            target.Set(componentType, cmp);
+            
+            if (cmp.Count == 0)
             {
-                buffer.Destroy(world, target);
+                cmp.Destroy(world, target);
             }
 
-            ref var targetRelationships = ref world.TryGetRefRelationships<ArchRelationshipComponent>(target, out exists);
-
+            ref var targetRelationships = ref world.TryGetRefRelationships<InRelationship>(target, out exists);
             if (!exists)
             {
                 continue;

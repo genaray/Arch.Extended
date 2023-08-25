@@ -160,6 +160,7 @@ public class RelationshipTest
         That(childTwoRelationshipsRef.Elements, Does.ContainKey(parent));
 
         // Destroy childOne, should remove any relationships containing it
+        _world.CleanupRelationships(childOne);
         _world.Destroy(childOne);
 
         // Get should throw on childOne and not return it in any of the other references

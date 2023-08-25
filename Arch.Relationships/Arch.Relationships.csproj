@@ -23,6 +23,10 @@
         <Version>1.0.1</Version>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACE;EVENTS</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup>
       <PackageReference Include="Arch" Version="1.2.6.5-alpha" />
     </ItemGroup>
