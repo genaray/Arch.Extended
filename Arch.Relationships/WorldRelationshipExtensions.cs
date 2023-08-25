@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 
 [assembly:InternalsVisibleTo("Arch.Relationships.Tests")]
@@ -24,33 +25,36 @@ public static class WorldRelationshipExtensions
         world.SubscribeEntityDestroyed((in Entity entity) => CleanupRelationships(world, in entity));
     }
 
+    // TODO: Probably someone will kill me for the dark magic that happens down below. 
     /// <summary>
     ///     Cleans up all relations of the passed <see cref="Entity"/>.
-    ///     TODO: Without allocating stuff while still staying serializable? 
     /// </summary>
     /// <param name="entity"></param>
     public static void CleanupRelationships(this World world, in Entity entity)
     {
         ref var relationships = ref world.TryGetRefRelationships<InRelationship>(entity, out var exists);
-
         if (!exists)
         {
             return;
         }
-
-        foreach (var (target, relationship) in relationships.Elements)
+        
+        foreach (var (target, inRelationship) in relationships.Elements)
         {
-            var id = relationship.ComponentTypeId;
+            var id = inRelationship.ComponentTypeId;
             var componentType = new ComponentType(id, null, 0, false);
             
-            // Remove entity from relationship. 
-            var cmp = target.Get(componentType) as IRelationship;
-            cmp.Remove(entity);
-            target.Set(componentType, cmp);
+            // Get slots, chunk and array to prevent entity.Get(type) object allocation
+            ref readonly var chunk = ref target.GetChunk();
+            var array = chunk.GetArray(componentType);
+            var relationshipsArray = Unsafe.As<IRelationship[]>(array);
+
+            var slot = world.GetSlot(target);
+            var relationship = relationshipsArray[slot.Item1];
+            relationship.Remove(entity);
             
-            if (cmp.Count == 0)
+            if (relationship.Count == 0)
             {
-                cmp.Destroy(world, target);
+                relationship.Destroy(world, target);
             }
 
             ref var targetRelationships = ref world.TryGetRefRelationships<InRelationship>(target, out exists);

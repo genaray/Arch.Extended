@@ -28,7 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Arch" Version="1.2.6.5-alpha" />
+      <PackageReference Include="Arch" Version="1.2.6.6-alpha" />
     </ItemGroup>
 
 </Project>
