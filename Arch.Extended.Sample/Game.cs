@@ -55,12 +55,6 @@ public class Game : Microsoft.Xna.Framework.Game
         // Create a new SpriteBatch, which can be used to draw textures.
         _spriteBatch = new SpriteBatch(GraphicsDevice);
     }
-
-    public struct Target
-    {
-        [IgnoreDataMember]
-        public EntityReference SomeEntity;
-    }
     
     protected override void BeginRun()
     {
