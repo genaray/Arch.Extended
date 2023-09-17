@@ -330,7 +330,7 @@ public static class QueryUtils
         // Generate basesystem.
         var baseSystem = new BaseSystem
         {
-            Namespace = classSymbol.ContainingNamespace != null ? classSymbol.ContainingNamespace.ToString() : string.Empty,
+            Namespace = classSymbol.ContainingNamespace != null && !classSymbol.ContainingNamespace.IsGlobalNamespace ? classSymbol.ContainingNamespace.ToString() : string.Empty,
             GenericType = typeSymbol,
             GenericTypeNamespace = typeSymbol.ContainingNamespace.ToString(),
             Name = classSymbol.Name,
