@@ -249,7 +249,7 @@ public static class QueryUtils
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
-                public {{staticModifier}} partial class {{queryMethod.ClassName}}{
+                {{staticModifier}} partial class {{queryMethod.ClassName}}{
                     
                     private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
                         All = {{allTypeArray}},
