@@ -354,7 +354,7 @@ public static class QueryUtils
             using System.Runtime.InteropServices;
             using {{baseSystem.GenericTypeNamespace}};
             {{(baseSystem.Namespace != string.Empty ? $"namespace {baseSystem.Namespace} {{" : "")}}
-                public partial class {{baseSystem.Name}}{
+                partial class {{baseSystem.Name}}{
                         
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public override void Update(in {{baseSystem.GenericType.ToDisplayString()}} {{baseSystem.GenericType.Name.ToLower()}}){
