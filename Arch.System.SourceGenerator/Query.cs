@@ -357,7 +357,7 @@ public static class QueryUtils
                 public partial class {{baseSystem.Name}}{
                         
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public override void Update(in {{baseSystem.GenericType.ToDisplayString()}} {{baseSystem.GenericType.Name.ToLower()}}){
+                    public override void Update(in {{baseSystem.GenericType.ToDisplayString()}} data){
                         {{methodCalls}}
                     }
                 }
