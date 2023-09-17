@@ -18,7 +18,7 @@ public static class QueryUtils
       
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type}>();");
+                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}>();");
 
         return sb;
     }
@@ -72,7 +72,7 @@ public static class QueryUtils
         
         foreach (var symbol in parameterSymbols)
             if(symbol.Name is not "Entity") // Prevent entity being added to the type array
-                sb.Append($"typeof({symbol}),");
+                sb.Append($"typeof({symbol.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}),");
         
         if (sb.Length > 0) sb.Length -= 1;
         sb.Append('}');
