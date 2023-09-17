@@ -200,7 +200,7 @@ public static class QueryUtils
             Namespace = methodSymbol.ContainingNamespace.ToString(),
             ClassName = className.Substring(className.LastIndexOf('.')+1),
             
-            IsStatic = methodSymbol.IsStatic,
+            IsStatic = methodSymbol.ContainingType.IsStatic,
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,
             
