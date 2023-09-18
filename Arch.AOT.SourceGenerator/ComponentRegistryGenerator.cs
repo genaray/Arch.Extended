@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
+using Arch.SourceGen.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -12,27 +13,13 @@ namespace Arch.SourceGen;
 [Generator(LanguageNames.CSharp)]
 public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 {
+	private readonly List<ComponentType> componentTypes = new List<ComponentType>();
 	private const string ATTRIBUTE_TEMPLATE = @"using System;
 
 namespace Arch.Core
 {
     [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class ComponentAttribute : Attribute { }
-}";
-
-	private const string COMPONENT_REGISTRY_TEMPLATE = @"using System.Runtime.CompilerServices;
-using Arch.Core.Utils;
-
-namespace Arch.Generated
-{
-    internal static class GeneratedComponentRegistry
-    {
-        [ModuleInitializer]
-        public static void Initialize()
-        {
-%REPLACE%
-        }
-    }
 }";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -104,9 +91,10 @@ namespace Arch.Generated
 		return (typeDeclarationSyntax, false);
 	}
 
-	private static void GenerateCode(SourceProductionContext productionContext, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> typeList)
+	private void GenerateCode(SourceProductionContext productionContext, Compilation compilation, ImmutableArray<TypeDeclarationSyntax> typeList)
 	{
 		StringBuilder sb = new StringBuilder();
+		componentTypes.Clear();
 
 		foreach (TypeDeclarationSyntax? type in typeList)
 		{
@@ -131,12 +119,12 @@ namespace Arch.Generated
 			}
 
 			string typeName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-			string hasZeroFieldsString = hasZeroFields ? "true" : "false";
-			string size = typeSymbol.IsValueType ? $"Unsafe.SizeOf<{typeName}>()" : "IntPtr.Size";
 
-			sb.AppendLine($"\t\t\tComponentRegistry.Add(new ComponentType(ComponentRegistry.Size + 1, typeof({typeName}), {size}, {hasZeroFieldsString}));");
+			componentTypes.Add(new ComponentType(typeName, hasZeroFields, typeSymbol.IsValueType));
 		}
 
-		productionContext.AddSource("GeneratedComponentRegistry.g.cs", COMPONENT_REGISTRY_TEMPLATE.Replace("%REPLACE%", sb.ToString().TrimEnd()));
+		sb.AppendComponentTypes(componentTypes);
+
+		productionContext.AddSource("GeneratedComponentRegistry.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 }
