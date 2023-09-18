@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Arch.EventBus;
+namespace Arch.Bus;
 
 public static class IMethodSymbolExtensions
 {

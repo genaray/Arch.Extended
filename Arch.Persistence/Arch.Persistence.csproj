@@ -18,11 +18,12 @@
         <RepositoryUrl>https://github.com/genaray/Arch.Extended.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
-        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <PackageReleaseNotes>Now requires Arch 1.2.6.8-alpha due to new internal API.</PackageReleaseNotes>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Arch" Version="1.2.6.4-alpha" />
+      <PackageReference Include="Arch" Version="1.2.6.8-alpha" />
       <PackageReference Include="Utf8Json" Version="1.3.7" />
     </ItemGroup>
 

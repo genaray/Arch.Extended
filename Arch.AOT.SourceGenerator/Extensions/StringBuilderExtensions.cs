@@ -1,7 +1,11 @@
 ﻿using System.Text;
 
-namespace Arch.SourceGen.Extensions;
+namespace Arch.AOT.SourceGenerator.Extensions;
 
+/// <summary>
+///		The <see cref="StringBuilderExtensions"/> class
+///		adds code-generating methods to the string-builder for outsourcing them.
+/// </summary>
 public static class StringBuilderExtensions
 {
 	/// <summary>
@@ -12,28 +16,32 @@ public static class StringBuilderExtensions
 	/// <returns></returns>
 	public static StringBuilder AppendComponentTypes(this StringBuilder sb, IList<ComponentType> componentTypes)
 	{
-		sb.AppendLine(@"using System.Runtime.CompilerServices;
-using Arch.Core.Utils;
-
-namespace Arch.Generated
-{
-    internal static class GeneratedComponentRegistry
-    {
-        [ModuleInitializer]
-        public static void Initialize()
-        {");
-
-		for (int i = 0; i < componentTypes.Count; i++)
+		// Lists the component registration commands line by line. 
+		var components = new StringBuilder();
+		foreach (var type in componentTypes)
 		{
-			ComponentType componentType = componentTypes[i];
-			sb.AppendComponentType(ref componentType);
+			var componentType = type;
+			components.AppendComponentType(ref componentType);
 		}
-
-		sb.Append(@"
-		}
-	}
-}");
-
+		
+		sb.AppendLine(
+			$$"""
+		    using System.Runtime.CompilerServices;
+		    using Arch.Core.Utils;
+		              
+		    namespace Arch.Generated
+		    {
+		       internal static class GeneratedComponentRegistry
+		       {
+		          [ModuleInitializer]
+		          public static void Initialize()
+		          {
+		          {{components}}
+		          }
+		       }
+		    }
+		    """
+		);
 		return sb;
 	}
 
@@ -45,12 +53,10 @@ namespace Arch.Generated
 	/// <returns></returns>
 	public static StringBuilder AppendComponentType(this StringBuilder sb, ref ComponentType componentType)
 	{
-		string hasZeroFieldsString = componentType.IsZeroSize ? "true" : "false";
-		string size = componentType.IsValueType ? $"Unsafe.SizeOf<{componentType.TypeName}>()" : "IntPtr.Size";
+		var hasZeroFieldsString = componentType.IsZeroSize ? "true" : "false";
+		var size = componentType.IsValueType ? $"Unsafe.SizeOf<{componentType.TypeName}>()" : "IntPtr.Size";
 
-		sb.AppendLine(
-			$"\t\t\tComponentRegistry.Add(new ComponentType(ComponentRegistry.Size + 1, typeof({componentType.TypeName}), {size}, {hasZeroFieldsString}));");
-
+		sb.AppendLine($"ComponentRegistry.Add(new ComponentType(ComponentRegistry.Size + 1, typeof({componentType.TypeName}), {size}, {hasZeroFieldsString}));");
 		return sb;
 	}
 }

@@ -461,14 +461,18 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
         // Deserialise each chunk and put it into the archetype. 
         reader.ReadPropertyName();
         reader.ReadIsBeginArray();
+        
+        var entities = 0;
         for (var index = 0; index < chunkSize; index++)
         {
             var chunk = chunkFormatter.Deserialize(ref reader, formatterResolver);
             chunks.Add(chunk);
+            entities += chunk.Size;
             reader.ReadIsValueSeparator();
         }
         
         archetype.SetChunks(chunks);
+        archetype.SetEntities(entities);
         
         reader.ReadIsEndArray();
         reader.ReadIsEndObject();

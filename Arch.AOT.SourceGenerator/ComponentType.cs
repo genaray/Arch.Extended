@@ -1,7 +1,8 @@
-﻿namespace Arch.SourceGen;
+﻿namespace Arch.AOT.SourceGenerator;
 
 /// <summary>
-///     Represents ComponentType for use in the generated code.
+///     The struct <see cref="ComponentType"/>
+///		represents an Component (Their type with meta data) for use in the generated code.
 /// </summary>
 public struct ComponentType
 {
@@ -18,6 +19,12 @@ public struct ComponentType
 	/// </summary>
 	public bool IsValueType { get; }
 
+	/// <summary>
+	///		Creates a new instance of the <see cref="ComponentType"/>.
+	/// </summary>
+	/// <param name="typeName">The type name.</param>
+	/// <param name="isZeroSize">If its zero sized.</param>
+	/// <param name="isValueType">If its a value type.</param>
 	public ComponentType(string typeName, bool isZeroSize, bool isValueType)
 	{
 		TypeName = typeName;
