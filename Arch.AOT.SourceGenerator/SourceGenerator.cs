@@ -25,7 +25,7 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 	private const string AttributeTemplate = """
 	                                         using System;
 
-	                                         namespace Arch.Core
+	                                         namespace Arch.AOT.SourceGenerator
 	                                         {
 	                                             [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 	                                             public sealed class ComponentAttribute : Attribute { }
@@ -90,7 +90,7 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 			}
 
 			// If the attribute is the Component attribute, we can stop here and return true.
-			if (string.Equals(attributeData.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), "global::Arch.Core.ComponentAttribute",
+			if (string.Equals(attributeData.AttributeClass.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), "global::Arch.AOT.SourceGenerator.ComponentAttribute",
 				    StringComparison.Ordinal))
 			{
 				return (typeDeclarationSyntax, true);

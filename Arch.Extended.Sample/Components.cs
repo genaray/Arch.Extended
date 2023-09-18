@@ -1,4 +1,6 @@
 ﻿using System.Runtime.Serialization;
+using Arch.AOT.SourceGenerator;
+using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

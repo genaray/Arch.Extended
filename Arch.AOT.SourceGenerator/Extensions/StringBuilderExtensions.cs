@@ -29,7 +29,7 @@ public static class StringBuilderExtensions
 		    using System.Runtime.CompilerServices;
 		    using Arch.Core.Utils;
 		              
-		    namespace Arch.Generated
+		    namespace Arch.AOT.SourceGenerator
 		    {
 		       internal static class GeneratedComponentRegistry
 		       {
