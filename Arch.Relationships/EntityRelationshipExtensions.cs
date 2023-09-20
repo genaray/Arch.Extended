@@ -4,6 +4,8 @@ using Arch.Core;
 
 namespace Arch.Relationships;
 
+#if !PURE_ECS
+
 /// <summary>
 ///     The <see cref="EntityRelationshipExtensions"/> class
 ///     stores several methods to forward relationship methods from the <see cref="World"/> to the <see cref="Entity"/>.
@@ -119,3 +121,5 @@ public static class EntityRelationshipExtensions
         world.RemoveRelationship<T>(source, target);
     }
 }
+
+#endif
