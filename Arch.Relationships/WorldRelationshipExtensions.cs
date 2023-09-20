@@ -44,7 +44,7 @@ public static class WorldRelationshipExtensions
             var componentType = new ComponentType(id, null, 0, false);
             
             // Get slots, chunk and array to prevent entity.Get(type) object allocation
-            ref readonly var chunk = ref target.GetChunk();
+            ref readonly var chunk = ref world.GetChunk(target);
             var array = chunk.GetArray(componentType);
             var relationshipsArray = Unsafe.As<IRelationship[]>(array);
 
