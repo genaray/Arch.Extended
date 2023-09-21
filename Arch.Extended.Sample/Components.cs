@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Arch.AOT.SourceGenerator;
 using Arch.Core;
+using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -26,6 +27,16 @@ public struct Position
     {
         Vector2 = new Vector2(x, y);
     }
+    
+    /// <summary>
+    ///     Constructs a new <see cref="Position"/> instance.
+    /// <remarks>Mostly required for <see cref="MessagePack"/>.</remarks>
+    /// </summary>
+    /// <param name="vector2">The <see cref="Vector2"/>, the position.</param>
+    public Position(Vector2 vector2)
+    {
+        Vector2 = vector2;
+    }
 };
 
 /// <summary>
@@ -47,6 +58,16 @@ public struct Velocity
     public Velocity(float x, float y)
     {
         Vector2 = new Vector2(x, y);
+    }
+    
+    /// <summary>
+    ///     Constructs a new <see cref="Velocity"/> instance.
+    /// <remarks>Mostly required for <see cref="MessagePack"/>.</remarks>
+    /// </summary>
+    /// <param name="vector2">The <see cref="Vector2"/>, the velocity.</param>
+    public Velocity(Vector2 vector2)
+    {
+        Vector2 = vector2;
     }
 }
 

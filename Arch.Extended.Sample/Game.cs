@@ -7,6 +7,7 @@ using Arch.Core.Extensions.Dangerous;
 using Arch.Persistence;
 using Arch.Relationships;
 using Arch.System;
+using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -56,10 +57,31 @@ public class Game : Microsoft.Xna.Framework.Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
     }
     
+    [MessagePackObject]
+    public struct Data
+    {
+        [Key(1)]
+        public int i = 100;
+        [Key(2)]
+        public int j = 200;
+        [Key(3)]
+        public string si = "ffffffffffffffffffffff";
+        [Key(4)]
+        public string sj = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr";
+        public Data()
+        {
+        }
+    }
+
+    public class Test
+    {
+        public int i;
+    }
+    
     protected override void BeginRun()
     {
         base.BeginRun();
-        
+
         // Create world & JobScheduler for multithreading
         _world = World.Create();
         _jobScheduler = new("SampleWorkerThreads");
@@ -75,9 +97,9 @@ public class Game : Microsoft.Xna.Framework.Game
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
-        ArchSerializer.Initialize(new SpriteSerializer{GraphicsDevice = GraphicsDevice});
-        var worldJson = ArchSerializer.Serialize(_world);
-        _world = ArchSerializer.Deserialize(worldJson);
+        var archSerializer = new ArchBinarySerializer(new SpriteSerializer{GraphicsDevice = GraphicsDevice}) as IArchSerializer;
+        var worldJson = archSerializer.Serialize(_world);
+        _world = archSerializer.Deserialize(worldJson);
         
         // Create systems, running in order
         _systems = new Group<GameTime>(

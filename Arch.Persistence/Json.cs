@@ -14,13 +14,13 @@ namespace Arch.Persistence;
 ///     The <see cref="SingleEntityFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Entity}"/> to (de)serialize a single <see cref="Entity"/>to or from json.
 /// </summary>
-public class SingleEntityFormatter : IJsonFormatter<Entity>
+public partial class SingleEntityFormatter : IJsonFormatter<Entity>
 {
     
     /// <summary>
     ///     The <see cref="EntityWorld"/> the entity belongs to. 
     /// </summary>
-    internal static World EntityWorld { get; set; }
+    internal World EntityWorld { get; set; }
     
     public void Serialize(ref JsonWriter writer, Entity value, IJsonFormatterResolver formatterResolver)
     {
@@ -123,7 +123,7 @@ public class SingleEntityFormatter : IJsonFormatter<Entity>
     }
 }
 
-public class EntityFormatter : IJsonFormatter<Entity>, IObjectPropertyNameFormatter<Entity>
+public partial class EntityFormatter : IJsonFormatter<Entity>, IObjectPropertyNameFormatter<Entity>
 {
     
     /// <summary>
@@ -166,7 +166,7 @@ public class EntityFormatter : IJsonFormatter<Entity>, IObjectPropertyNameFormat
 ///     The <see cref="ArrayFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Array}"/> to (de)serialize <see cref="Array"/>s to or from json.
 /// </summary>
-public class ArrayFormatter : IJsonFormatter<Array>
+public partial class ArrayFormatter : IJsonFormatter<Array>
 {
     public void Serialize(ref JsonWriter writer, Array value, IJsonFormatterResolver formatterResolver)
     {
@@ -233,7 +233,7 @@ public class ArrayFormatter : IJsonFormatter<Array>
 ///     The <see cref="ComponentTypeFormatter"/> class
 ///     is a <see cref="IJsonFormatter{ComponentType}"/> to (de)serialize <see cref="ComponentType"/>s to or from json.
 /// </summary>
-public class ComponentTypeFormatter : IJsonFormatter<ComponentType>
+public partial class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 {
     public void Serialize(ref JsonWriter writer, ComponentType value, IJsonFormatterResolver formatterResolver)
     {
@@ -282,7 +282,7 @@ public class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 ///     The <see cref="WorldFormatter"/> class
 ///     is a <see cref="IJsonFormatter{World}"/> to (de)serialize <see cref="World"/>s to or from json.
 /// </summary>
-public class WorldFormatter : IJsonFormatter<World>
+public partial class WorldFormatter : IJsonFormatter<World>
 {
     public void Serialize(ref JsonWriter writer, World value, IJsonFormatterResolver formatterResolver)
     {
@@ -369,7 +369,7 @@ public class WorldFormatter : IJsonFormatter<World>
 ///     The <see cref="ArchetypeFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Archetype}"/> to (de)serialize <see cref="Archetype"/>s to or from json.
 /// </summary>
-public class ArchetypeFormatter : IJsonFormatter<Archetype>
+public partial class ArchetypeFormatter : IJsonFormatter<Archetype>
 {
     
     /// <summary>
@@ -484,7 +484,7 @@ public class ArchetypeFormatter : IJsonFormatter<Archetype>
 ///     The <see cref="ChunkFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Chunk}"/> to (de)serialize <see cref="Chunk"/>s to or from json.
 /// </summary>
-public class ChunkFormatter : IJsonFormatter<Chunk>
+public partial class ChunkFormatter : IJsonFormatter<Chunk>
 {
     
     /// <summary>
