@@ -55,6 +55,16 @@ public class Relationship<T> : IRelationship
         Elements = new SortedList<Entity, T>();
     }
     
+    /// <summary>
+    ///     Initializes a new instance of an <see cref="Relationship{T}"/>.
+    /// <remarks>Mostly for binary serialization.</remarks>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Relationship(SortedList<Entity, T> elements)
+    {
+        Elements = elements;
+    }
+    
     /// <inheritdoc/>
     int IRelationship.Count
     {

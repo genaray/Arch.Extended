@@ -26,4 +26,14 @@ internal readonly struct InRelationship
     {
         ComponentTypeId = targetRelation.Id;
     }
+    
+    /// <summary>
+    ///     Creates a new <see cref="InRelationship"/> instance.
+    /// <remarks>Mostly for binary serialization.</remarks>
+    /// </summary>
+    /// <param name="componentTypeId">The <see cref="ComponentTypeId"/>.</param>
+    internal InRelationship(int componentTypeId)
+    {
+        ComponentTypeId = componentTypeId;
+    }
 }
