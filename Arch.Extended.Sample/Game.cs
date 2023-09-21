@@ -57,27 +57,6 @@ public class Game : Microsoft.Xna.Framework.Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
     }
     
-    [MessagePackObject]
-    public struct Data
-    {
-        [Key(1)]
-        public int i = 100;
-        [Key(2)]
-        public int j = 200;
-        [Key(3)]
-        public string si = "ffffffffffffffffffffff";
-        [Key(4)]
-        public string sj = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr";
-        public Data()
-        {
-        }
-    }
-
-    public class Test
-    {
-        public int i;
-    }
-    
     protected override void BeginRun()
     {
         base.BeginRun();
