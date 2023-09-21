@@ -1,4 +1,4 @@
-# Arch.Extended
+**# Arch.Extended
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![Nuget](https://img.shields.io/nuget/v/Arch?style=for-the-badge)](https://www.nuget.org/packages/Arch.System/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
@@ -14,11 +14,11 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 Download the packages and get started today! 
 ```console
 dotnet add package Arch.System --version 1.0.2
-dotnet add package Arch.System.SourceGenerator --version 1.1.0
+dotnet add package Arch.System.SourceGenerator --version 1.1.1
 dotnet add package Arch.EventBus --version 1.0.2
 dotnet add package Arch.LowLevel --version 1.0.3
 dotnet add package Arch.Relationships --version 1.0.0
-dotnet add package Arch.Persistence --version 1.0.0
+dotnet add package Arch.Persistence --version 1.0.2
 ```
 
 # Features & Tools
@@ -85,4 +85,4 @@ public class Game
         _systems.Dispose();                     // Calls .Dispose on all systems ( can be overriden )
     }
 }
-```
+```**
