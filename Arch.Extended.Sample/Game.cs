@@ -76,7 +76,7 @@ public class Game : Microsoft.Xna.Framework.Game
         }
         
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
-        var archSerializer = new ArchBinarySerializer(new SpriteSerializer{GraphicsDevice = GraphicsDevice}) as IArchSerializer;
+        var archSerializer = new ArchJsonSerializer(new SpriteSerializer{GraphicsDevice = GraphicsDevice}) as IArchSerializer;
         var worldJson = archSerializer.Serialize(_world);
         _world = archSerializer.Deserialize(worldJson);
         
