@@ -200,7 +200,7 @@ public static class QueryUtils
             Namespace = methodSymbol.ContainingNamespace.ToString(),
             ClassName = className.Substring(className.LastIndexOf('.')+1),
             
-            IsStatic = methodSymbol.ContainingType.IsStatic,
+            IsStatic = methodSymbol.IsStatic,
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,
             
@@ -249,7 +249,7 @@ public static class QueryUtils
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
             using Component = Arch.Core.Utils.Component;
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
-                {{staticModifier}} partial class {{queryMethod.ClassName}}{
+                partial class {{queryMethod.ClassName}}{
                     
                     private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
                         All = {{allTypeArray}},
