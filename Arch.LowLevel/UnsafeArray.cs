@@ -16,6 +16,11 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 {
 
     /// <summary>
+    ///     The static empty <see cref="UnsafeArray{T}"/>.
+    /// </summary>
+    internal static UnsafeArray<T> Empty = new(0);
+    
+    /// <summary>
     ///     The pointer, pointing towards the first element of this <see cref="UnsafeArray{T}"/>.
     /// </summary>
     internal readonly T* _ptr;
@@ -137,6 +142,17 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 
 public unsafe struct UnsafeArray
 {
+
+    /// <summary>
+    ///     Returns an empty <see cref="UnsafeArray{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>The empty <see cref="UnsafeArray{T}"/>.</returns>
+    public static UnsafeArray<T> Empty<T>() where T : unmanaged
+    {
+        return UnsafeArray<T>.Empty;
+    }
+    
     /// <summary>
     ///  Copies the a part of the <see cref="UnsafeArray{T}"/> to the another <see cref="UnsafeArray{T}"/>.
     /// </summary>
@@ -170,6 +186,22 @@ public unsafe struct UnsafeArray
         {
             source[index] = value;
         }
+    }
+    
+    /// <summary>
+    ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <see cref="newCapacity"/>.
+    /// </summary>
+    /// <param name="source">The <see cref="UnsafeArray{T}"/>.</param>
+    /// <param name="newCapacity">The new capacity.</param>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>The new resized <see cref="UnsafeArray{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UnsafeArray<T> Resize<T>(ref UnsafeArray<T> source, int newCapacity) where T : unmanaged
+    {
+        var destination = new UnsafeArray<T>(newCapacity);
+        Copy(ref source, 0, ref destination, 0, source.Length);
+
+        return destination;
     }
 }
 

@@ -1,4 +1,5 @@
 
+using Arch.LowLevel.Jagged;
 using static NUnit.Framework.Assert;
 
 namespace Arch.LowLevel.Tests;
