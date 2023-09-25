@@ -234,6 +234,26 @@ public class JaggedArray<T>
         value = item;
         return true;
     }
+    
+    /// <summary>
+    ///     Checks if the value at the given index exists.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <returns>True if it does, false if it does not.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsKey(int index)
+    {
+        if (index <= 0 || index > Capacity)
+        {
+            return false;
+        }
+        
+        IdToSlot(index, out var outerIndex, out var innerIndex);
+        ref var item = ref _bucketArray[outerIndex][innerIndex];
+
+        // If the item is the default then the nobody set its value.
+        return !EqualityComparer<T>.Default.Equals(item, _filler);
+    }
 
     /// <summary>
     ///     Ensures the capacity and increases it if necessary.
