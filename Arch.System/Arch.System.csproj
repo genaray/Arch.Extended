@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <TargetFrameworks>net7.0; net6.0; netstandard2.1</TargetFrameworks>
@@ -30,4 +31,5 @@
         <Copyright>Apache2.0</Copyright>
         <PackageLicenseUrl></PackageLicenseUrl>
     </PropertyGroup>
+
 </Project>

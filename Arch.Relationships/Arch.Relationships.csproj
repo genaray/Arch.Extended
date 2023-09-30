@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -30,4 +31,5 @@
     <ItemGroup>
       <PackageReference Include="Arch" Version="1.2.6.6-alpha" />
     </ItemGroup>
+
 </Project>
