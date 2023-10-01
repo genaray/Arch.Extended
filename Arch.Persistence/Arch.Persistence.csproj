@@ -3,6 +3,7 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <TargetFrameworks>net6.0;net7.0;netstandard2.1</TargetFrameworks>
         <LangVersion>11</LangVersion>
 
@@ -23,6 +24,8 @@ Added Binary-Serializer.
 Added a bunch of additional methods to (de)serialize byte[], streams and IBufferWriter&lt;T&gt;.
 Increased performance slightly. </PackageReleaseNotes>
         <Version>1.0.2</Version>
+
+        <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
     <ItemGroup>
