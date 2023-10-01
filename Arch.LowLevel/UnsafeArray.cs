@@ -182,7 +182,7 @@ public unsafe struct UnsafeArray
     [Pure]
     public static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
     {
-        for (int index = 0; index < source.Count; index++)
+        for (var index = 0; index < source.Count; index++)
         {
             source[index] = value;
         }
@@ -201,6 +201,7 @@ public unsafe struct UnsafeArray
         var destination = new UnsafeArray<T>(newCapacity);
         Copy(ref source, 0, ref destination, 0, source.Length);
 
+        source.Dispose();
         return destination;
     }
 }
