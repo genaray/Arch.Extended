@@ -72,7 +72,7 @@ internal record struct UnsafeSparseBucket<T> where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void EnsureCapacity()
     {
-        if (Array != null)
+        if (Array != UnsafeArray.Empty<T>())
         {
             return;
         }

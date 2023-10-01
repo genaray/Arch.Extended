@@ -18,7 +18,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     /// <summary>
     ///     The static empty <see cref="UnsafeArray{T}"/>.
     /// </summary>
-    internal static UnsafeArray<T> Empty = new(0);
+    internal static UnsafeArray<T> Empty = new(null, 0);
     
     /// <summary>
     ///     The pointer, pointing towards the first element of this <see cref="UnsafeArray{T}"/>.
@@ -37,6 +37,17 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 #else
         _ptr = (T*)Marshal.AllocHGlobal(sizeof(T) * count);
 #endif
+        Count = count;
+    }
+    
+    /// <summary>
+    ///     Creates an instance of the <see cref="UnsafeArray{T}"/> by a pointer.
+    /// </summary>
+    /// <param name="ptr">The pointer.</param>
+    /// <param name="count">The count.</param>
+    public UnsafeArray(T* ptr, int count)
+    {
+        _ptr = ptr;
         Count = count;
     }
 
@@ -101,6 +112,61 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
         return new UnsafeEnumerator<T>(_ptr, Count);
     }
 
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="other">The other <see cref="UnsafeArray"/>.</param>
+    /// <returns>True if equal, oterwhise false.</returns>
+    public bool Equals(UnsafeArray<T> other)
+    {
+        return _ptr == other._ptr && Count == other.Count;
+    }
+
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="obj">The other <see cref="UnsafeArray"/>.</param>
+    /// <returns>True if equal, oterwhise false.</returns>
+    public override bool Equals(object? obj)
+    {
+        return obj is UnsafeArray<T> other && Equals(other);
+    }
+
+    
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="left">The first <see cref="UnsafeArray"/>.</param>
+    /// <param name="right">The second <see cref="UnsafeArray"/>.</param>
+    /// <returns></returns>
+    public static bool operator ==(UnsafeArray<T> left, UnsafeArray<T> right)
+    {
+        return left.Equals(right);
+    }
+
+    /// <summary>
+    ///     Checks for inequality.
+    /// </summary>
+    /// <param name="left">The first <see cref="UnsafeArray"/>.</param>
+    /// <param name="right">The second <see cref="UnsafeArray"/>.</param>
+    /// <returns></returns>
+    public static bool operator !=(UnsafeArray<T> left, UnsafeArray<T> right)
+    {
+        return !left.Equals(right);
+    }
+
+    /// <summary>
+    ///     Returns the hash of this <see cref="UnsafeArray"/>.
+    /// </summary>
+    /// <returns></returns>
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            return (unchecked((int)(long)_ptr) * 397) ^ Count;
+        }
+    }
+    
     /// <summary>
     ///     Converts an <see cref="UnsafeArray{T}"/> into a void pointer.
     /// </summary>
