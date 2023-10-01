@@ -22,6 +22,8 @@
         <PackageReleaseNotes>Relationships now use less memory and are serializable.</PackageReleaseNotes>
         <Authors>genaray</Authors>
         <Version>1.0.1</Version>
+
+        <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

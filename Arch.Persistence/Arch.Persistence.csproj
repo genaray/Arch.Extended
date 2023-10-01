@@ -24,6 +24,8 @@ Added Binary-Serializer.
 Added a bunch of additional methods to (de)serialize byte[], streams and IBufferWriter&lt;T&gt;.
 Increased performance slightly. </PackageReleaseNotes>
         <Version>1.0.2</Version>
+
+        <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
     <ItemGroup>
