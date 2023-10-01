@@ -30,8 +30,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Copyright>Apache2.0</Copyright>
         <PackageLicenseUrl></PackageLicenseUrl>
-
-        <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
     <ItemGroup>
