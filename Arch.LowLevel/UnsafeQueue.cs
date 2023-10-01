@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
-using Arch.LowLevel;
+
+namespace Arch.LowLevel;
 
 /// <summary>
 ///     The struct <see cref="UnsafeStack{T}"/> represents a native unmanaged queue.

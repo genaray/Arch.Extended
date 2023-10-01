@@ -33,6 +33,18 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     }
 
     /// <summary>
+    ///     Creates an instance of the <see cref="UnsafeList{T}"/> by a pointer.
+    /// </summary>
+    /// <param name="ptr">The pointer.</param>
+    /// <param name="capacity">The initial capacity that is being allocated.</param>
+    public UnsafeList(T* ptr, int capacity = 8)
+    {
+        Count = 0;
+        Capacity = capacity;
+        _array = new UnsafeArray<T>(ptr, capacity);
+    }
+
+    /// <summary>
     ///     The amount of items in the list.
     /// </summary>
     public int Count
@@ -320,6 +332,63 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     IEnumerator IEnumerable.GetEnumerator()
     {
         return new Enumerator<T>(_array, Count);
+    }
+
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="other">The other <see cref="UnsafeList{T}"/>.</param>
+    /// <returns>True or false.</returns>
+    public bool Equals(UnsafeList<T> other)
+    {
+        return _array.Equals(other._array) && Count == other.Count && Capacity == other.Capacity;
+    }
+
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="obj">The other <see cref="UnsafeList{T}"/>.</param>
+    /// <returns>True or false.</returns>
+    public override bool Equals(object? obj)
+    {
+        return obj is UnsafeList<T> other && Equals(other);
+    }
+
+    /// <summary>
+    ///     Checks for equality.
+    /// </summary>
+    /// <param name="left">The first <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="right">The second <see cref="UnsafeList{T}"/>.</param>
+    /// <returns>True or false.</returns>
+    public static bool operator ==(UnsafeList<T> left, UnsafeList<T> right)
+    {
+        return left.Equals(right);
+    }
+
+    /// <summary>
+    ///     Checks for inequality.
+    /// </summary>
+    /// <param name="left">The first <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="right">The second <see cref="UnsafeList{T}"/>.</param>
+    /// <returns>True or false.</returns>
+    public static bool operator !=(UnsafeList<T> left, UnsafeList<T> right)
+    {
+        return !left.Equals(right);
+    }
+    
+    /// <summary>
+    ///     Returns the hashcode of this <see cref="UnsafeList{T}"/>.
+    /// </summary>
+    /// <returns></returns>
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = _array.GetHashCode();
+            hashCode = (hashCode * 397) ^ Count;
+            hashCode = (hashCode * 397) ^ Capacity;
+            return hashCode;
+        }
     }
 
     /// <summary>
