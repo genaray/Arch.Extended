@@ -5,8 +5,8 @@ namespace Arch.LowLevel.Jagged;
 
 
 /// <summary>
-///     The <see cref="SparseBucket{T}"/> struct
-///     represents a bucket of the <see cref="SparseJaggedArray{T}"/> where items are stored.
+///     The <see cref="UnsafeSparseBucket{T}"/> struct
+///     represents a bucket of the <see cref="UnsafeSparseJaggedArray{T}"/> where items are stored.
 ///     <remarks>It will not allocate memory upon creation, it stays empty till the first item was added in.</remarks>
 /// </summary>
 /// <typeparam name="T"></typeparam>

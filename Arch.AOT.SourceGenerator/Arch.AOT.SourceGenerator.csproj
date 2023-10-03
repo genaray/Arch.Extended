@@ -16,10 +16,8 @@
         <Version>1.0.0</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <Description>A source generator for arch.</Description>
-        <PackageReleaseNotes>
-            Added component registry generator.
-        </PackageReleaseNotes>
+        <Description>A source generator for arch to support AOT. </Description>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
