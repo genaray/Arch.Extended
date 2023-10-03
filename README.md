@@ -28,6 +28,7 @@ dotnet add package Arch.Persistence --version 1.0.2
 - 👾 **_[LowLevel](https://github.com/genaray/Arch.Extended/wiki/Lowlevel-&-Resource-Management)_** > Low-level utils and data structures to get rid of GC pressure!
 - 💑 **_[Relationships](https://github.com/genaray/Arch.Extended/wiki/Relationships)_** > Adds simple relationships between entities to arch!
 - 💾 **_[Persistence](https://github.com/genaray/Arch.Extended/wiki/Persistence)_** > JSON and Binary (de)serialization to persist your Worlds!
+- ⌛ **_[AOT Source Generator](https://github.com/genaray/Arch.Extended/wiki/AOT-Source-Generator)_** > Helps with AOT compatibility and reduces boilerplate code! 
 > Check the links and the [Wiki](https://github.com/genaray/Arch.Extended/wiki)! 
 
 # Full code sample
