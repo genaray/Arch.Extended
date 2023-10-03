@@ -310,10 +310,28 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             return ref _bucketArray[outerIndex][innerIndex];
         }
     }
+    
+    /// <summary>
+    ///     Clears this <see cref="JaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        foreach (ref var bucket in _bucketArray)
+        {
+            if (bucket.IsEmpty)
+            {
+                continue;
+            }
+            
+            UnsafeArray.Fill(ref bucket.Array, _filler);
+        }
+    }
 
     /// <summary>
     ///     Disposes this <see cref="UnsafeJaggedArray{T}"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
         foreach (ref var bucket in _bucketArray)

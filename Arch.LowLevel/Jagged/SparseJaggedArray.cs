@@ -358,4 +358,21 @@ public class SparseJaggedArray<T>
             return ref _bucketArray[outerIndex][innerIndex];
         }
     }
+    
+    /// <summary>
+    ///     Clears this <see cref="SparseJaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        foreach (var bucket in _bucketArray)
+        {
+            if (bucket.IsEmpty)
+            {
+                continue;
+            }
+            
+            Array.Fill(bucket.Array, _filler);
+        }
+    }
 }

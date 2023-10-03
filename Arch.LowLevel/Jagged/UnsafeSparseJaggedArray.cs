@@ -10,7 +10,7 @@ namespace Arch.LowLevel.Jagged;
 ///     <remarks>It will not allocate memory upon creation, it stays empty till the first item was added in.</remarks>
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal record struct UnsafeSparseBucket<T> where T : unmanaged
+internal record struct UnsafeSparseBucket<T> : IDisposable where T : unmanaged
 {
     
     /// <summary>
@@ -103,6 +103,15 @@ internal record struct UnsafeSparseBucket<T> where T : unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref Array[i];
     }
+
+    /// <summary>
+    ///     Disposes this <see cref="UnsafeSparseBucket{T}"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        Array.Dispose();
+    }
 }
 
 /// <summary>
@@ -111,7 +120,7 @@ internal record struct UnsafeSparseBucket<T> where T : unmanaged
 ///     <remarks>Its buckets will stay empty and not allocate memory till a slot in it is being used.</remarks>
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public struct UnsafeSparseJaggedArray<T> where T : unmanaged
+public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
 {
     /// <summary>
     ///     The <see cref="Bucket{T}"/> size in items.
@@ -345,7 +354,7 @@ public struct UnsafeSparseJaggedArray<T> where T : unmanaged
         outerIndex = id / _bucketSize;
         innerIndex = id & _bucketSizeMinusOne;
     }
-
+    
     /// <summary>
     ///     Returns a reference to an item at the given index.
     /// </summary>
@@ -358,5 +367,35 @@ public struct UnsafeSparseJaggedArray<T> where T : unmanaged
             IdToSlot(i, out var outerIndex, out var innerIndex);
             return ref _bucketArray[outerIndex][innerIndex];
         }
+    }
+    
+    /// <summary>
+    ///     Clears this <see cref="UnsafeSparseJaggedArray{T}"/> and sets all values to the <see cref="_filler"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        foreach (ref var bucket in _bucketArray)
+        {
+            if (bucket.IsEmpty)
+            {
+                continue;
+            }
+            
+            UnsafeArray.Fill(ref bucket.Array, _filler);
+        }
+    }
+    
+    /// <summary>
+    ///     Disposes this <see cref="UnsafeSparseJaggedArray{T}"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        foreach (ref var bucket in _bucketArray)
+        {
+            bucket.Dispose();
+        }
+        _bucketArray.Dispose();
     }
 }
