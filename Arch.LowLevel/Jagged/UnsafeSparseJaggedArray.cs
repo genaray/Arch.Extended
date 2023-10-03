@@ -271,6 +271,44 @@ public struct UnsafeSparseJaggedArray<T> : IDisposable where T : unmanaged
         value = item;
         return true;
     }
+    
+    /// <summary>
+    ///     Trys to get an item from its index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="bool">True if sucessfull, otherwhise false</param>
+    /// <returns>A reference or null reference to the item.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T TryGetValue(int index, out bool @bool)
+    {
+        // If the id is negative
+        if (index < 0)
+        {
+            @bool = false;
+            return ref Unsafe.NullRef<T>(); 
+        }
+
+        IdToSlot(index, out var outerIndex, out var innerIndex);
+
+        // If the item is outside the array. Then it definetly doesn't exist
+        if (outerIndex > _bucketArray.Length)
+        {
+            @bool = false;
+            return ref Unsafe.NullRef<T>(); 
+        }
+
+        ref var item = ref _bucketArray[outerIndex][innerIndex];
+
+        // If the item is the default then the nobody set its value.
+        if (EqualityComparer<T>.Default.Equals(item, _filler))
+        {
+            @bool = false;
+            return ref Unsafe.NullRef<T>(); 
+        }
+
+        @bool = true;
+        return ref Unsafe.NullRef<T>(); 
+    }
 
     /// <summary>
     ///     Checks if the value at the given index exists.
