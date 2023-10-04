@@ -314,9 +314,15 @@ public class SparseJaggedArray<T>
         }
         
         IdToSlot(index, out var outerIndex, out var innerIndex);
-        ref var item = ref _bucketArray[outerIndex][innerIndex];
+        ref var bucket = ref _bucketArray[outerIndex];
+        
+        if (bucket.IsEmpty)
+        {
+            return false;
+        }
 
         // If the item is the default then the nobody set its value.
+        ref var item = ref bucket[innerIndex];
         return !EqualityComparer<T>.Default.Equals(item, _filler);
     }
 
