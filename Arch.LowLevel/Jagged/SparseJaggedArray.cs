@@ -71,7 +71,7 @@ internal record struct SparseBucket<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void EnsureCapacity()
     {
-        if (Array != null)
+        if (Array != System.Array.Empty<T>())
         {
             return;
         }
