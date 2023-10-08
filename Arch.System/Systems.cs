@@ -40,8 +40,6 @@ public interface ISystem<T> : IDisposable
 /// <typeparam name="T">The type passed to the <see cref="ISystem{T}"/> interface.</typeparam>
 public abstract class BaseSystem<W, T> : ISystem<T>
 {
-
-    private T _data;
     
     /// <summary>
     ///     Creates an instance. 
@@ -57,22 +55,9 @@ public abstract class BaseSystem<W, T> : ISystem<T>
     /// </summary>
     public W World { get; private set; }
 
-    /// <summary>
-    ///     The systems data.
-    ///     Assigned during <see cref="BeforeUpdate"/>
-    /// </summary>
-    public ref T Data
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _data;
-    }
-
     public virtual void Initialize(){}
 
-    public virtual void BeforeUpdate(in T t)
-    {
-        _data = t;
-    }
+    public virtual void BeforeUpdate(in T t) { }
     public virtual void Update(in T t){}
     public virtual void AfterUpdate(in T t){}
     public virtual void Dispose(){}
@@ -190,6 +175,8 @@ public class Group<T> : ISystem<T>
     public void Dispose()
     {
         foreach (var system in _systems)
+        {
             system.Dispose();
+        }
     }
 }

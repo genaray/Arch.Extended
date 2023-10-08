@@ -116,7 +116,7 @@ public static class QueryUtils
             foreach (var parameter in method.Parameters)
             {
                 if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data"))) continue;
-                data.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} Data,");
+                data.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} data,");
                 break;
             }
             data.Length--;

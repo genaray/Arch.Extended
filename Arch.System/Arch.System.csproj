@@ -11,13 +11,12 @@
 
         <PackageId>Arch.System</PackageId>
         <Title>Arch.System</Title>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A systems framework for arch.</Description>
-        <PackageReleaseNotes>
-            Arch.System.SourceGeneration was renamed to Arch.System. 
-        </PackageReleaseNotes>
+        <PackageReleaseNotes>BaseSystem does not have Data property anymore.
+Before, Update and AfterUpdate pass the data directly to the method now. </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>

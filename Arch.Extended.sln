@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Extended.Sample", "Arc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System", "Arch.System\Arch.System.csproj", "{39363918-BFC7-43BF-8307-F5581225FB41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.System.SourceGenerator.Tests", "Arch.System.SourceGenerator.Tests\Arch.System.SourceGenerator.Tests.csproj", "{DA87653A-AA46-4E31-AE34-4DD28E228511}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.EventBus", "Arch.EventBus\Arch.EventBus.csproj", "{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.LowLevel", "Arch.LowLevel\Arch.LowLevel.csproj", "{00B44305-AB3D-438B-9EB9-8EF1ED2E8394}"
@@ -40,10 +38,6 @@ Global
 		{39363918-BFC7-43BF-8307-F5581225FB41}.Release|Any CPU.Build.0 = Release|Any CPU
 		{39363918-BFC7-43BF-8307-F5581225FB41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{39363918-BFC7-43BF-8307-F5581225FB41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA87653A-AA46-4E31-AE34-4DD28E228511}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BBA34D1-7DAB-4410-8762-09F7CC543D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -206,7 +206,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
 /// <summary>
 /// A event handler class using the source generated eventbus to intercept and react to events to decouple logic. 
 /// </summary>
-public static class EventHandler
+public static partial class EventHandler
 {
 
     /// <summary>
