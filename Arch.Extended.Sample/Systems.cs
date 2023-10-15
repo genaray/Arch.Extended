@@ -173,7 +173,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     /// <param name="t">The <see cref="GameTime"/>.</param>
     public override void Update(in GameTime t)
     {
-        World.Query(in _customQuery, (in Entity entity) => Console.WriteLine($"Custom : {entity}"));  // Manual query
+        World.Query(in _customQuery, entity => Console.WriteLine($"Custom : {entity}"));  // Manual query
         PrintEntitiesWithoutVelocityQuery(World);  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
     }
 
@@ -222,6 +222,6 @@ public static partial class EventHandler
         
         // Query for velocity entities and remove their velocity to make them stop moving. 
         var queryDesc = new QueryDescription().WithAll<Velocity>();
-        tuple.world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
+        tuple.world.Query(in queryDesc, entity => entity.Remove<Velocity>());
     }
 }

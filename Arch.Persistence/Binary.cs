@@ -1,7 +1,9 @@
-﻿using Arch.Core;
+﻿using System.Runtime.CompilerServices;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
+using Arch.LowLevel.Jagged;
 using MessagePack;
 using MessagePack.Formatters;
 using Utf8Json;
@@ -74,6 +76,10 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
     }
 }
 
+/// <summary>
+///     The <see cref="EntityFormatter"/> class
+///     is a formatter that (de)serializes <see cref="Entity"/> structs. 
+/// </summary>
 public partial class EntityFormatter : IMessagePackFormatter<Entity>
 {
     public void Serialize(ref MessagePackWriter writer, Entity value, MessagePackSerializerOptions options)
@@ -87,7 +93,7 @@ public partial class EntityFormatter : IMessagePackFormatter<Entity>
         var id = reader.ReadInt32();
         return DangerousEntityExtensions.CreateEntityStruct(id, WorldId);
     }
-} 
+}
 
 /// <summary>
 ///     The <see cref="ArrayFormatter"/> class
@@ -131,6 +137,48 @@ public partial class ArrayFormatter : IMessagePackFormatter<Array>
 }
 
 /// <summary>
+///     The <see cref="JaggedArrayFormatter{T}"/> class
+///     (de)serializes a <see cref="JaggedArray{T}"/>.
+/// </summary>
+/// <typeparam name="T">The type stored in the <see cref="JaggedArray{T}"/>.</typeparam>
+public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray<T>>
+{
+    private const int CpuL1CacheSize = 16_000;
+    private readonly T _filler;
+
+    public JaggedArrayFormatter(T filler)
+    {
+        _filler = filler;
+    }
+
+    public void Serialize(ref MessagePackWriter writer, JaggedArray<T> value, MessagePackSerializerOptions options)
+    {
+
+        // Write length/capacity and items
+        writer.WriteInt32(value.Capacity);
+        for (var index = 0; index < value.Capacity; index++)
+        {
+            var item = value[index];
+            MessagePackSerializer.Serialize(ref writer, item, options);
+        }
+    }
+
+    public JaggedArray<T> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        var capacity = reader.ReadInt32();
+        var jaggedArray = new JaggedArray<T>(CpuL1CacheSize / Unsafe.SizeOf<T>(), _filler,capacity);
+        
+        for (var index = 0; index < capacity; index++)
+        {
+            var item = MessagePackSerializer.Deserialize<T>(ref reader, options);
+            jaggedArray.Add(index, item);
+        }
+
+        return jaggedArray;
+    }
+} 
+
+/// <summary>
 ///     The <see cref="ComponentTypeFormatter"/> class
 ///     is a <see cref="IJsonFormatter{ComponentType}"/> to (de)serialize <see cref="ComponentType"/>s to or from json.
 /// </summary>
@@ -140,9 +188,6 @@ public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentTyp
     {
         // Write id
         writer.WriteUInt32((uint)value.Id);
-
-        // Write type itself
-        MessagePackSerializer.Serialize(ref writer, value.Type, options);
         
         // Write bytesize
         writer.WriteUInt32((uint)value.ByteSize);
@@ -151,10 +196,9 @@ public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentTyp
     public ComponentType Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         var id = reader.ReadUInt32();
-        var type = MessagePackSerializer.Deserialize<Type>(ref reader, options);
         var bytesize = reader.ReadUInt32();
 
-        return new ComponentType((int)id, type, (int)bytesize, false);
+        return new ComponentType((int)id, (int)bytesize);
     }
 }
 
@@ -191,10 +235,10 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         archetypeFormatter.World = world;
 
         // Read versions
-        var versions = MessagePackSerializer.Deserialize<int[][]>(ref reader, options);
+        var versions = MessagePackSerializer.Deserialize<JaggedArray<int>>(ref reader, options);
         
         // Read slots
-        var slots =  MessagePackSerializer.Deserialize<(int,int)[][]>(ref reader, options);
+        var slots =  MessagePackSerializer.Deserialize<JaggedArray<(int,int)>>(ref reader, options);
         
         // Read archetypes
         var size = reader.ReadInt32();
@@ -210,7 +254,7 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         world.SetArchetypes(archetypes);
         world.SetVersions(versions);
         world.SetSlots(slots);
-        world.EnsureCapacity(versions.Length);
+        world.EnsureCapacity(versions.Capacity);
         return world;
     }
 }

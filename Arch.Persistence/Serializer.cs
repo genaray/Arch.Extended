@@ -112,6 +112,8 @@ public class ArchBinarySerializer : IArchSerializer
         new ArrayFormatter(),
         new ComponentTypeFormatter(),
         new EntityFormatter(),
+        new JaggedArrayFormatter<int>(-1),
+        new JaggedArrayFormatter<(int,int)>((-1,-1))
     };
 
     /// <summary>
@@ -245,6 +247,8 @@ public class ArchJsonSerializer : IArchSerializer
         new ArrayFormatter(),
         new ComponentTypeFormatter(),
         new EntityFormatter(),
+        new JaggedArrayFormatter<int>(-1),
+        new JaggedArrayFormatter<(int,int)>((-1,-1)),
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };

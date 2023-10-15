@@ -1,7 +1,9 @@
-﻿using Arch.Core;
+﻿using System.Runtime.CompilerServices;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
+using Arch.LowLevel.Jagged;
 using CommunityToolkit.HighPerformance;
 using Utf8Json;
 using Utf8Json.Formatters;
@@ -162,6 +164,7 @@ public partial class EntityFormatter : IJsonFormatter<Entity>, IObjectPropertyNa
     }
 }
 
+
 /// <summary>
 ///     The <see cref="ArrayFormatter"/> class
 ///     is a <see cref="IJsonFormatter{Array}"/> to (de)serialize <see cref="Array"/>s to or from json.
@@ -227,6 +230,62 @@ public partial class ArrayFormatter : IJsonFormatter<Array>
 }
 
 /// <summary>
+///     The <see cref="JaggedArrayFormatter{T}"/> class
+///     (de)serializes a <see cref="JaggedArray{T}"/>.
+/// </summary>
+/// <typeparam name="T">The type stored in the <see cref="JaggedArray{T}"/>.</typeparam>
+public partial class JaggedArrayFormatter<T> : IJsonFormatter<JaggedArray<T>>
+{
+    public void Serialize(ref JsonWriter writer, JaggedArray<T> value, IJsonFormatterResolver formatterResolver)
+    {
+        
+        writer.WriteBeginObject();
+        
+        // Write length/capacity and items
+        writer.WritePropertyName("capacity");
+        writer.WriteInt32(value.Capacity);
+        writer.WriteValueSeparator();
+        
+        // Write items
+        writer.WritePropertyName("items");
+        writer.WriteBeginArray();
+        for (var index = 0; index < value.Capacity; index++)
+        {
+            var item = value[index];
+            JsonSerializer.Serialize(ref writer, item, formatterResolver);
+            writer.WriteValueSeparator();
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+    }
+
+    public JaggedArray<T> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+    {
+        reader.ReadIsBeginObject();
+
+        // Read capacity;
+        reader.ReadPropertyName();
+        var capacity = reader.ReadInt32();
+        reader.ReadIsValueSeparator();
+        
+        // Read items
+        var jaggedArray = new JaggedArray<T>(CpuL1CacheSize / Unsafe.SizeOf<T>(), _filler,capacity);
+        reader.ReadPropertyName();
+        reader.ReadIsBeginArray();
+        for (var index = 0; index < capacity; index++)
+        {
+            var item = JsonSerializer.Deserialize<T>(ref reader, formatterResolver);
+            jaggedArray.Add(index, item);
+            reader.ReadIsValueSeparator();
+        }
+        reader.ReadIsEndArray();
+        reader.ReadIsEndObject();
+
+        return jaggedArray;
+    }
+} 
+
+/// <summary>
 ///     The <see cref="ComponentTypeFormatter"/> class
 ///     is a <see cref="IJsonFormatter{ComponentType}"/> to (de)serialize <see cref="ComponentType"/>s to or from json.
 /// </summary>
@@ -239,11 +298,6 @@ public partial class ComponentTypeFormatter : IJsonFormatter<ComponentType>
         // Write id
         writer.WritePropertyName("id");
         writer.WriteUInt32((uint)value.Id);
-        writer.WriteValueSeparator();
-        
-        // Write type itself
-        writer.WritePropertyName("type");
-        JsonSerializer.Serialize(ref writer, value.Type, formatterResolver);
         writer.WriteValueSeparator();
         
         // Write bytesize
@@ -260,10 +314,6 @@ public partial class ComponentTypeFormatter : IJsonFormatter<ComponentType>
         reader.ReadPropertyName();
         var id = reader.ReadUInt32();
         reader.ReadIsValueSeparator();
-        
-        reader.ReadPropertyName();
-        var type = JsonSerializer.Deserialize<Type>(ref reader, formatterResolver);
-        reader.ReadIsValueSeparator();
 
         reader.ReadPropertyName();
         var bytesize = reader.ReadUInt32();
@@ -271,7 +321,7 @@ public partial class ComponentTypeFormatter : IJsonFormatter<ComponentType>
         
         reader.ReadIsEndObject();
 
-        return new ComponentType((int)id, type, (int)bytesize, false);
+        return new ComponentType((int)id, (int)bytesize);
     }
 }
 
@@ -329,12 +379,12 @@ public partial class WorldFormatter : IJsonFormatter<World>
 
         // Read versions
         reader.ReadPropertyName();
-        var versions = JsonSerializer.Deserialize<int[][]>(ref reader, formatterResolver);
+        var versions = JsonSerializer.Deserialize<JaggedArray<int>>(ref reader, formatterResolver);
         reader.ReadIsValueSeparator();
         
         // Read slots
         reader.ReadPropertyName();
-        var slots = JsonSerializer.Deserialize<(int,int)[][]>(ref reader, formatterResolver);
+        var slots = JsonSerializer.Deserialize<JaggedArray<(int,int)>>(ref reader, formatterResolver);
         reader.ReadIsValueSeparator();
 
         // Read archetypes
@@ -353,7 +403,7 @@ public partial class WorldFormatter : IJsonFormatter<World>
         world.SetArchetypes(archetypes);
         world.SetVersions(versions);
         world.SetSlots(slots);
-        world.EnsureCapacity(versions.Length);
+        world.EnsureCapacity(versions.Capacity);
 
         reader.ReadIsEndObject();
         return world;

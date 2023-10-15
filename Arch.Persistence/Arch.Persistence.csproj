@@ -18,17 +18,14 @@
         <RepositoryUrl>https://github.com/genaray/Arch.Extended.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
-        <PackageReleaseNotes>Serializers are now instances.
-Added Binary-Serializer.
-Added a bunch of additional methods to (de)serialize byte[], streams and IBufferWriter&lt;T&gt;.
-Increased performance slightly. </PackageReleaseNotes>
-        <Version>1.0.2</Version>
+        <PackageReleaseNotes>Updated to Arch 1.2.7</PackageReleaseNotes>
+        <Version>1.0.3</Version>
 
         <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Arch" Version="1.2.6.8-alpha" />
+      <PackageReference Include="Arch" Version="1.2.7" />
       <PackageReference Include="MessagePack" Version="2.6.100-alpha" />
       <PackageReference Include="Utf8Json" Version="1.3.7" />
     </ItemGroup>
