@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System.IO.Compression;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Text.Json.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -11,6 +13,7 @@ using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using NUnit.Framework;
 using Utf8Json;
 using Utf8Json.Formatters;
 using Utf8Json.Resolvers;
@@ -60,7 +63,7 @@ public class Game : Microsoft.Xna.Framework.Game
     protected override void BeginRun()
     {
         base.BeginRun();
-
+        
         // Create world & JobScheduler for multithreading
         _world = World.Create();
         _jobScheduler = new("SampleWorkerThreads");
