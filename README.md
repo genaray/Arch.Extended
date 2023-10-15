@@ -18,7 +18,7 @@ dotnet add package Arch.System.SourceGenerator --version 1.1.1
 dotnet add package Arch.EventBus --version 1.0.2
 dotnet add package Arch.LowLevel --version 1.0.8
 dotnet add package Arch.Relationships --version 1.0.0
-dotnet add package Arch.Persistence --version 1.0.2
+dotnet add package Arch.Persistence --version 1.0.3
 dotnet add package Arch.AOT.SourceGenerator --version 1.0.0
 ```
 
