@@ -8,7 +8,7 @@ namespace Arch.LowLevel.Jagged;
 ///     represents a bucket of the <see cref="JaggedArray{T}"/> where items are stored
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal record struct UnsafeBucket<T> : IDisposable where T : unmanaged
+public record struct UnsafeBucket<T> : IDisposable where T : unmanaged
 {
     /// <summary>
     ///     The items array.
@@ -27,19 +27,19 @@ internal record struct UnsafeBucket<T> : IDisposable where T : unmanaged
     /// <summary>
     ///     The amount of items in this <see cref="Bucket{T}"/>.
     /// </summary>
-    internal int Count
+    public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set;
+        internal set;
     }
 
     /// <summary>
     ///     If this <see cref="Bucket{T}"/> is empty.
     /// </summary>
-    internal bool IsEmpty
+    public bool IsEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Count <= 0;
@@ -155,10 +155,10 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index, in T item)
     {
-        IdToSlot(index, out var outerIndex, out var innerIndex);
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
-        ref var bucket = ref _bucketArray[outerIndex];
-        bucket[innerIndex] = item;
+        ref var bucket = ref _bucketArray[bucketIndex];
+        bucket[itemIndex] = item;
         bucket.Count++;
     }
 
@@ -169,10 +169,10 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(int index)
     {
-        IdToSlot(index, out var outerIndex, out var innerIndex);
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
-        ref var bucket = ref _bucketArray[outerIndex];
-        bucket[innerIndex] = _filler;
+        ref var bucket = ref _bucketArray[bucketIndex];
+        bucket[itemIndex] = _filler;
         bucket.Count--;
     }
 
@@ -192,16 +192,16 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             return false;
         }
 
-        IdToSlot(index, out var outerIndex, out var innerIndex);
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         // If the item is outside the array. Then it definetly doesn't exist
-        if (outerIndex > _bucketArray.Length)
+        if (bucketIndex > _bucketArray.Length)
         {
             value = _filler;
             return false;
         }
 
-        ref var item = ref _bucketArray[outerIndex][innerIndex];
+        ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
         // If the item is the default then the nobody set its value.
         if (EqualityComparer<T>.Default.Equals(item, _filler))
@@ -230,16 +230,16 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             return ref Unsafe.NullRef<T>(); 
         }
 
-        IdToSlot(index, out var outerIndex, out var innerIndex);
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         // If the item is outside the array. Then it definetly doesn't exist
-        if (outerIndex > _bucketArray.Length)
+        if (bucketIndex > _bucketArray.Length)
         {
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
 
-        ref var item = ref _bucketArray[outerIndex][innerIndex];
+        ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
         // If the item is the default then the nobody set its value.
         if (EqualityComparer<T>.Default.Equals(item, _filler))
@@ -265,8 +265,8 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             return false;
         }
         
-        IdToSlot(index, out var outerIndex, out var innerIndex);
-        ref var item = ref _bucketArray[outerIndex][innerIndex];
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
+        ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
         // If the item is the default then the nobody set its value.
         return !EqualityComparer<T>.Default.Equals(item, _filler);
@@ -323,16 +323,27 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_items"/> array.
     /// </summary>
     /// <param name="id">The id.</param>
-    /// <param name="outerIndex">The outer index.</param>
-    /// <param name="innerIndex">The inner index.</param>
+    /// <param name="bucketIndex">The outer index.</param>
+    /// <param name="itemIndex">The inner index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void IdToSlot(int id, out int outerIndex, out int innerIndex)
+    public void IndexToSlot(int id, out int bucketIndex, out int itemIndex)
     {
         Debug.Assert(id >= 0, "Id cannot be negative.");
 
         /* Instead of the '%' operator we can use logical '&' operator which is faster. But it requires the bucket size to be a power of 2. */
-        outerIndex = id / _bucketSize;
-        innerIndex = id & _bucketSizeMinusOne;
+        bucketIndex = id / _bucketSize;
+        itemIndex = id & _bucketSizeMinusOne;
+    }
+    
+    /// <summary>
+    ///     Returns the <see cref="UnsafeBucket{T}"/> from the <see cref="_bucketArray"/> at the given index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <returns>The <see cref="UnsafeBucket{T}"/> at the given index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref UnsafeBucket<T> GetBucket(int index)
+    {
+        return ref _bucketArray[index];
     }
 
     /// <summary>
@@ -344,8 +355,8 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            IdToSlot(i, out var outerIndex, out var innerIndex);
-            return ref _bucketArray[outerIndex][innerIndex];
+            IndexToSlot(i, out var bucketIndex, out var itemIndex);
+            return ref _bucketArray[bucketIndex][itemIndex];
         }
     }
     
