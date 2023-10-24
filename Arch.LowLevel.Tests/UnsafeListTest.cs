@@ -10,7 +10,7 @@ public class UnsafeListTest
 {
     
     /// <summary>
-    ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding itemss.
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding items.
     /// </summary>
     [Test]
     public void UnsafeListAdd()
@@ -22,7 +22,94 @@ public class UnsafeListTest
         
         That(list.Count, Is.EqualTo(3));
     }
-    
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of being copied to an array.
+    /// </summary>
+    [Test]
+    public void UnsafeListCopyTo()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        var arr = new int[10];
+
+        // Basic copy into the array
+        list.CopyTo(arr, 3);
+        CollectionAssert.AreEqual(new[] { 0, 0, 0, 1, 2, 3, 0, 0, 0, 0 }, arr);
+
+        // Copy into a bad index
+        Throws<IndexOutOfRangeException>(() => { list.CopyTo(arr, -3); });
+        Throws<IndexOutOfRangeException>(() => { list.CopyTo(arr, arr.Length + 1); });
+
+        // Copy into an index near the end, so there's not enough space
+        Throws<ArgumentException>(() => list.CopyTo(arr, 8));
+
+        // Check that copying into an array from an empty list does nothing
+        list.Clear();
+        var arr2 = arr.ToArray();
+        list.CopyTo(arr, 0);
+        CollectionAssert.AreEqual(arr, arr2);
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of being cleared.
+    /// </summary>
+    [Test]
+    public void UnsafeListClear()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        list.Clear();
+        That(list, Is.Empty);
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is can be converted into a span.
+    /// </summary>
+    [Test]
+    public void UnsafeListAsSpan()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, list.AsSpan().ToArray());
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> equality works as expected
+    /// </summary>
+    [Test]
+    public void UnsafeListEquality()
+    {
+        using var list1 = new UnsafeList<int>(8);
+        list1.Add(1);
+        list1.Add(2);
+        list1.Add(3);
+
+        using var list2 = new UnsafeList<int>(8);
+        list2.Add(1);
+        list2.Add(2);
+        list2.Add(3);
+
+        That(list1 == list2, Is.False);
+        That(list1 != list2, Is.True);
+
+        var list1a = list1;
+        That(list1 == list1a, Is.True);
+        That(list1 != list1a, Is.False);
+
+        That(list1.Equals((object)list2), Is.False);
+        That(list1.Equals((object)list1), Is.True);
+    }
+
     /// <summary>
     ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding items at a given index.
     /// </summary>

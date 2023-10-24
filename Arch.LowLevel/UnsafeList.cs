@@ -209,7 +209,13 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CopyTo(T[] array, int arrayIndex)
     {
-        if(Count == 0) return;
+        if (Count == 0)
+            return;
+        if (arrayIndex < 0 || arrayIndex >= array.Length)
+            throw new IndexOutOfRangeException("Index must be 0 <= index <= array.Length");
+        if (arrayIndex + Count > array.Length)
+            throw new ArgumentException("Destination array was not long enough. Check the destination index, length, and the array's lower bounds.", nameof(arrayIndex));
+
         fixed(T* arrayPtr = array)
         {
             Buffer.MemoryCopy(_array, arrayPtr+arrayIndex, array.Length * sizeof(T), Count * sizeof(T));

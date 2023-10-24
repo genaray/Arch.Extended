@@ -9,7 +9,7 @@ public class UnsafeQueueTest
 {
 
     /// <summary>
-    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of adding itemss.
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of adding items.
     /// </summary>
     [Test]
     public void UnsafeQueueEnqueue()
@@ -21,6 +21,22 @@ public class UnsafeQueueTest
         
         That(queue, Has.Count.EqualTo(20));
         That(queue.Peek(), Is.EqualTo(0));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of being converted into a span.
+    /// </summary>
+    [Test]
+    public void UnsafeQueueAsSpan()
+    {
+        using var queue = new UnsafeQueue<int>(8);
+
+        for (var i = 0; i < 9; i++)
+            queue.Enqueue(i);
+
+        var span = queue.AsSpan();
+
+        CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, span.ToArray());
     }
 
     /// <summary>
