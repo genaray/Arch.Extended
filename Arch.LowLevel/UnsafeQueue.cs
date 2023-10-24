@@ -113,7 +113,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     public void TrimExcess()
     {
         var newCapacity = _count;
-        EnsureCapacity(newCapacity, true);
+        SetCapacity(newCapacity);
     }
 
     /// <summary>
@@ -124,29 +124,25 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void EnsureCapacity(int newCapacity)
     {
-        EnsureCapacity(newCapacity, false);
+        if (newCapacity <= _capacity)
+        {
+            return;
+        }
+
+        SetCapacity(newCapacity);
     }
 
     /// <summary>
     ///     Ensures the capacity of this instance. 
     /// </summary>
     /// <param name="newCapacity">The new capacity.</param>
-    /// <param name="allowShrinking">Indicates if the new capacity may be smaller than current capacity</param>
     /// <exception cref="ArgumentException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureCapacity(int newCapacity, bool allowShrinking)
+    private void SetCapacity(int newCapacity)
     {
-        if (allowShrinking)
+        if (newCapacity < _count)
         {
-            if (newCapacity < _count)
-                throw new ArgumentOutOfRangeException(nameof(newCapacity), "newCapacity cannot be smaller than _count");
-        }
-        else
-        {
-            if (newCapacity <= _capacity)
-            {
-                return;
-            }
+            throw new ArgumentOutOfRangeException(nameof(newCapacity), "newCapacity cannot be smaller than _count");
         }
 
         var newBuffer = new UnsafeArray<T>(newCapacity);
