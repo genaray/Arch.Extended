@@ -1,4 +1,6 @@
-﻿namespace Arch.LowLevel.Tests;
+﻿using System.Collections;
+
+namespace Arch.LowLevel.Tests;
 using static NUnit.Framework.Assert;
 
 /// <summary>
@@ -85,6 +87,55 @@ public class UnsafeStackTest
         stack.Push(3);
 
         var enumerator = stack.GetEnumerator();
+
+        True(enumerator.MoveNext());
+        That(enumerator.Current, Is.EqualTo(3));
+        True(enumerator.MoveNext());
+        That(enumerator.Current, Is.EqualTo(2));
+
+        enumerator.Reset();
+
+        var count = 3;
+        foreach (var item in stack)
+        {
+            That(count, Is.EqualTo(item));
+            count--;
+        }
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of iterating with its enumerators.
+    /// </summary>
+    [Test]
+    public void UnsafeStackIEnumerableTEnumerator()
+    {
+        using var stack = new UnsafeStack<int>(8);
+        stack.Push(1);
+        stack.Push(2);
+        stack.Push(3);
+
+        var enumerable = (IEnumerable<int>)stack;
+
+        var count = 0;
+        foreach (var item in enumerable)
+        {
+            count++;
+        }
+        That(count, Is.EqualTo(3));
+    }
+
+    /// <summary>
+    ///     Checks if the stack enumerator can be reset
+    /// </summary>
+    [Test]
+    public void UnsafeStackIEnumerableEnumeratorReset()
+    {
+        using var stack = new UnsafeStack<int>(8);
+        stack.Push(1);
+        stack.Push(2);
+        stack.Push(3);
+
+        var enumerator = ((IEnumerable)stack).GetEnumerator();
 
         True(enumerator.MoveNext());
         That(enumerator.Current, Is.EqualTo(3));
