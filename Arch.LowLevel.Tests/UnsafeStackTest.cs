@@ -72,4 +72,32 @@ public class UnsafeStackTest
         }
         That(count, Is.EqualTo(3));
     }
+
+    /// <summary>
+    ///     Checks if the stack enumerator can be reset
+    /// </summary>
+    [Test]
+    public void UnsafeStackEnumeratorReset()
+    {
+        using var stack = new UnsafeStack<int>(8);
+        stack.Push(1);
+        stack.Push(2);
+        stack.Push(3);
+
+        var enumerator = stack.GetEnumerator();
+
+        True(enumerator.MoveNext());
+        That(enumerator.Current, Is.EqualTo(3));
+        True(enumerator.MoveNext());
+        That(enumerator.Current, Is.EqualTo(2));
+
+        enumerator.Reset();
+
+        var count = 3;
+        foreach (var item in stack)
+        {
+            That(count, Is.EqualTo(item));
+            count--;
+        }
+    }
 }

@@ -104,19 +104,23 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         // Inserting to end of the list is legal.
         if ((uint)index > (uint)Count)
         {
-            throw new ArgumentOutOfRangeException(); 
+            throw new ArgumentOutOfRangeException(nameof(index)); 
         }
         
         // Resize if the list is actually full
-        if(Capacity == Count+1) 
+        if (Capacity == Count) 
         {
             EnsureCapacity(Capacity + 1);
         }
 
-        if(index < Count) 
+        if (index < Count)
         {
-            //Buffer.MemoryCopy(_array+index, _array+index+1,Capacity-Count,Capacity-Count);
-            UnsafeArray.Copy(ref _array, index, ref _array, index+1, Capacity-Count);
+            //var span = _array.AsSpan();
+            //var src = span.Slice(index, Count - index);
+            //var dst = span.Slice(index + 1, src.Length);
+            //src.CopyTo(dst);
+
+            UnsafeArray.Copy(ref _array, index, ref _array, index + 1, Count - index);
         }
         
         _array[index] = item;
@@ -134,7 +138,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     {
         if ((uint)index > (uint)Count) 
         {
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
         
         Count--;
