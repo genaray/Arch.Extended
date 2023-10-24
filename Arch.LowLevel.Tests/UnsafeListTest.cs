@@ -207,6 +207,34 @@ public class UnsafeListTest
     ///     Checks if the unsafe list enumerator can be reset
     /// </summary>
     [Test]
+    public void UnsafeListAsIListEnumeratorReset()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        using var enumerator = ((IList<int>)list).GetEnumerator();
+
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(1));
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(2));
+
+        enumerator.Reset();
+
+        var count = 1;
+        foreach (var item in list)
+        {
+            That(count, Is.EqualTo(item));
+            count++;
+        }
+    }
+
+    /// <summary>
+    ///     Checks if the unsafe list enumerator can be reset
+    /// </summary>
+    [Test]
     public void UnsafeListEnumeratorReset()
     {
         using var list = new UnsafeList<int>(8);

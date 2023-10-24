@@ -1,5 +1,3 @@
-
-using Arch.LowLevel.Jagged;
 using static NUnit.Framework.Assert;
 
 namespace Arch.LowLevel.Tests;
@@ -24,6 +22,28 @@ public class ResourcesTest
 
         That(handle.Id, Is.EqualTo(0));
         That(nextHandle.Id, Is.EqualTo(1));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="Resources{T}"/> is capable of adding many more <see cref="Handle{T}"/>s than the capacity
+    /// </summary>
+    [Test]
+    public void ResourcesAddManyHandles()
+    {
+        const int count = 10000;
+
+        using var resources = new Resources<string>(capacity: 3);
+
+        var handles = new List<Handle<string>>();
+        for (var i = 0; i < count; i++)
+            handles.Add(resources.Add(i.ToString()));
+
+        resources.TrimExcess();
+
+        That(resources.Count, Is.EqualTo(count));
+
+        for (var i = 0; i < handles.Count; i++)
+            That(resources.Get(handles[i]), Is.EqualTo(i.ToString()));
     }
 
     /// <summary>
@@ -98,5 +118,29 @@ public class ResourcesTest
         
         That(resources.IsValid(handle), Is.EqualTo(true));
         That(resources.IsValid(someHandle), Is.EqualTo(false));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="Resources{T}"/> throws after Dispose
+    /// </summary>
+    [Test]
+    public void ResourcesDispose()
+    {
+        // Check add
+        var resources = new Resources<string>(IntPtr.Size, capacity: 64);
+        var handle = resources.Add("Handle");
+
+        // Check get
+        That(resources.Get(in handle), Is.EqualTo("Handle"));
+        
+        resources.Dispose();
+
+        That(resources.Count, Is.EqualTo(0));
+
+        // Check that get fails
+        Throws<NullReferenceException>(() =>
+        {
+            resources.Get(in handle);
+        });
     }
 }

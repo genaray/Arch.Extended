@@ -19,6 +19,11 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     private int _frontIndex;
     private int _count;
 
+    /// <summary>
+    ///     Creates an instance of the <see cref="UnsafeQueue{T}"/>.
+    /// </summary>
+    /// <param name="capacity">Initial capacity of this queue.</param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public UnsafeQueue(int capacity)
     {
         if (capacity <= 0)
