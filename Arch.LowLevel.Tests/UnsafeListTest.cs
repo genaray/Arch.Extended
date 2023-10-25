@@ -16,11 +16,61 @@ public class UnsafeListTest
     public void UnsafeListAdd()
     {
         using var list = new UnsafeList<int>(8);
+        That(list.IsReadOnly, Is.False);
         list.Add(1);
         list.Add(2);
         list.Add(3);
         
         That(list.Count, Is.EqualTo(3));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> GetHashCode is different for different lists
+    /// </summary>
+    [Test]
+    public void UnsafeListGetHashCode()
+    {
+        using var list1 = new UnsafeList<int>(8);
+        using var list2 = new UnsafeList<int>(8);
+
+        That(list1.GetHashCode(), Is.Not.EqualTo(list2.GetHashCode()));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> can access items by index
+    /// </summary>
+    [Test]
+    public void UnsafeListRefIndex()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(7);
+
+        ref var item0 = ref list[0];
+        That(item0, Is.EqualTo(7));
+        item0 = 11;
+        That(list[0], Is.EqualTo(11));
+
+        Throws<IndexOutOfRangeException>(() => { var x = list[-1]; });
+        Throws<IndexOutOfRangeException>(() => { var x = list[2]; });
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> can access items by index
+    /// </summary>
+    [Test]
+    public void UnsafeListIndex()
+    {
+        using var unsafelist = new UnsafeList<int>(8);
+        unsafelist.Add(7);
+
+        var list = (IList<int>)unsafelist;
+
+        That(list[0], Is.EqualTo(7));
+        list[0] = 11;
+        That(list[0], Is.EqualTo(11));
+
+        Throws<IndexOutOfRangeException>(() => { var x = list[-1]; });
+        Throws<IndexOutOfRangeException>(() => { var x = list[2]; });
     }
 
     /// <summary>

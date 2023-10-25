@@ -67,7 +67,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     }
 
     /// <summary>
-    ///     If this stack is full.
+    ///     If this stack is empty.
     /// </summary>
     public bool IsEmpty
     {
@@ -76,7 +76,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     }
 
     /// <summary>
-    ///     If this stack is empty. 
+    ///     If this stack is full. 
     /// </summary>
     public bool IsFull
     {
