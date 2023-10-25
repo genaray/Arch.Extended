@@ -1,9 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Drawing;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Arch.LowLevel;
@@ -88,8 +85,8 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         {
             EnsureCapacity(Capacity * 2);
         }
-        
-        this[Count] = item;
+
+        _array[Count] = item;
         Count++;
     }
     
@@ -147,7 +144,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
             //Buffer.MemoryCopy(_array+(index+1), _array+index,Count-index,Count-index);
             UnsafeArray.Copy(ref _array, index + 1, ref _array, index, Count - index);
         }
-        this[Count] = default;
+        _array[Count] = default;
     }
 
     /// <summary>
@@ -269,10 +266,10 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     T IList<T>.this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _array[index];
+        get => _array[CheckIndex(index)];
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _array[index] = value;
+        set => _array[CheckIndex(index)] = value;
     }
 
     /// <summary>
@@ -282,7 +279,17 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     public ref T this[int i]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _array[i];
+        get => ref _array[CheckIndex(i)];
+    }
+
+    private readonly int CheckIndex(int index)
+    {
+        if (index < 0)
+            throw new IndexOutOfRangeException("Index cannot be less than zero");
+        if (index >= Count)
+            throw new IndexOutOfRangeException("Index cannot be greater than or equal to the count");
+
+        return index;
     }
 
     /// <summary>
