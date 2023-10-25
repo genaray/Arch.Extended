@@ -284,10 +284,12 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
 
     private readonly int CheckIndex(int index)
     {
+#if DEBUG
         if (index < 0)
             throw new IndexOutOfRangeException("Index cannot be less than zero");
         if (index >= Count)
             throw new IndexOutOfRangeException("Index cannot be greater than or equal to the count");
+#endif
 
         return index;
     }
