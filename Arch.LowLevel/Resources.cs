@@ -166,5 +166,6 @@ public sealed class Resources<T> : IDisposable
     {
         _array = null;
         _ids = null;
+        Count = 0;
     }
 }

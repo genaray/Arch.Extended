@@ -10,7 +10,7 @@ public class UnsafeListTest
 {
     
     /// <summary>
-    ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding itemss.
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding items.
     /// </summary>
     [Test]
     public void UnsafeListAdd()
@@ -22,7 +22,94 @@ public class UnsafeListTest
         
         That(list.Count, Is.EqualTo(3));
     }
-    
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of being copied to an array.
+    /// </summary>
+    [Test]
+    public void UnsafeListCopyTo()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        var arr = new int[10];
+
+        // Basic copy into the array
+        list.CopyTo(arr, 3);
+        CollectionAssert.AreEqual(new[] { 0, 0, 0, 1, 2, 3, 0, 0, 0, 0 }, arr);
+
+        // Copy into a bad index
+        Throws<IndexOutOfRangeException>(() => { list.CopyTo(arr, -3); });
+        Throws<IndexOutOfRangeException>(() => { list.CopyTo(arr, arr.Length + 1); });
+
+        // Copy into an index near the end, so there's not enough space
+        Throws<ArgumentException>(() => list.CopyTo(arr, 8));
+
+        // Check that copying into an array from an empty list does nothing
+        list.Clear();
+        var arr2 = arr.ToArray();
+        list.CopyTo(arr, 0);
+        CollectionAssert.AreEqual(arr, arr2);
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is capable of being cleared.
+    /// </summary>
+    [Test]
+    public void UnsafeListClear()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        list.Clear();
+        That(list, Is.Empty);
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> is can be converted into a span.
+    /// </summary>
+    [Test]
+    public void UnsafeListAsSpan()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, list.AsSpan().ToArray());
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeList{T}"/> equality works as expected
+    /// </summary>
+    [Test]
+    public void UnsafeListEquality()
+    {
+        using var list1 = new UnsafeList<int>(8);
+        list1.Add(1);
+        list1.Add(2);
+        list1.Add(3);
+
+        using var list2 = new UnsafeList<int>(8);
+        list2.Add(1);
+        list2.Add(2);
+        list2.Add(3);
+
+        That(list1 == list2, Is.False);
+        That(list1 != list2, Is.True);
+
+        var list1a = list1;
+        That(list1 == list1a, Is.True);
+        That(list1 != list1a, Is.False);
+
+        That(list1.Equals((object)list2), Is.False);
+        That(list1.Equals((object)list1), Is.True);
+    }
+
     /// <summary>
     ///     Checks if <see cref="UnsafeList{T}"/> is capable of adding items at a given index.
     /// </summary>
@@ -38,6 +125,19 @@ public class UnsafeListTest
         That(list[0], Is.EqualTo(1));
         That(list[1], Is.EqualTo(2));
         That(list[2], Is.EqualTo(3));
+
+        // Check that adding past the end throws
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            list.Insert(5, 5);
+        });
+
+        // Add lots of items, to force capacity to grow
+        var count = 10;
+        for (var i = 0; i < count; i++)
+            list.Insert(0, 0);
+
+        CollectionAssert.AreEqual(new[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3 }, list);
     }
     
     /// <summary>
@@ -56,6 +156,15 @@ public class UnsafeListTest
         
         That(list.Count, Is.EqualTo(1));
         That(list[0], Is.EqualTo(2));
+
+        Throws<ArgumentOutOfRangeException>(() =>
+        {
+            list.RemoveAt(-1);
+        });
+        Throws<ArgumentOutOfRangeException>(() =>
+        {
+            list.RemoveAt(10);
+        });
     }
     
     /// <summary>
@@ -68,9 +177,10 @@ public class UnsafeListTest
         list.Add(1);
         list.Add(2);
         list.Add(3);
-        
-        list.Remove(2);
-        
+
+        That(list.Remove(2), Is.True);
+        That(list.Remove(4), Is.False);
+
         That(list.Count, Is.EqualTo(2));
         That(list[1], Is.EqualTo(3));
     }
@@ -88,6 +198,7 @@ public class UnsafeListTest
         
         That(list.Count, Is.EqualTo(3));
         That(list.Contains(2), Is.EqualTo(true));
+        That(list.Contains(0), Is.EqualTo(false));
     }
     
     /// <summary>
@@ -103,6 +214,8 @@ public class UnsafeListTest
         
         That(list.Count, Is.EqualTo(3));
         That(list.IndexOf(2), Is.EqualTo(1));
+        That(list.IndexOf(0), Is.EqualTo(-1));
+        That(list.IndexOf(4), Is.EqualTo(-1));
     }
     
     /// <summary>
@@ -119,6 +232,10 @@ public class UnsafeListTest
         That(list.Capacity, Is.EqualTo(16));
         That(list.IndexOf(0), Is.EqualTo(0));
         That(list.IndexOf(1), Is.EqualTo(1));
+
+        // This should do nothing
+        list.EnsureCapacity(list.Count);
+        That(list.Capacity, Is.EqualTo(16));
     }
     
     /// <summary>
@@ -152,7 +269,7 @@ public class UnsafeListTest
         var count = 0;
         foreach (ref var item in list)
         {
-            count++;
+            That(++count, Is.EqualTo(item));
         }
         That(count, Is.EqualTo(3));
         
@@ -160,8 +277,126 @@ public class UnsafeListTest
         count = 0;
         foreach (var item in list as IList<int>)
         {
-            count++;
+            That(++count, Is.EqualTo(item));
         }
         That(count, Is.EqualTo(3));
+
+        // non-generic enumerator
+        count = 0;
+        foreach (var item in ((IEnumerable)list))
+        {
+            That(++count, Is.EqualTo(item));
+        }
+        That(count, Is.EqualTo(3));
+    }
+
+    /// <summary>
+    ///     Checks if the unsafe list enumerator can be reset
+    /// </summary>
+    [Test]
+    public void UnsafeListAsIListEnumeratorReset()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        using var enumerator = ((IList<int>)list).GetEnumerator();
+
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(1));
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(2));
+
+        enumerator.Reset();
+
+        var count = 1;
+        foreach (var item in list)
+        {
+            That(count, Is.EqualTo(item));
+            count++;
+        }
+    }
+
+    /// <summary>
+    ///     Checks if the unsafe list enumerator can be reset
+    /// </summary>
+    [Test]
+    public void UnsafeListEnumeratorReset()
+    {
+        using var list = new UnsafeList<int>(8);
+        list.Add(1);
+        list.Add(2);
+        list.Add(3);
+
+        var enumerator = list.GetEnumerator();
+
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(1));
+        That(enumerator.MoveNext(), Is.True);
+        That(enumerator.Current, Is.EqualTo(2));
+
+        enumerator.Reset();
+
+        var count = 1;
+        foreach (var item in list)
+        {
+            That(count, Is.EqualTo(item));
+            count++;
+        }
+    }
+
+    [Test]
+    public void UnsafeListFuzz()
+    {
+        using var list = new UnsafeList<int>(8);
+        var truth = new List<int>();
+
+        var rng = new Random(3462345);
+
+        for (var i = 0; i < 1024; i++)
+        {
+            var index = rng.Next(0, list.Count);
+            var value = rng.Next();
+            switch (rng.Next(0, 5))
+            {
+                case 0:
+                {
+                    truth.Add(value);
+                    list.Add(value);
+                    break;
+                }
+
+                case 1:
+                {
+                    truth.Remove(value);
+                    list.Remove(value);
+                    break;
+                }
+
+                case 2 when list.Count > 0:
+                {
+                    truth.RemoveAt(index);
+                    list.RemoveAt(index);
+                    break;
+                }
+
+                case 3:
+                {
+                    truth.Insert(index, value);
+                    list.Insert(index, value);
+                    break;
+                }
+
+                case 4 when list.Count > 0:
+                {
+                    value = truth[index];
+                    That(list, Does.Contain(value));
+                    break;
+                }
+            }
+
+            CollectionAssert.AreEqual(truth, list);
+        }
     }
 }

@@ -7,69 +7,160 @@ using static NUnit.Framework.Assert;
 [TestFixture]
 public class UnsafeQueueTest
 {
-   
+
     /// <summary>
-    ///     Checks if <see cref="UnsafeStack{T}"/> is capable of adding itemss.
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of adding items.
     /// </summary>
     [Test]
     public void UnsafeQueueEnqueue()
     {
-        using var stack = new UnsafeQueue<int>(8);
-        stack.Enqueue(1);
-        stack.Enqueue(2);
-        stack.Enqueue(3);
+        using var queue = new UnsafeQueue<int>(8);
+
+        for (var i = 0; i < 20; i++)
+            queue.Enqueue(i);
         
-        That(stack.Count, Is.EqualTo(3));
-        That(stack.Peek(), Is.EqualTo(1));
+        That(queue, Has.Count.EqualTo(20));
+        That(queue.Peek(), Is.EqualTo(0));
     }
-    
+
     /// <summary>
-    ///     Checks if <see cref="UnsafeStack{T}"/> is capable of peeking itemss.
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of being converted into a span.
+    /// </summary>
+    [Test]
+    public void UnsafeQueueAsSpan()
+    {
+        using var queue = new UnsafeQueue<int>(8);
+
+        for (var i = 0; i < 9; i++)
+            queue.Enqueue(i);
+
+        var span = queue.AsSpan();
+
+        CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, span.ToArray());
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of peeking itemss.
     /// </summary>
     [Test]
     public void UnsafeQueuePeek()
     {
-        using var stack = new UnsafeQueue<int>(8);
-        stack.Enqueue(1);
-        stack.Enqueue(2);
+        using var queue = new UnsafeQueue<int>(8);
+        queue.Enqueue(1);
+        queue.Enqueue(2);
 
-        That(stack.Peek(), Is.EqualTo(1));
-        stack.Enqueue(3);
-        That(stack.Peek(), Is.EqualTo(1));
+        That(queue.Peek(), Is.EqualTo(1));
+        queue.Enqueue(3);
+        That(queue.Peek(), Is.EqualTo(1));
     }
-    
+
     /// <summary>
-    ///     Checks if <see cref="UnsafeStack{T}"/> is capable of popping itemss.
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of popping itemss.
     /// </summary>
     [Test]
     public void UnsafeQueueDequeue()
     {
-        using var stack = new UnsafeQueue<int>(8);
-        stack.Enqueue(1);
-        stack.Enqueue(2);
-        stack.Enqueue(3);
+        using var queue = new UnsafeQueue<int>(8);
+        queue.Enqueue(1);
+        queue.Enqueue(2);
+        queue.Enqueue(3);
         
-        That(stack.Dequeue(), Is.EqualTo(1));
-        That(stack.Dequeue(), Is.EqualTo(2));
+        That(queue.Dequeue(), Is.EqualTo(1));
+        That(queue.Dequeue(), Is.EqualTo(2));
+        That(queue.Dequeue(), Is.EqualTo(3));
+
+        Throws<InvalidOperationException>(() =>
+        {
+            queue.Dequeue();
+        });
+
+        Throws<InvalidOperationException>(() =>
+        {
+            queue.Peek();
+        });
     }
-    
+
+    [Test]
+    public void UnsafeQueueClear()
+    {
+        using var queue = new UnsafeQueue<int>(8);
+
+        for (var i = 0; i < 20; i++)
+            queue.Enqueue(i);
+
+        That(queue, Has.Count.EqualTo(20));
+
+        queue.Clear();
+
+        That(queue, Is.Empty);
+    }
+
     /// <summary>
-    ///     Checks if <see cref="UnsafeList{T}"/> is capable of iterating with its enumerators.
+    ///     Checks if <see cref="UnsafeQueue{T}"/> is capable of iterating with its enumerators.
     /// </summary>
     [Test]
     public void UnsafeQueueEnumerator()
     {
-        using var stack = new UnsafeQueue<int>(8);
-        stack.Enqueue(1);
-        stack.Enqueue(2);
-        stack.Enqueue(3);
+        using var queue = new UnsafeQueue<int>(8);
+        queue.Enqueue(1);
+        queue.Enqueue(2);
+        queue.Enqueue(3);
 
         // Ref iterator
         var count = 0;
-        foreach (ref var item in stack)
+        foreach (ref var item in queue)
         {
             count++;
         }
         That(count, Is.EqualTo(3));
+    }
+
+    /// <summary>
+    ///      Checks if <see cref="UnsafeQueue{T}"/> can be constructed with invalid parameters.
+    /// </summary>
+    [Test]
+    public void UnsafeQueueInvalidConstruction()
+    {
+        Throws<ArgumentOutOfRangeException>(() =>
+        {
+            new UnsafeQueue<int>(-8);
+        });
+    }
+
+    /// <summary>
+    ///      Checks if <see cref="UnsafeQueue{T}"/> EnsureCapacity functions correctly.
+    /// </summary>
+    [Test]
+    public void UnsafeQueueEnsureCapacity()
+    {
+        using var queue = new UnsafeQueue<int>(8);
+
+        That(queue.Capacity, Is.AtLeast(8));
+
+        queue.EnsureCapacity(20);
+        That(queue.Capacity, Is.AtLeast(20));
+
+        queue.EnsureCapacity(10);
+        That(queue.Capacity, Is.AtLeast(20));
+    }
+
+    /// <summary>
+    ///      Checks if <see cref="UnsafeQueue{T}"/> TrimExcess removes all excess capacity.
+    /// </summary>
+    [Test]
+    public void UnsafeQueueTrimExcess()
+    {
+        using var queue = new UnsafeQueue<int>(8);
+        for (var i = 0; i < 4; i++)
+            queue.Enqueue(i);
+
+        That(queue.Capacity, Is.AtLeast(8));
+
+        queue.EnsureCapacity(20);
+        That(queue.Capacity, Is.AtLeast(20));
+
+        queue.TrimExcess();
+
+        That(queue.Capacity, Is.EqualTo(4));
     }
 }
