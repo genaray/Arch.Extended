@@ -282,6 +282,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
         get => ref _array[CheckIndex(i)];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private readonly int CheckIndex(int index)
     {
 #if DEBUG
