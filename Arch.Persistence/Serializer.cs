@@ -264,6 +264,10 @@ public class ArchJsonSerializer : IArchSerializer
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };
     
+    // It can `not` garbage collect and create is slightly high cost.
+    // so you should store to static field.
+    private IJsonFormatterResolver _formatterResolver;
+    
     // CompositeResolver.Create can create dynamic composite resolver.
     // It can `not` garbage collect and create is slightly high cost.
     // so you should store to static field.
@@ -275,7 +279,7 @@ public class ArchJsonSerializer : IArchSerializer
     public ArchJsonSerializer(params IJsonFormatter[] custFormatters)
     {
         // Register all important jsonformatters 
-        CompositeResolver.RegisterAndSetAsDefault(
+        _formatterResolver = CompositeResolver.Create(
             _formatters.Concat(custFormatters).ToArray(), 
             new[] {
                 EnumResolver.UnderlyingValue,
@@ -301,7 +305,7 @@ public class ArchJsonSerializer : IArchSerializer
     /// <returns>Its json-string.</returns>
     public string ToJson(World world)
     {
-        return JsonSerializer.ToJsonString(world);
+        return JsonSerializer.ToJsonString(world, _formatterResolver);
     }
 
     /// <summary>
@@ -324,7 +328,7 @@ public class ArchJsonSerializer : IArchSerializer
     /// <returns>A new <see cref="World"/>.</returns>
     public World FromJson(string jsonWorld)
     {
-        return JsonSerializer.Deserialize<World>(jsonWorld);
+        return JsonSerializer.Deserialize<World>(jsonWorld, _formatterResolver);
     }
     
     /// <summary>
@@ -377,13 +381,13 @@ public class ArchJsonSerializer : IArchSerializer
     /// <inheritdoc/>
     public byte[] Serialize(World world)
     {
-        return JsonSerializer.Serialize(world);
+        return JsonSerializer.Serialize(world, _formatterResolver);
     }
 
     /// <inheritdoc/>
     public void Serialize(Stream stream, World world)
     {
-        JsonSerializer.Serialize(stream, world);
+        JsonSerializer.Serialize(stream, world, _formatterResolver);
     }
 
     /// <inheritdoc/>
@@ -395,12 +399,12 @@ public class ArchJsonSerializer : IArchSerializer
     /// <inheritdoc/>
     public World Deserialize(byte[] world)
     {
-        return JsonSerializer.Deserialize<World>(world);
+        return JsonSerializer.Deserialize<World>(world, _formatterResolver);
     }
 
     /// <inheritdoc/>
     public World Deserialize(Stream stream)
     {
-        return JsonSerializer.Deserialize<World>(stream);
+        return JsonSerializer.Deserialize<World>(stream, _formatterResolver);
     }
 }
