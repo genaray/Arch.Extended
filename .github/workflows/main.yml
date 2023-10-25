@@ -1,0 +1,38 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [linux-debug, linux-release]
+        include:
+          - build: linux-debug
+            os: ubuntu-latest
+            config: debug
+          - build: linux-release
+            os: ubuntu-latest
+            config: release
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
+    #  workaround for actions/setup-dotnet#155
+    - name: Clear package cache
+      run: dotnet clean Arch.Extended.sln && dotnet nuget locals all --clear
+    - name: Restore packages
+      run: dotnet restore Arch.Extended.sln
+    - name: Build
+      run: dotnet build Arch.Extended.sln -c ${{ matrix.config }} --no-restore
+    - name: Test
+      run: dotnet test Arch.Extended.sln -c ${{ matrix.config }} -l "console;verbosity=detailed"
