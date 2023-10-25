@@ -50,8 +50,10 @@ public class UnsafeListTest
         item0 = 11;
         That(list[0], Is.EqualTo(11));
 
+#if DEBUG
         Throws<IndexOutOfRangeException>(() => { var x = list[-1]; });
         Throws<IndexOutOfRangeException>(() => { var x = list[2]; });
+#endif
     }
 
     /// <summary>
@@ -69,8 +71,10 @@ public class UnsafeListTest
         list[0] = 11;
         That(list[0], Is.EqualTo(11));
 
+#if DEBUG
         Throws<IndexOutOfRangeException>(() => { var x = list[-1]; });
         Throws<IndexOutOfRangeException>(() => { var x = list[2]; });
+#endif
     }
 
     /// <summary>
