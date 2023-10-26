@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -54,7 +53,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     /// <summary>
     ///     The count of this <see cref="UnsafeArray{T}"/> instance, its capacity.
     /// </summary>
-    public readonly int Count
+    public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get;
@@ -63,7 +62,7 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     /// <summary>
     ///     The count of this <see cref="UnsafeArray{T}"/> instance, its capacity.
     /// </summary>
-    public readonly int Length
+    public int Length
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => Count;
@@ -228,7 +227,6 @@ public unsafe struct UnsafeArray
     /// <param name="destinationIndex">The start index in the destination <see cref="UnsafeArray{T}"/>.</param>
     /// <param name="length">The length indicating the amount of items being copied.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
     public static void Copy<T>(ref UnsafeArray<T> source, int index, ref UnsafeArray<T> destination, int destinationIndex, int length) where T : unmanaged
     {
         var size = sizeof(T);
@@ -245,13 +243,9 @@ public unsafe struct UnsafeArray
     /// <param name="source">The <see cref="UnsafeArray{T}"/> instance.</param>
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
     public static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
     {
-        for (var index = 0; index < source.Count; index++)
-        {
-            source[index] = value;
-        }
+        source.AsSpan().Fill(value);
     }
     
     /// <summary>
@@ -265,7 +259,7 @@ public unsafe struct UnsafeArray
     public static UnsafeArray<T> Resize<T>(ref UnsafeArray<T> source, int newCapacity) where T : unmanaged
     {
         var destination = new UnsafeArray<T>(newCapacity);
-        Copy(ref source, 0, ref destination, 0, source.Length);
+        Copy(ref source, 0, ref destination, 0, Math.Min(source.Length, destination.Length));
 
         source.Dispose();
         return destination;
