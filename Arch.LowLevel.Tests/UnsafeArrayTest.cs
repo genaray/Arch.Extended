@@ -1,4 +1,6 @@
-﻿namespace Arch.LowLevel.Tests;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Arch.LowLevel.Tests;
 using static Assert;
 
 /// <summary>
@@ -19,6 +21,19 @@ public class UnsafeArrayTest
         array[2] = 3;
         
         That(array.Count, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void UnsafeArrayEnumerator()
+    {
+        using var array = new UnsafeArray<int>(3);
+        array[0] = 1;
+        array[1] = 2;
+        array[2] = 3;
+
+        var count = 1;
+        foreach (var item in array)
+            That(item, Is.EqualTo(count++));
     }
 
     [Test]
@@ -98,5 +113,25 @@ public class UnsafeArrayTest
             That(resized[i], Is.EqualTo(i));
 
         resized.Dispose();
+    }
+
+    [Test]
+    public void UnsafeArrayEquals()
+    {
+        using var a = new UnsafeArray<int>(8);
+        var b = a;
+
+        That(a, Is.EqualTo(b));
+        That(a == b, Is.True);
+    }
+
+    [Test]
+    public void UnsafeArrayNotEquals()
+    {
+        using var a = new UnsafeArray<int>(8);
+        using var b = new UnsafeArray<int>(8);
+
+        That(a, Is.Not.EqualTo(b));
+        That(a != b, Is.True);
     }
 }
