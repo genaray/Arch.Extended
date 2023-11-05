@@ -85,6 +85,7 @@ public class Game : Microsoft.Xna.Framework.Game
         
         // Create systems, running in order
         _systems = new Group<GameTime>(
+            "Systems",
             new MovementSystem(_world, GraphicsDevice.Viewport.Bounds),
             new ColorSystem(_world),
             new DebugSystem(_world)
