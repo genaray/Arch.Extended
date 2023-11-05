@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace Arch.System.SourceGenerator;
 
@@ -327,13 +329,15 @@ public static class QueryUtils
         // Get generic of BaseSystem
         var typeSymbol = parentSymbol.TypeArguments[1];
 
+        var className = classSymbol.ToString();
+
         // Generate basesystem.
         var baseSystem = new BaseSystem
         {
             Namespace = classSymbol.ContainingNamespace != null && !classSymbol.ContainingNamespace.IsGlobalNamespace ? classSymbol.ContainingNamespace.ToString() : string.Empty,
             GenericType = typeSymbol,
             GenericTypeNamespace = typeSymbol.ContainingNamespace.ToString(),
-            Name = classSymbol.Name,
+            Name = className.Substring(className.LastIndexOf('.') + 1),
             QueryMethods = classToMethod.Value,
         };
         return sb.AppendBaseSystem(ref baseSystem);
