@@ -20,7 +20,7 @@ public static class QueryUtils
       
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}>();");
+                sb.AppendLine($"ref var @{symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}>();");
 
         return sb;
     }
@@ -35,7 +35,7 @@ public static class QueryUtils
     {
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity") // Prevent entity being added to the type array
-                sb.AppendLine($"ref var {symbol.Name.ToLower()} = ref Unsafe.Add(ref {symbol.Type.Name.ToLower()}FirstElement, entityIndex);");
+                sb.AppendLine($"ref var @{symbol.Name.ToLower()} = ref Unsafe.Add(ref {symbol.Type.Name.ToLower()}FirstElement, entityIndex);");
 
         return sb;
     }
@@ -50,7 +50,7 @@ public static class QueryUtils
     public static StringBuilder InsertParams(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
         foreach (var symbol in parameterSymbols)
-            sb.Append($"{CommonUtils.RefKindToString(symbol.RefKind)} {symbol.Name.ToLower()},");
+            sb.Append($"{CommonUtils.RefKindToString(symbol.RefKind)} @{symbol.Name.ToLower()},");
         
         if(sb.Length > 0) sb.Length--;
         return sb;
@@ -96,7 +96,7 @@ public static class QueryUtils
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                sb.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} {parameter.Type} {parameter.Name.ToLower()},");
+                sb.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} {parameter.Type} @{parameter.Name.ToLower()},");
         }
         sb.Length--;
         return sb;
