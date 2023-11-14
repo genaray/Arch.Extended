@@ -174,7 +174,28 @@ public sealed class Group<T> : ISystem<T>
 
         return this;
     }
-    
+
+    /// <summary>
+    /// Get all systems which can be cast into the given type
+    /// </summary>
+    /// <typeparam name="G"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<G> Get<G>()
+        where G : ISystem<T>
+    {
+        foreach (var item in _systems)
+        {
+            if (item.System is G sys)
+                yield return sys;
+
+            if (item.System is Group<T> grp)
+            {
+                foreach (var nested in grp.Get<G>())
+                    yield return nested;
+            }
+        }
+    }
+
     /// <summary>
     ///     Initializes all <see cref="ISystem{T}"/>'s in this <see cref="Group{T}"/>.
     /// </summary>
