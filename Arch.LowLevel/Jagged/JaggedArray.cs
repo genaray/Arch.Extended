@@ -122,7 +122,7 @@ public class JaggedArray<T>
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new Bucket<T>[capacity/bucketSize + 1];
+        _bucketArray = new Bucket<T>[capacity/_bucketSize + 1];
         
         _filler = default!;
 
@@ -145,7 +145,7 @@ public class JaggedArray<T>
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new Bucket<T>[capacity/bucketSize + 1];
+        _bucketArray = new Bucket<T>[capacity/_bucketSize + 1];
         
         _filler = filler;
 

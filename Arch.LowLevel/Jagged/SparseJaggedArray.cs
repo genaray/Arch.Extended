@@ -141,7 +141,7 @@ public class SparseJaggedArray<T>
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new SparseBucket<T>[capacity/bucketSize + 1];
+        _bucketArray = new SparseBucket<T>[capacity/_bucketSize + 1];
         
         _filler = default!;
 
@@ -164,7 +164,7 @@ public class SparseJaggedArray<T>
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new SparseBucket<T>[capacity/bucketSize + 1];
+        _bucketArray = new SparseBucket<T>[capacity/_bucketSize + 1];
         
         _filler = filler!;
 

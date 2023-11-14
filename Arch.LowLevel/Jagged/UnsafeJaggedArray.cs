@@ -101,7 +101,7 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new UnsafeArray<UnsafeBucket<T>>(capacity / bucketSize + 1);
+        _bucketArray = new UnsafeArray<UnsafeBucket<T>>(capacity / _bucketSize + 1);
 
         _filler = default!;
         
@@ -124,7 +124,7 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new UnsafeArray<UnsafeBucket<T>>(capacity / bucketSize + 1);
+        _bucketArray = new UnsafeArray<UnsafeBucket<T>>(capacity / _bucketSize + 1);
 
         _filler = filler;
         
