@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Arch.System.SourceGenerator;
+namespace Arch.System.SourceGenerator.Extensions;
 
 public static class IMethodSymbolExtensions
 {
@@ -11,7 +11,7 @@ public static class IMethodSymbolExtensions
     /// <param name="ms">The <see cref="IMethodSymbol"/> instance.</param>
     /// <param name="name">The attributes name.</param>
     /// <returns>The attribute wrapped in an <see cref="AttributeData"/>.</returns>
-    public static AttributeData GetAttributeData(this IMethodSymbol ms, string name)
+    public static AttributeData? GetAttributeData(this IMethodSymbol ms, string name)
     {
         foreach (var attribute in ms.GetAttributes())
         {

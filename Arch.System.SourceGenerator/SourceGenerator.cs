@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using Arch.System.SourceGenerator.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,11 +35,14 @@ public class QueryGenerator : IIncrementalGenerator
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
-                 static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.QueryAttribute")
+                 static (ctx, _) => ctx.GetMethodSymbolIfAttributeOf("Arch.System.ParallelQueryAttribute")
+                                 ?? ctx.GetMethodSymbolIfAttributeOf("Arch.System.QueryAttribute")
         ).Where(static m => m is not null)!; // filter out attributed methods that we don't care about
 
         // Combine the selected enums with the `Compilation`
-        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods = context.CompilationProvider.Combine(methodDeclarations.WithComparer(Comparer.Instance).Collect());
+        IncrementalValueProvider<(Compilation, ImmutableArray<MethodDeclarationSyntax>)> compilationAndMethods
+            = context.CompilationProvider.Combine(methodDeclarations.WithComparer(Comparer.Instance).Collect());
+
         context.RegisterSourceOutput(compilationAndMethods, static (spc, source) => Generate(source.Item1, source.Item2, spc));
     }
 
@@ -56,37 +60,6 @@ public class QueryGenerator : IIncrementalGenerator
         }
         list.Add(methodSymbol);
     }
-    
-    /// <summary>
-    ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
-    /// </summary>
-    /// <param name="context">Its <see cref="GeneratorSyntaxContext"/>.</param>
-    /// <param name="name">The attributes name.</param>
-    /// <returns></returns>
-    private static MethodDeclarationSyntax? GetMethodSymbolIfAttributeof(GeneratorSyntaxContext context, string name)
-    {
-        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-        var enumDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
-
-        // loop through all the attributes on the method
-        foreach (var attributeListSyntax in enumDeclarationSyntax.AttributeLists)
-        {
-            foreach (var attributeSyntax in attributeListSyntax.Attributes)
-            {
-                if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
-                
-                var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                var fullName = attributeContainingTypeSymbol.ToDisplayString();
-
-                // Is the attribute the [EnumExtensions] attribute?
-                if (fullName != name) continue;
-                return enumDeclarationSyntax;
-            }
-        }
-
-        // we didn't find the attribute we were looking for
-        return null;
-    }
 
     /// <summary>
     ///     Generates queries and partial classes for the found marked methods.
@@ -102,7 +75,7 @@ public class QueryGenerator : IIncrementalGenerator
         _classToMethods = new(512);
         foreach (var methodSyntax in methods)
         {
-            IMethodSymbol? methodSymbol = null;
+            IMethodSymbol? methodSymbol;
             try
             {
                 var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
@@ -115,7 +88,7 @@ public class QueryGenerator : IIncrementalGenerator
             }
 
             AddMethodToClass(methodSymbol);
-            
+
             var sb = new StringBuilder();
             var method = sb.AppendQueryMethod(methodSymbol);
             var fileName = methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');

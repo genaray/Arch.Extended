@@ -1,8 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
+using Arch.System.SourceGenerator.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace Arch.System.SourceGenerator;
 
@@ -155,6 +153,8 @@ public static class QueryUtils
     /// <returns></returns>
     public static StringBuilder AppendQueryMethod(this StringBuilder sb, IMethodSymbol methodSymbol)
     {
+        // Determine which type of query to generate
+        var parallel = methodSymbol.GetAttributeData("Arch.System.ParallelQueryAttribute") != null;
 
         // Check for entity param
         var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
@@ -194,7 +194,7 @@ public static class QueryUtils
         noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
 
-        // Create data modell and generate it
+        // Create data model and generate it
         var className = methodSymbol.ContainingSymbol.ToString();
         var queryMethod = new QueryMethod
         {
@@ -202,6 +202,7 @@ public static class QueryUtils
             Namespace = methodSymbol.ContainingNamespace.ToString(),
             ClassName = className.Substring(className.LastIndexOf('.')+1),
             
+            IsParallelQuery = parallel,
             IsStatic = methodSymbol.IsStatic,
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,

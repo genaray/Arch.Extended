@@ -47,7 +47,12 @@ public struct QueryMethod
     /// The namespace of the method.
     /// </summary>
     public string Namespace { get; set; }
-    
+
+    /// <summary>
+    /// If this method is marked with a [ParallelQuery] attribute
+    /// </summary>
+    public bool IsParallelQuery { get; set; }
+
     /// <summary>
     /// If this method is static.
     /// </summary>
