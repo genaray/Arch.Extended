@@ -241,19 +241,21 @@ public static class QueryUtils
         var noneTypeArray = new StringBuilder().GetTypeArray(queryMethod.NoneFilteredTypes);
         var exclusiveTypeArray = new StringBuilder().GetTypeArray(queryMethod.ExclusiveFilteredTypes);
 
-        sb.Append(Usings());
+        sb.Append(ClassStart());
 
         if (queryMethod.IsParallelQuery)
             sb.Append(ParallelQuery());
         else
             sb.Append(SerialQuery());
 
+        sb.Append(ClassEnd());
+
         return sb;
 
-        string Usings()
+        string ClassStart()
         {
             return
-                """
+                $$"""
                 using System;
                 using System.Runtime.CompilerServices;
                 using System.Runtime.InteropServices;
@@ -262,14 +264,8 @@ public static class QueryUtils
                 using Arch.Core.Utils;
                 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
                 using Component = Arch.Core.Utils.Component;
-                """;
-        }
-
-        string SerialQuery()
-        {
-            return
-            $$"""
-            {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
+                
+                {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     
                     private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
@@ -278,10 +274,10 @@ public static class QueryUtils
                         None = {{noneTypeArray}},
                         Exclusive = {{exclusiveTypeArray}}
                     };
-
+                
                     private {{staticModifier}} bool _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
-
+                
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
@@ -289,7 +285,22 @@ public static class QueryUtils
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
                             _{{queryMethod.MethodName}}_Initialized = true;
                         }
+                """;
+        }
 
+        string ClassEnd()
+        {
+            return $$"""
+                         }
+                     }
+                     {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
+                     """;
+        }
+
+        string SerialQuery()
+        {
+            return
+            $$"""
                         foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
@@ -303,9 +314,6 @@ public static class QueryUtils
                                 {{queryMethod.MethodName}}({{insertParams}});
                             }
                         }
-                    }
-                }
-            {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
             """;
         }
 
@@ -313,27 +321,6 @@ public static class QueryUtils
         {
             return
             $$"""
-            {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
-                partial class {{queryMethod.ClassName}}{
-                    
-                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
-                        All = {{allTypeArray}},
-                        Any = {{anyTypeArray}},
-                        None = {{noneTypeArray}},
-                        Exclusive = {{exclusiveTypeArray}}
-                    };
-
-                    private {{staticModifier}} bool _{{queryMethod.MethodName}}_Initialized;
-                    private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
-
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
-                     
-                        if(!_{{queryMethod.MethodName}}_Initialized){
-                            _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
-                            _{{queryMethod.MethodName}}_Initialized = true;
-                        }
-
                         foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
                             
                             var chunkSize = chunk.Size;
@@ -347,9 +334,6 @@ public static class QueryUtils
                                 {{queryMethod.MethodName}}({{insertParams}});
                             }
                         }
-                    }
-                }
-            {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
             """;
         }
     }
