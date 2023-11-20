@@ -202,6 +202,11 @@ public class SparseJaggedArray<T>
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
         
+        if (bucketIndex >= _bucketArray.Length)
+        {
+            EnsureCapacity(index);
+        }
+        
         ref var bucket = ref _bucketArray[bucketIndex];
         bucket.EnsureCapacity();
         bucket[itemIndex] = item;

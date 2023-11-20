@@ -212,6 +212,12 @@ public class JaggedArray<T>
             value = _filler;
             return false;
         }
+        
+        if (index >= Capacity)
+        {
+            value = _filler;
+            return false;
+        }
 
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
