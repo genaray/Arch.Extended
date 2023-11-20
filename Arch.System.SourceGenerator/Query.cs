@@ -217,7 +217,7 @@ public static class QueryUtils
             ExclusiveFilteredTypes = exclusiveArray
         };
         
-        return sb.AppendQueryMethod(ref queryMethod);
+        return sb.AppendQueryMethod(queryMethod);
     }
 
     /// <summary>
@@ -226,7 +226,7 @@ public static class QueryUtils
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="queryMethod">The <see cref="QueryMethod"/> which is generated.</param>
     /// <returns></returns>
-    public static StringBuilder AppendQueryMethod(this StringBuilder sb, ref QueryMethod queryMethod)
+    public static StringBuilder AppendQueryMethod(this StringBuilder sb, QueryMethod queryMethod)
     {
         var staticModifier = queryMethod.IsStatic ? "static" : "";
         
@@ -241,16 +241,34 @@ public static class QueryUtils
         var noneTypeArray = new StringBuilder().GetTypeArray(queryMethod.NoneFilteredTypes);
         var exclusiveTypeArray = new StringBuilder().GetTypeArray(queryMethod.ExclusiveFilteredTypes);
 
-        var template = 
+        sb.Append(Usings());
+
+        if (queryMethod.IsParallelQuery)
+            sb.Append(ParallelQuery());
+        else
+            sb.Append(SerialQuery());
+
+        return sb;
+
+        string Usings()
+        {
+            return
+                """
+                using System;
+                using System.Runtime.CompilerServices;
+                using System.Runtime.InteropServices;
+                using Arch.Core;
+                using Arch.Core.Extensions;
+                using Arch.Core.Utils;
+                using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
+                using Component = Arch.Core.Utils.Component;
+                """;
+        }
+
+        string SerialQuery()
+        {
+            return
             $$"""
-            using System;
-            using System.Runtime.CompilerServices;
-            using System.Runtime.InteropServices;
-            using Arch.Core;
-            using Arch.Core.Extensions;
-            using Arch.Core.Utils;
-            using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
-            using Component = Arch.Core.Utils.Component;
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     
@@ -289,9 +307,51 @@ public static class QueryUtils
                 }
             {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
             """;
+        }
 
-        sb.Append(template);
-        return sb;
+        string ParallelQuery()
+        {
+            return
+            $$"""
+            {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
+                partial class {{queryMethod.ClassName}}{
+                    
+                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
+                        All = {{allTypeArray}},
+                        Any = {{anyTypeArray}},
+                        None = {{noneTypeArray}},
+                        Exclusive = {{exclusiveTypeArray}}
+                    };
+
+                    private {{staticModifier}} bool _{{queryMethod.MethodName}}_Initialized;
+                    private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
+
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
+                     
+                        if(!_{{queryMethod.MethodName}}_Initialized){
+                            _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
+                            _{{queryMethod.MethodName}}_Initialized = true;
+                        }
+
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
+                            
+                            var chunkSize = chunk.Size;
+                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
+                            {{getFirstElements}}
+
+                            foreach(var entityIndex in chunk)
+                            {
+                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
+                                {{getComponents}}
+                                {{queryMethod.MethodName}}({{insertParams}});
+                            }
+                        }
+                    }
+                }
+            {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
+            """;
+        }
     }
 
     /// <summary>
