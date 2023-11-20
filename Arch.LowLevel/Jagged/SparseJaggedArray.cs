@@ -308,7 +308,7 @@ public class SparseJaggedArray<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ContainsKey(int index)
     {
-        if (index <= 0 || index > Capacity)
+        if (index <= 0 || index >= Capacity)
         {
             return false;
         }
