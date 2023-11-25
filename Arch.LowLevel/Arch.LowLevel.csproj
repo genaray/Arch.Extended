@@ -13,11 +13,11 @@
 
         <PackageId>Arch.LowLevel</PackageId>
         <Title>Arch.LowLevel</Title>
-        <Version>1.0.9</Version>
+        <Version>1.1.0</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>LowLevel tools for arch.</Description>
-        <PackageReleaseNotes>Made buckets public acessable. </PackageReleaseNotes>
+        <PackageReleaseNotes>Additional fixes. </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
