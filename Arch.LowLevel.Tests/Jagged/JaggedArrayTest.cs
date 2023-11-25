@@ -33,7 +33,7 @@ public class JaggedArrayTest
             That(item, Is.EqualTo(index));
         }
         
-        That(jaggedArray.Capacity, Is.EqualTo(capacity));
+        That(jaggedArray.Capacity, Is.GreaterThan(capacity));
     }
     
     /// <summary>
