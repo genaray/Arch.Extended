@@ -260,15 +260,15 @@ public static class QueryUtils
                         Exclusive = {{exclusiveTypeArray}}
                     };
 
-                    private {{staticModifier}} bool _{{queryMethod.MethodName}}_Initialized;
+                    private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
-                        if(!_{{queryMethod.MethodName}}_Initialized){
+                        if(!ReferenceEquals(_{{queryMethod.MethodName}}_Initialized, world)) {
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
-                            _{{queryMethod.MethodName}}_Initialized = true;
+                            _{{queryMethod.MethodName}}_Initialized = world;
                         }
 
                         foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
