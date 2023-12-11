@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Arch.LowLevel;
@@ -51,7 +49,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <summary>
     ///     The amount of items in the stack.
     /// </summary>
-    public int Count
+    public readonly int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _count;
@@ -60,7 +58,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <summary>
     ///     The total capacity of this stack.
     /// </summary>
-    public int Capacity
+    public readonly int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _capacity;
@@ -69,7 +67,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <summary>
     ///     If this stack is empty.
     /// </summary>
-    public bool IsEmpty
+    public readonly bool IsEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _count == 0;
@@ -78,7 +76,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// <summary>
     ///     If this stack is full. 
     /// </summary>
-    public bool IsFull
+    public readonly bool IsFull
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _count >= _capacity;
@@ -204,9 +202,8 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     ///     Converts this <see cref="UnsafeStack{T}"/> instance into a <see cref="Span{T}"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="Span{T}"/>.</returns>
-    [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> AsSpan()
+    public readonly Span<T> AsSpan()
     {
         return new Span<T>(_stack, Count);
     }
@@ -216,7 +213,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// </summary>
     /// <returns>A new <see cref="UnsafeEnumerator{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public UnsafeReverseEnumerator<T> GetEnumerator()
+    public readonly UnsafeReverseEnumerator<T> GetEnumerator()
     {
         return new UnsafeReverseEnumerator<T>(_stack, Count);
     }
@@ -226,7 +223,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// </summary>
     /// <returns>The new <see cref="IEnumerable{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
         return new ReverseEnumerator<T>(_stack, Count);
     }
@@ -236,7 +233,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// </summary>
     /// <returns>The new <see cref="IEnumerator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IEnumerator IEnumerable.GetEnumerator()
+    readonly IEnumerator IEnumerable.GetEnumerator()
     {
         return new ReverseEnumerator<T>(_stack, Count);
     }
@@ -246,7 +243,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     /// </summary>
     /// <returns>The string.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override string ToString()
+    public readonly override string ToString()
     {
         var items = new StringBuilder();
         foreach (ref var item in this)
