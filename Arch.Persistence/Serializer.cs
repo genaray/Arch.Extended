@@ -1,10 +1,7 @@
-﻿using System.Buffers;
-using Arch.Core;
-using Arch.Core.Extensions;
-using Arch.Core.Extensions.Dangerous;
-using Arch.Core.Utils;
+﻿using Arch.Core;
 using MessagePack;
 using MessagePack.Formatters;
+using System.Buffers;
 using Utf8Json;
 using Utf8Json.Resolvers;
 using DateTimeFormatter = Utf8Json.Formatters.DateTimeFormatter;
@@ -25,7 +22,7 @@ public interface IArchSerializer
     /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     byte[] Serialize(World world, Entity entity);
-    
+
     /// <summary>
     ///     Serializes an <see cref="Entity"/> to a <see cref="Stream"/> e.g. a File or existing array.
     /// </summary>
@@ -41,7 +38,7 @@ public interface IArchSerializer
     /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     void Serialize(IBufferWriter<byte> writer, World world, Entity entity);
-    
+
     /// <summary>
     ///     Deserializes an <see cref="Entity"/> from its bytes to an real <see cref="Entity"/> in a <see cref="World"/>.
     ///     <remarks>The new <see cref="Entity.Id"/> and <see cref="Entity.WorldId"/> will differ.</remarks>
@@ -65,21 +62,21 @@ public interface IArchSerializer
     /// </summary>
     /// <param name="world">The <see cref="World"/>.</param>
     byte[] Serialize(World world);
-    
+
     /// <summary>
     ///     Serializes a <see cref="World"/> to a <see cref="Stream"/>.
     /// </summary>
     /// <param name="stream">The <see cref="Stream"/>.</param>
     /// <param name="world">The <see cref="World"/>.</param>
     void Serialize(Stream stream, World world);
-    
+
     /// <summary>
     ///     Serializes a <see cref="World"/> to a <see cref="IBufferWriter{T}"/>.
     /// </summary>
     /// <param name="writer">The <see cref="IBufferWriter{T}"/>.</param>
     /// <param name="world">The <see cref="World"/>.</param>
     void Serialize(IBufferWriter<byte> writer, World world);
-    
+
     /// <summary>
     ///     Deserializes a byte-array into a <see cref="World"/>.
     /// </summary>
@@ -129,12 +126,12 @@ public class ArchBinarySerializer : IArchSerializer
     ///     The standard <see cref="MessagePackSerializerOptions"/> for world (de)serialization.
     /// </summary>
     private readonly MessagePackSerializerOptions _options;
-    
+
     /// <summary>
     ///     The standard <see cref="MessagePackSerializerOptions"/> for single entity (de)serialization.
     /// </summary>
     private readonly MessagePackSerializerOptions _singleEntityOptions;
-    
+
     /// <summary>
     ///     The static constructor gets called during compile time to setup the serializer. 
     /// </summary>
@@ -151,7 +148,7 @@ public class ArchBinarySerializer : IArchSerializer
                 }
             )
         );
-        
+
         _singleEntityOptions = MessagePackSerializerOptions.Standard.WithResolver(
             MessagePack.Resolvers.CompositeResolver.Create(
                 _singleEntityFormatters.Concat(custFormatters).ToList(),
@@ -163,7 +160,7 @@ public class ArchBinarySerializer : IArchSerializer
             )
         );
     }
-    
+
     /// <inheritdoc/>
     public byte[] Serialize(World world, Entity entity)
     {
@@ -202,7 +199,7 @@ public class ArchBinarySerializer : IArchSerializer
     /// <inheritdoc/>
     public byte[] Serialize(World world)
     {
-        return MessagePackSerializer.Serialize(world, _options);;
+        return MessagePackSerializer.Serialize(world, _options); ;
     }
 
     /// <inheritdoc/>
@@ -236,7 +233,7 @@ public class ArchBinarySerializer : IArchSerializer
 /// </summary>
 public class ArchJsonSerializer : IArchSerializer
 {
-    
+
     /// <summary>
     ///     The default formatters used to (de)serialize the <see cref="World"/>.
     /// </summary>
@@ -252,7 +249,7 @@ public class ArchJsonSerializer : IArchSerializer
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };
-    
+
     /// <summary>
     ///     The default formatters used to (de)serialize a single <see cref="Entity"/>.
     /// </summary>
@@ -263,16 +260,16 @@ public class ArchJsonSerializer : IArchSerializer
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };
-    
+
     // It can `not` garbage collect and create is slightly high cost.
     // so you should store to static field.
     private IJsonFormatterResolver _formatterResolver;
-    
+
     // CompositeResolver.Create can create dynamic composite resolver.
     // It can `not` garbage collect and create is slightly high cost.
     // so you should store to static field.
     private IJsonFormatterResolver _singleEntityFormatterResolver;
-    
+
     /// <summary>
     ///     The static constructor gets called during compile time to setup the serializer. 
     /// </summary>
@@ -280,7 +277,7 @@ public class ArchJsonSerializer : IArchSerializer
     {
         // Register all important jsonformatters 
         _formatterResolver = CompositeResolver.Create(
-            _formatters.Concat(custFormatters).ToArray(), 
+            _formatters.Concat(custFormatters).ToArray(),
             new[] {
                 EnumResolver.UnderlyingValue,
                 StandardResolver.AllowPrivateExcludeNullSnakeCase,
@@ -288,7 +285,7 @@ public class ArchJsonSerializer : IArchSerializer
                 DynamicGenericResolver.Instance,
             }
         );
-        
+
         _singleEntityFormatterResolver = CompositeResolver.Create(
             _singleEntityFormatters.Concat(custFormatters).ToArray(),
             new[] {
@@ -297,7 +294,33 @@ public class ArchJsonSerializer : IArchSerializer
             }
         );
     }
-    
+
+    /// <summary>
+    ///     The static constructor gets called during compile time to setup the serializer. 
+    ///     This variant allows custom resolvers to be passed in as well.
+    /// </summary>
+    public ArchJsonSerializer(IJsonFormatter[] custFormatters, IJsonFormatterResolver[] custResolvers)
+    {
+        // Register all important jsonformatters 
+        _formatterResolver = CompositeResolver.Create(
+            _formatters.Concat(custFormatters).ToArray(),
+            custResolvers.Concat(new[] {
+                EnumResolver.UnderlyingValue,
+                StandardResolver.AllowPrivateExcludeNullSnakeCase,
+                BuiltinResolver.Instance,
+                DynamicGenericResolver.Instance,
+            }).ToArray()
+        );
+
+        _singleEntityFormatterResolver = CompositeResolver.Create(
+            _singleEntityFormatters.Concat(custFormatters).ToArray(),
+            custResolvers.Concat(new[] {
+                EnumResolver.UnderlyingValue,
+                StandardResolver.AllowPrivateExcludeNullSnakeCase,
+            }).ToArray()
+        );
+    }
+
     /// <summary>
     ///     Serializes the given <see cref="World"/> to a json-string.
     /// </summary>
@@ -320,7 +343,7 @@ public class ArchJsonSerializer : IArchSerializer
         (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.ToJsonString(entity, _singleEntityFormatterResolver);
     }
-    
+
     /// <summary>
     ///     Deserializes the given json <see cref="string"/> to a <see cref="World"/>.
     /// </summary>
@@ -330,7 +353,7 @@ public class ArchJsonSerializer : IArchSerializer
     {
         return JsonSerializer.Deserialize<World>(jsonWorld, _formatterResolver);
     }
-    
+
     /// <summary>
     ///     Deserializes the given json <see cref="string"/> to a <see cref="World"/>.
     ///     <remarks>The deserialized <see cref="Entity"/> will receive a new id and a new worldId.</remarks>
@@ -343,7 +366,7 @@ public class ArchJsonSerializer : IArchSerializer
         (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.Deserialize<Entity>(jsonEntity, _singleEntityFormatterResolver);
     }
-    
+
     /// <inheritdoc/>
     public byte[] Serialize(World world, Entity entity)
     {

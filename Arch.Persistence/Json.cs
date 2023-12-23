@@ -246,11 +246,18 @@ public partial class JaggedArrayFormatter<T> : IJsonFormatter<JaggedArray<T>>
         // Write items
         writer.WritePropertyName("items");
         writer.WriteBeginArray();
-        for (var index = 0; index < value.Capacity; index++)
+
+        for (int index = 0; index < value.Capacity; index++)
         {
-            var item = value[index];
+            T? item = value[index];
             JsonSerializer.Serialize(ref writer, item, formatterResolver);
             writer.WriteValueSeparator();
+        }
+
+        // Cut last value seperator
+        if (value.Capacity > 0)
+        {
+            writer.AdvanceOffset(-1);
         }
         writer.WriteEndArray();
         writer.WriteEndObject();
