@@ -44,7 +44,7 @@ The tools can be used independently of each other.
 public struct Position{ float X, Y };
 public struct Velocity{ float Dx, Dy };
 
-// BaseSystem provides several usefull methods for interacting and structuring systems
+// BaseSystem provides several useful methods for interacting and structuring systems
 public class MovementSystem : BaseSystem<World, float>
 {
     public MovementSystem(World world) : base(world) {}
@@ -87,4 +87,4 @@ public class Game
         _systems.Dispose();                     // Calls .Dispose on all systems ( can be overriden )
     }
 }
-```**
+```
