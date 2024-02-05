@@ -56,7 +56,7 @@ public static class StringBuilderExtensions
 		var hasZeroFieldsString = componentType.IsZeroSize ? "true" : "false";
 		var size = componentType.IsValueType ? $"Unsafe.SizeOf<{componentType.TypeName}>()" : "IntPtr.Size";
 
-		sb.AppendLine($"ComponentRegistry.Add(new ComponentType(ComponentRegistry.Size + 1, typeof({componentType.TypeName}), {size}, {hasZeroFieldsString}));");
+		//sb.AppendLine($"ComponentRegistry.Add(new ComponentType(ComponentRegistry.Size + 1, typeof({componentType.TypeName}), {size}, {hasZeroFieldsString}));");
 		sb.AppendLine($"ArrayRegistry.Add<{componentType.TypeName}>();");
 		return sb;
 	}
