@@ -1,8 +1,10 @@
-﻿#if !NET5_0_OR_GREATER
+﻿//#if !NET5_0_OR_GREATER
     #define ARCH_METRICS_DISABLED
-#endif
+//#endif
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 #if !ARCH_METRICS_DISABLED
 using System.Diagnostics.Metrics;
@@ -96,7 +98,7 @@ public sealed class Group<T> : ISystem<T>
     public string Name { get; }
 
     /// <summary>
-    /// All <see cref="ISystem{T}"/>'s in this group. 
+    /// All <see cref="SystemEntry"/>'s in this group. 
     /// </summary>
     private readonly List<SystemEntry> _systems = new();
 
@@ -150,7 +152,7 @@ public sealed class Group<T> : ISystem<T>
     
     /// <summary>
     ///     Adds an single <see cref="ISystem{T}"/> to this group by its generic.
-    ///     Automaticly initializes it properly. Must be contructorless.
+    ///     Automatically initializes it properly. Must be contructorless.
     /// </summary>
     /// <typeparam name="G">Its generic type.</typeparam>
     /// <returns>The same <see cref="Group{T}"/>.</returns>
@@ -176,22 +178,52 @@ public sealed class Group<T> : ISystem<T>
     }
 
     /// <summary>
-    /// Get all systems which can be cast into the given type
+    ///     Return the first <see cref="G"/> which was found in the hierachy.
     /// </summary>
-    /// <typeparam name="G"></typeparam>
+    /// <typeparam name="G">The Type.</typeparam>
     /// <returns></returns>
-    public IEnumerable<G> Get<G>()
-        where G : ISystem<T>
+    public G Get<G>() where G : ISystem<T>
     {
         foreach (var item in _systems)
         {
             if (item.System is G sys)
-                yield return sys;
-
-            if (item.System is Group<T> grp)
             {
-                foreach (var nested in grp.Get<G>())
-                    yield return nested;
+                return sys;
+            }
+
+            if (item.System is not Group<T> grp)
+            {
+                continue;
+            }
+
+            return grp.Get<G>();
+        }
+
+        return default;
+    }
+    
+    /// <summary>
+    ///     Finds all <see cref="ISystem{T}"/>s which can be cast into the given type.
+    /// </summary>
+    /// <typeparam name="G">The Type.</typeparam>
+    /// <returns></returns>
+    public IEnumerable<G> Find<G>() where G : ISystem<T>
+    {
+        foreach (var item in _systems)
+        {
+            if (item.System is G sys)
+            {
+                yield return sys;
+            }
+
+            if (item.System is not Group<T> grp)
+            {
+                continue;
+            }
+            
+            foreach (var nested in grp.Find<G>())
+            {
+                yield return nested;   
             }
         }
     }
@@ -294,8 +326,32 @@ public sealed class Group<T> : ISystem<T>
         }
     }
 
-    private readonly struct SystemEntry
-        : IDisposable
+    /// <summary>
+    ///     Converts this <see cref="Group{T}"/> to a human readable string.
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        // List all system names
+        var stringBuilder = new StringBuilder();
+        foreach (var systemEntry in _systems)
+        {
+            stringBuilder.Append($"{systemEntry.System.GetType().Name},");
+        }
+
+        // Cut last `,`
+        if (_systems.Count > 0)
+        {
+            stringBuilder.Length--;
+        }
+        
+        return $"Group = {{ {nameof(Name)} = {Name}, {nameof(_systems)} = {_systems} }} ";
+    }
+
+    /// <summary>
+    ///     The struct <see cref="SystemEntry"/> represents the given <see cref="ISystem{T}"/> in the <see cref="Group{T}"/> with all its performance statistics.
+    /// </summary>
+    private readonly struct SystemEntry : IDisposable
     {
         public readonly ISystem<T> System;
 
@@ -317,7 +373,6 @@ public sealed class Group<T> : ISystem<T>
             )
         {
             var name = system.GetType().Name;
-
             System = system;
 
 #if !ARCH_METRICS_DISABLED
