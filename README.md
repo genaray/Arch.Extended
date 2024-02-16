@@ -13,7 +13,7 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 
 Download the packages and get started today! 
 ```console
-dotnet add package Arch.System --version 1.0.4
+dotnet add package Arch.System --version 1.0.5
 dotnet add package Arch.System.SourceGenerator --version 1.1.4
 dotnet add package Arch.EventBus --version 1.0.2
 dotnet add package Arch.LowLevel --version 1.0.9
