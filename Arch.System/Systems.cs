@@ -345,7 +345,7 @@ public sealed class Group<T> : ISystem<T>
             stringBuilder.Length--;
         }
         
-        return $"Group = {{ {nameof(Name)} = {Name}, {nameof(_systems)} = {_systems} }} ";
+        return $"Group = {{ {nameof(Name)} = {Name}, Systems = {{ {stringBuilder} }} }} ";
     }
 
     /// <summary>

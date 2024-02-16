@@ -11,7 +11,7 @@
 
         <PackageId>Arch.System</PackageId>
         <Title>Arch.System</Title>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A systems framework for arch.</Description>

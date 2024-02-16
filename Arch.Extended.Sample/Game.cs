@@ -6,9 +6,9 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Bus;
 using Arch.Core.Extensions.Dangerous;
+using Arch.Core.Utils;
 using Arch.Persistence;
 using Arch.Relationships;
-using Arch.System;
 using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -30,7 +30,7 @@ public class Game : Microsoft.Xna.Framework.Game
     private global::JobScheduler.JobScheduler _jobScheduler;
     
     // Our systems processing entities
-    private Group<GameTime> _systems;
+    private System.Group<GameTime> _systems;
     private DrawSystem _drawSystem;
 
     // Monogame stuff
@@ -84,7 +84,7 @@ public class Game : Microsoft.Xna.Framework.Game
         _world = archSerializer.FromJson(worldJson);
         
         // Create systems, running in order
-        _systems = new Group<GameTime>(
+        _systems = new System.Group<GameTime>(
             "Systems",
             new MovementSystem(_world, GraphicsDevice.Viewport.Bounds),
             new ColorSystem(_world),
@@ -95,6 +95,8 @@ public class Game : Microsoft.Xna.Framework.Game
         // Initialize systems
         _systems.Initialize();
         _drawSystem.Initialize();
+
+        ComponentRegistry.Add(new ComponentType());
     }
 
     protected override void Update(GameTime gameTime)
