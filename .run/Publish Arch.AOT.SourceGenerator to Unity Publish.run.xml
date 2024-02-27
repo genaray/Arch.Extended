@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Publish Arch.AOT.SourceGenerator to Unity Publish" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/UnityPublish/SourceGenerators" target_framework="netstandard2.0" uuid_high="720741342265887674" uuid_low="-5713872599858624605" />
+    <method v="2" />
+  </configuration>
+</component>
