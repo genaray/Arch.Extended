@@ -14,17 +14,17 @@ using Microsoft.Xna.Framework.Input;
 namespace Arch.Extended;
 
 /// <summary>
-///     The movement system makes the entities move and bounce properly. 
+///     The movement system makes the entities move and bounce properly.
 /// </summary>
 public partial class MovementSystem : BaseSystem<World, GameTime>
 {
-    
+
     /// <summary>
     ///     A rectangle which specifies the viewport.
     ///     Needed so that the entities do not wander outside the viewport.
     /// </summary>
     private readonly Rectangle _viewport;
-    
+
     /// <summary>
     ///     Creates a <see cref="MovementSystem"/> instance.
     /// </summary>
@@ -45,7 +45,7 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
     {
         pos.Vector2 += time.ElapsedGameTime.Milliseconds * vel.Vector2;
     }
-    
+
     /// <summary>
     ///     Called for each <see cref="Entity"/> to move it.
     ///     The calling takes place through the source generated method "MoveQuery" on <see cref="BaseSystem{W,T}.Update"/>.
@@ -58,20 +58,20 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
     {
         if (pos.Vector2.X >= _viewport.X + _viewport.Width)
             vel.Vector2.X = -vel.Vector2.X;
-            
+
         if (pos.Vector2.Y >= _viewport.Y + _viewport.Height)
             vel.Vector2.Y = -vel.Vector2.Y;
-            
+
         if (pos.Vector2.X <= _viewport.X)
             vel.Vector2.X = -vel.Vector2.X;
-            
+
         if (pos.Vector2.Y <= _viewport.Y)
             vel.Vector2.Y = -vel.Vector2.Y;
     }
 }
 
 /// <summary>
-///     Color system, modifies each entities color slowly. 
+///     Color system, modifies each entities color slowly.
 /// </summary>
 public partial class ColorSystem : BaseSystem<World, GameTime>
 {
@@ -98,7 +98,7 @@ public partial class ColorSystem : BaseSystem<World, GameTime>
 }
 
 /// <summary>
-///     The draw system, handles the drawing of <see cref="Entity"/> sprites at their position. 
+///     The draw system, handles the drawing of <see cref="Entity"/> sprites at their position.
 /// </summary>
 public partial class DrawSystem : BaseSystem<World, GameTime>
 {
@@ -106,7 +106,7 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
     ///     The <see cref="SpriteBatch"/> used for drawing all <see cref="Entity"/>s.
     /// </summary>
     private readonly SpriteBatch _batch;
-    
+
     /// <summary>
     ///     Creates a <see cref="DrawSystem"/> instance.
     /// </summary>
@@ -118,9 +118,9 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
     ///     Is called before the <see cref="BaseSystem{W,T}.Update"/> to start with the <see cref="SpriteBatch"/> recording.
     /// </summary>
     /// <param name="t">The <see cref="GameTime"/>.</param>
-    public override void BeforeUpdate(in GameTime t)
+    public override void BeforeExecute(in GameTime t)
     {
-        base.BeforeUpdate(in t);
+        base.BeforeExecute(in t);
         _batch.Begin();
     }
 
@@ -141,15 +141,15 @@ public partial class DrawSystem : BaseSystem<World, GameTime>
     ///     Is called after the <see cref="BaseSystem{W,T}.Update"/> to stop the <see cref="SpriteBatch"/> recording.
     /// </summary>
     /// <param name="t">The <see cref="GameTime"/>.</param>
-    public override void AfterUpdate(in GameTime t)
+    public override void AfterExecute(in GameTime t)
     {
-        base.AfterUpdate(in t);
+        base.AfterExecute(in t);
         _batch.End();
     }
 }
 
 /// <summary>
-///     The debug system, shows how you can combine source generated queries and default ones. 
+///     The debug system, shows how you can combine source generated queries and default ones.
 /// </summary>
 public partial class DebugSystem : BaseSystem<World, GameTime>
 {
@@ -159,7 +159,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     private readonly QueryDescription _customQuery = new QueryDescription().WithAll<Position, Sprite>().WithNone<Velocity>();
 
     /// <summary>
-    ///     Creates a new <see cref="DebugSystem"/> instance. 
+    ///     Creates a new <see cref="DebugSystem"/> instance.
     /// </summary>
     /// <param name="world">The <see cref="World"/> used.</param>
     public DebugSystem(World world) : base(world)
@@ -168,10 +168,10 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     }
 
     /// <summary>
-    ///     Implements <see cref="BaseSystem{W,T}.Update"/> to call the custom Query and the source generated one. 
+    ///     Implements <see cref="BaseSystem{W,T}.Update"/> to call the custom Query and the source generated one.
     /// </summary>
     /// <param name="t">The <see cref="GameTime"/>.</param>
-    public override void Update(in GameTime t)
+    public override void Execute(in GameTime t)
     {
         World.Query(in _customQuery, entity => Console.WriteLine($"Custom : {entity}"));  // Manual query
         PrintEntitiesWithoutVelocityQuery(World);  // Call source generated query, which calls the PrintEntitiesWithoutVelocity method
@@ -183,7 +183,7 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
     /// </summary>
     /// <param name="en">The <see cref="Entity"/>. Passed by the "PrintEntitiesWithoutVelocityQuery", you can also pass components or data parameters as usual.</param>
     [Query]
-    [All<Position, Sprite>, None<Velocity>]
+    [All(typeof(Position), typeof(Sprite)), None(typeof(Velocity))]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void PrintEntitiesWithoutVelocity(in Entity en)
     {
@@ -204,14 +204,14 @@ public partial class DebugSystem : BaseSystem<World, GameTime>
 }
 
 /// <summary>
-/// A event handler class using the source generated eventbus to intercept and react to events to decouple logic. 
+/// A event handler class using the source generated eventbus to intercept and react to events to decouple logic.
 /// </summary>
 public static partial class EventHandler
 {
 
     /// <summary>
     /// Listens for <see cref="ValueTuple{T1,T2}"/> events with a <see cref="World"/> and <see cref="KeyboardState"/> to check if the delte key was pressed.
-    /// If thats the case, it will remove the <see cref="Velocity"/> component from all of them. 
+    /// If thats the case, it will remove the <see cref="Velocity"/> component from all of them.
     /// </summary>
     /// <param name="tuple"></param>
     [Event(order: 1)]
@@ -219,8 +219,8 @@ public static partial class EventHandler
     public static void OnDeleteStopEntities(ref (World world, KeyboardState state) tuple)
     {
         if (!tuple.state.IsKeyDown(Keys.Delete)) return;
-        
-        // Query for velocity entities and remove their velocity to make them stop moving. 
+
+        // Query for velocity entities and remove their velocity to make them stop moving.
         var queryDesc = new QueryDescription().WithAll<Velocity>();
         tuple.world.Query(in queryDesc, entity => entity.Remove<Velocity>());
     }
