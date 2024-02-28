@@ -16,29 +16,37 @@ public static class StringBuilderExtensions
 	/// <returns></returns>
 	public static StringBuilder AppendComponentTypes(this StringBuilder sb, IList<ComponentType> componentTypes)
 	{
-		// Lists the component registration commands line by line. 
+		// Lists the component registration commands line by line.
 		var components = new StringBuilder();
 		foreach (var type in componentTypes)
 		{
 			var componentType = type;
 			components.AppendComponentType(ref componentType);
 		}
-		
+
 		sb.AppendLine(
 			$$"""
 		    using System.Runtime.CompilerServices;
 		    using Arch.Core.Utils;
-		              
+		    
+		    #if UNITY_5_6_OR_NEWER
+		    using UnityEngine;
+		    #endif
+		    
 		    namespace Arch.AOT.SourceGenerator
 		    {
-		       internal static class GeneratedComponentRegistry
-		       {
-		          [ModuleInitializer]
-		          public static void Initialize()
-		          {
-		          {{components}}
-		          }
-		       }
+		    	internal static class GeneratedComponentRegistry
+		    	{
+		    		#if UNITY_5_6_OR_NEWER
+		    		[RuntimeInitializeOnLoadMethod]
+		    		#else
+		    		[ModuleInitializer]
+		    		#endif
+		    		public static void Initialize()
+		    		{
+		    		{{components}}
+		    		}
+		    	}
 		    }
 		    """
 		);
@@ -55,7 +63,7 @@ public static class StringBuilderExtensions
 	{
 		//var size = componentType.IsValueType ? $"Unsafe.SizeOf<{componentType.TypeName}>()" : "IntPtr.Size";
 		//sb.AppendLine($"ComponentRegistry.Add(typeof({componentType.TypeName}), new ComponentType(ComponentRegistry.Size + 1, {size}));");
-		
+
 		sb.AppendLine($"ArrayRegistry.Add<{componentType.TypeName}>();");
 		return sb;
 	}
