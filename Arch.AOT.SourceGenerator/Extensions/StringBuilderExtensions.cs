@@ -38,7 +38,7 @@ public static class StringBuilderExtensions
 		    	internal static class GeneratedComponentRegistry
 		    	{
 		    		#if UNITY_5_6_OR_NEWER
-		    		[RuntimeInitializeOnLoadMethod]
+		    		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		    		#else
 		    		[ModuleInitializer]
 		    		#endif
