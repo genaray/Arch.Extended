@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>net7.0; net6.0; netstandard2.1</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
-        
+
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <IncludeSymbols>true</IncludeSymbols>
@@ -29,6 +29,7 @@ Some other small improvements.</PackageReleaseNotes>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Copyright>Apache2.0</Copyright>
         <PackageLicenseUrl></PackageLicenseUrl>
+        <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 
         <UnityPublish>true</UnityPublish>
     </PropertyGroup>

@@ -10,7 +10,7 @@
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        
+
         <Title>Arch.Relationships</Title>
         <Description>Simple Entity-Relationships for Arch.</Description>
         <Copyright>Apache2.0</Copyright>
@@ -21,6 +21,7 @@
         <PackageReleaseNotes>Relationships now use less memory and are serializable.</PackageReleaseNotes>
         <Authors>genaray</Authors>
         <Version>1.0.1</Version>
+        <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 
         <UnityPublish>true</UnityPublish>
     </PropertyGroup>

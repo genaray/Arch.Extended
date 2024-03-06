@@ -20,6 +20,7 @@
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
         <PackageReleaseNotes>Updated to Arch 1.2.7</PackageReleaseNotes>
         <Version>1.0.3</Version>
+        <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 
         <UnityPublish>true</UnityPublish>
     </PropertyGroup>
