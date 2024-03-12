@@ -19,7 +19,7 @@
         <Description>A source generator for arch.system.</Description>
         <PackageReleaseNotes>Data is now passed correctly into generated queries.
 `@` in fromt of params is now accepted.
-Added `World _world` to generated queries for making them usable in different worlds. 
+Added `World _world` to generated queries for making them usable in different worlds.
 </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
@@ -32,6 +32,7 @@ Added `World _world` to generated queries for making them usable in different wo
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Copyright>Apache2.0</Copyright>
         <PackageLicenseUrl></PackageLicenseUrl>
+        <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
     </PropertyGroup>
 
     <ItemGroup>

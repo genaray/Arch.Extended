@@ -24,6 +24,7 @@ riderModule.iml
 
 # Rider
 # Rider auto-generates .iml files, and contentModel.xml
+.idea
 **/.idea/**/*.iml
 **/.idea/**/contentModel.xml
 **/.idea/**/modules.xml
@@ -43,3 +44,4 @@ Footer
 © 2022 GitHub, Inc.
 Footer navigation
 Terms
+
