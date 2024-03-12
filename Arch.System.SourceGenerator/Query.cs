@@ -17,14 +17,14 @@ public static class QueryUtils
     /// <returns></returns>
     public static StringBuilder GetFirstElements(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
     {
-      
+
         foreach (var symbol in parameterSymbols)
             if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
                 sb.AppendLine($"ref var @{symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}>();");
 
         return sb;
     }
-    
+
     /// <summary>
     ///     Appends the components of the types specified in the <see cref="parameterSymbols"/> from the previous specified first elements.
     /// </summary>
@@ -39,7 +39,7 @@ public static class QueryUtils
 
         return sb;
     }
-    
+
     /// <summary>
     ///     Inserts the types defined in the <see cref="parameterSymbols"/> as parameters in a method.
     ///     <example>ref position, out velocity,...</example>
@@ -51,11 +51,11 @@ public static class QueryUtils
     {
         foreach (var symbol in parameterSymbols)
             sb.Append($"{CommonUtils.RefKindToString(symbol.RefKind)} @{symbol.Name.ToLower()},");
-        
+
         if(sb.Length > 0) sb.Length--;
         return sb;
     }
-    
+
     /// <summary>
     ///     Creates a ComponentType array from the <see cref="parameterSymbols"/> passed through.
     /// </summary>
@@ -71,11 +71,11 @@ public static class QueryUtils
         }
 
         sb.Append("new ComponentType[]{");
-        
+
         foreach (var symbol in parameterSymbols)
             if(symbol.Name is not "Entity") // Prevent entity being added to the type array
                 sb.Append($"typeof({symbol.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}),");
-        
+
         if (sb.Length > 0) sb.Length -= 1;
         sb.Append('}');
 
@@ -101,7 +101,7 @@ public static class QueryUtils
         sb.Length--;
         return sb;
     }
-    
+
     /// <summary>
     ///     Appends method calls made with their important data parameters.
     ///     <example>someQuery(World, gameTime); ...</example>
@@ -122,7 +122,7 @@ public static class QueryUtils
                 break;
             }
             data.Length--;
-            sb.AppendLine($"{method.Name}Query(World {data});");   
+            sb.AppendLine($"{method.Name}Query(World {data});");
         }
         return sb;
     }
@@ -165,31 +165,31 @@ public static class QueryUtils
         var anyAttributeData = methodSymbol.GetAttributeData("Any");
         var noneAttributeData = methodSymbol.GetAttributeData("None");
         var exclusiveAttributeData = methodSymbol.GetAttributeData("Exclusive");
-        
-        // Get params / components except those marked with data or entities. 
+
+        // Get params / components except those marked with data or entities.
         var components = methodSymbol.Parameters.ToList();
-        components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys 
+        components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys
         components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data")));    // Remove data annotated params
-        
+
         // Create all query array
         var allArray = components.Select(symbol => symbol.Type).ToList();
         var anyArray = new List<ITypeSymbol>();
         var noneArray = new List<ITypeSymbol>();
         var exclusiveArray = new List<ITypeSymbol>();
 
-        // Get All<...> or All(...) passed types and pass them to the arrays 
+        // Get All<...> or All(...) passed types and pass them to the arrays
         GetAttributeTypes(attributeData, allArray);
         GetAttributeTypes(anyAttributeData, anyArray);
         GetAttributeTypes(noneAttributeData, noneArray);
         GetAttributeTypes(exclusiveAttributeData, exclusiveArray);
-        
-        // Remove doubles and entities 
+
+        // Remove doubles and entities
         allArray = allArray.Distinct().ToList();
         anyArray = anyArray.Distinct().ToList();
         noneArray = noneArray.Distinct().ToList();
         exclusiveArray = exclusiveArray.Distinct().ToList();
-        
-        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity")); 
+
+        allArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         noneArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
         exclusiveArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
@@ -201,21 +201,21 @@ public static class QueryUtils
             IsGlobalNamespace = methodSymbol.ContainingNamespace.IsGlobalNamespace,
             Namespace = methodSymbol.ContainingNamespace.ToString(),
             ClassName = className.Substring(className.LastIndexOf('.')+1),
-            
+
             IsStatic = methodSymbol.IsStatic,
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,
-            
+
             EntityParameter = entityParam,
             Parameters = methodSymbol.Parameters,
             Components = components,
-            
+
             AllFilteredTypes = allArray,
             AnyFilteredTypes = anyArray,
             NoneFilteredTypes = noneArray,
             ExclusiveFilteredTypes = exclusiveArray
         };
-        
+
         return sb.AppendQueryMethod(ref queryMethod);
     }
 
@@ -228,19 +228,19 @@ public static class QueryUtils
     public static StringBuilder AppendQueryMethod(this StringBuilder sb, ref QueryMethod queryMethod)
     {
         var staticModifier = queryMethod.IsStatic ? "static" : "";
-        
-        // Generate code 
+
+        // Generate code
         var data = new StringBuilder().DataParameters(queryMethod.Parameters);
         var getFirstElements = new StringBuilder().GetFirstElements(queryMethod.Components);
         var getComponents = new StringBuilder().GetComponents(queryMethod.Components);
         var insertParams = new StringBuilder().InsertParams(queryMethod.Parameters);
-        
+
         var allTypeArray = new StringBuilder().GetTypeArray(queryMethod.AllFilteredTypes);
         var anyTypeArray = new StringBuilder().GetTypeArray(queryMethod.AnyFilteredTypes);
         var noneTypeArray = new StringBuilder().GetTypeArray(queryMethod.NoneFilteredTypes);
         var exclusiveTypeArray = new StringBuilder().GetTypeArray(queryMethod.ExclusiveFilteredTypes);
 
-        var template = 
+        var template =
             $$"""
             using System;
             using System.Runtime.CompilerServices;
@@ -294,7 +294,7 @@ public static class QueryUtils
     }
 
     /// <summary>
-    ///     Adds a basesystem that calls a bunch of query methods. 
+    ///     Adds a basesystem that calls a bunch of query methods.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="classToMethod">The <see cref="KeyValuePair{TKey,TValue}"/> which maps all query methods to a common class containing them.</param>
@@ -305,13 +305,13 @@ public static class QueryUtils
         var classSymbol = classToMethod.Key as INamedTypeSymbol;
 
         INamedTypeSymbol? parentSymbol = null;
-        var implementsUpdate = false;
+        var implementsExecute = false;
         var type = classSymbol;
         while (type != null)
         {
-            // Update was implemented by user, no need to do that by source generator.
-            if (type.MemberNames.Contains("Update"))
-                implementsUpdate = true;
+            // Execute was implemented by user, no need to do that by source generator.
+            if (type.MemberNames.Contains("Execute"))
+                implementsExecute = true;
 
             type = type.BaseType;
 
@@ -323,7 +323,7 @@ public static class QueryUtils
             }
         }
 
-        if (parentSymbol == null || implementsUpdate)
+        if (parentSymbol == null || implementsExecute)
             return sb;
 
         // Get generic of BaseSystem
@@ -342,9 +342,9 @@ public static class QueryUtils
         };
         return sb.AppendBaseSystem(ref baseSystem);
     }
-    
+
     /// <summary>
-    ///     Adds a basesystem that calls a bunch of query methods. 
+    ///     Adds a basesystem that calls a bunch of query methods.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="baseSystem">The <see cref="BaseSystem"/> which is generated.</param>
@@ -361,7 +361,7 @@ public static class QueryUtils
                 partial class {{baseSystem.Name}}{
                         
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public override void Update(in {{baseSystem.GenericType.ToDisplayString()}} data){
+                    public override void Execute(in {{baseSystem.GenericType.ToDisplayString()}} data){
                         {{methodCalls}}
                     }
                 }

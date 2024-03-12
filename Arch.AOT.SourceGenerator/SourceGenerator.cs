@@ -15,12 +15,12 @@ namespace Arch.AOT.SourceGenerator;
 public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 {
 	/// <summary>
-	///		A <see cref="List{T}"/> of annotated components (their types) found via the source-gen. 
+	///		A <see cref="List{T}"/> of annotated components (their types) found via the source-gen.
 	/// </summary>
 	private readonly List<ComponentType> _componentTypes = new();
-	
+
 	/// <summary>
-	///		The attribute to mark components with in order to be found by this source-gen. 
+	///		The attribute to mark components with in order to be found by this source-gen.
 	/// </summary>
 	private const string AttributeTemplate = """
 	                                         using System;
@@ -122,7 +122,7 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 			foreach (var member in typeSymbol.GetMembers())
 			{
 				if (member is not IFieldSymbol) continue;
-				
+
 				hasZeroFields = false;
 				break;
 			}
@@ -130,6 +130,9 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 			var typeName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 			_componentTypes.Add(new ComponentType(typeName, hasZeroFields, typeSymbol.IsValueType));
 		}
+
+		// Order component types by type name (a-z)
+		_componentTypes.Sort((x, y) => x.TypeName.CompareTo(y.TypeName));
 
 		sb.AppendComponentTypes(_componentTypes);
 		productionContext.AddSource("GeneratedComponentRegistry.g.cs",CSharpSyntaxTree.ParseText(sb.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

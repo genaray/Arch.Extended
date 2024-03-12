@@ -17,7 +17,7 @@ public class QueryGenerator : IIncrementalGenerator
     {
         //if (!Debugger.IsAttached) Debugger.Launch();
 
-        // Register the generic attributes 
+        // Register the generic attributes
         var attributes = $$"""
             namespace Arch.System.SourceGenerator
             {
@@ -30,8 +30,8 @@ public class QueryGenerator : IIncrementalGenerator
             }
         """;
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
-        
-        // Do a simple filter for methods marked with update
+
+        // Do a simple filter for methods marked with execute
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
                  static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.QueryAttribute")
@@ -56,7 +56,7 @@ public class QueryGenerator : IIncrementalGenerator
         }
         list.Add(methodSymbol);
     }
-    
+
     /// <summary>
     ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
     /// </summary>
@@ -74,7 +74,7 @@ public class QueryGenerator : IIncrementalGenerator
             foreach (var attributeSyntax in attributeListSyntax.Attributes)
             {
                 if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
-                
+
                 var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
                 var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
@@ -97,7 +97,7 @@ public class QueryGenerator : IIncrementalGenerator
     private static void Generate(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
-        
+
         // Generate Query methods and map them to their classes
         _classToMethods = new(512);
         foreach (var methodSyntax in methods)
@@ -115,7 +115,7 @@ public class QueryGenerator : IIncrementalGenerator
             }
 
             AddMethodToClass(methodSymbol);
-            
+
             var sb = new StringBuilder();
             var method = sb.AppendQueryMethod(methodSymbol);
             var fileName = methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
@@ -127,7 +127,7 @@ public class QueryGenerator : IIncrementalGenerator
         {
             var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
             if (string.IsNullOrEmpty(template)) continue;
-            
+
             var fileName = (classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
             context.AddSource($"{fileName}.g.cs",
                 CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
@@ -135,7 +135,7 @@ public class QueryGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Compares <see cref="MethodDeclarationSyntax"/>s to remove duplicates. 
+    /// Compares <see cref="MethodDeclarationSyntax"/>s to remove duplicates.
     /// </summary>
     class Comparer : IEqualityComparer<MethodDeclarationSyntax>
     {
