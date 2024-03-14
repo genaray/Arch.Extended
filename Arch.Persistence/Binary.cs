@@ -218,12 +218,12 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         MessagePackSerializer.Serialize(ref writer, value.GetSlots(), options);
 
         //Write recycled entity ids
-        List<(int, int)> recycledEntityIDs = value.GetRecycledEntityIds();
+        var recycledEntityIDs = value.GetRecycledEntityIds();
         MessagePackSerializer.Serialize(ref writer, recycledEntityIDs, options);
 
         // Write archetypes
         writer.WriteUInt32((uint)value.Archetypes.Count);
-        foreach (Archetype archetype in value)
+        foreach (var archetype in value)
         {
             MessagePackSerializer.Serialize(ref writer, archetype, options);
         }
@@ -232,28 +232,28 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
     public World Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         // Create world and setup formatter
-        World world = World.Create();
-        ArchetypeFormatter? archetypeFormatter = options.Resolver.GetFormatter<Archetype>() as ArchetypeFormatter;
-        EntityFormatter? entityFormatter = options.Resolver.GetFormatter<Entity>() as EntityFormatter;
+        var world = World.Create();
+        var archetypeFormatter = options.Resolver.GetFormatter<Archetype>() as ArchetypeFormatter;
+        var entityFormatter = options.Resolver.GetFormatter<Entity>() as EntityFormatter;
         entityFormatter.WorldId = world.Id;
         archetypeFormatter.World = world;
 
         // Read versions
-        JaggedArray<int> versions = MessagePackSerializer.Deserialize<JaggedArray<int>>(ref reader, options);
+        var versions = MessagePackSerializer.Deserialize<JaggedArray<int>>(ref reader, options);
 
         // Read slots
-        JaggedArray<(int, int)> slots = MessagePackSerializer.Deserialize<JaggedArray<(int, int)>>(ref reader, options);
+        var slots = MessagePackSerializer.Deserialize<JaggedArray<(Archetype, (int, int))>>(ref reader, options);
 
         //Read recycled entity ids
-        List<(int, int)> recycledEntityIDs = MessagePackSerializer.Deserialize<List<(int, int)>>(ref reader, options);
+        var recycledEntityIDs = MessagePackSerializer.Deserialize<List<(int, int)>>(ref reader, options);
 
         // Read archetypes
-        int size = reader.ReadInt32();
+        var size = reader.ReadInt32();
         List<Archetype> archetypes = new();
 
-        for (int index = 0; index < size; index++)
+        for (var index = 0; index < size; index++)
         {
-            Archetype archetype = archetypeFormatter.Deserialize(ref reader, options);
+            var archetype = archetypeFormatter.Deserialize(ref reader, options);
             archetypes.Add(archetype);
         }
 
@@ -290,10 +290,10 @@ public partial class ArchetypeFormatter : IMessagePackFormatter<Archetype>
         MessagePackSerializer.Serialize(ref writer, value.GetLookupArray(), options);
 
         // Write chunk size
-        writer.WriteUInt32((uint)value.Size);
+        writer.WriteUInt32((uint)value.ChunkCount);
 
         // Write chunks 
-        for (var index = 0; index < value.Size; index++)
+        for (var index = 0; index < value.ChunkCount; index++)
         {
             ref var chunk = ref chunks[index];
             chunkFormatter.Serialize(ref writer, chunk, options);

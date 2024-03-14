@@ -414,11 +414,11 @@ public partial class WorldFormatter : IJsonFormatter<World>
 
         // Read slots
         reader.ReadPropertyName();
-        JaggedArray<(int, int)> slots = JsonSerializer.Deserialize<JaggedArray<(int, int)>>(ref reader, formatterResolver);
+        var slots = JsonSerializer.Deserialize<JaggedArray<(Archetype,(int, int))>>(ref reader, formatterResolver);
         reader.ReadIsValueSeparator();
 
         // Read recycled ids
-        int count = 0;
+        var count = 0;
         List<(int, int)> recycledIds = new();
 
         reader.ReadPropertyName();
@@ -448,7 +448,7 @@ public partial class WorldFormatter : IJsonFormatter<World>
         reader.ReadIsBeginArray();
         while (!reader.ReadIsEndArrayWithSkipValueSeparator(ref count))
         {
-            Archetype archetype = archetypeFormatter.Deserialize(ref reader, formatterResolver);
+            var archetype = archetypeFormatter.Deserialize(ref reader, formatterResolver);
             archetypes.Add(archetype);
         }
 
@@ -498,13 +498,13 @@ public partial class ArchetypeFormatter : IJsonFormatter<Archetype>
 
         // Write chunk size
         writer.WritePropertyName("chunkSize");
-        writer.WriteUInt32((uint)value.Size);
+        writer.WriteUInt32((uint)value.ChunkCount);
         writer.WriteValueSeparator();
 
         // Write chunks 
         writer.WritePropertyName("chunks");
         writer.WriteBeginArray();
-        for (var index = 0; index < value.Size; index++)
+        for (var index = 0; index < value.ChunkCount; index++)
         {
             ref var chunk = ref chunks[index];
             chunkFormatter.Serialize(ref writer, chunk, formatterResolver);
@@ -512,7 +512,7 @@ public partial class ArchetypeFormatter : IJsonFormatter<Archetype>
         }
 
         // Trim last value separator
-        if (value.Size > 0)
+        if (value.ChunkCount > 0)
         {
             writer.AdvanceOffset(-1);
         }
