@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using NUnit.Framework;
+using Schedulers;
 using Utf8Json;
 using Utf8Json.Formatters;
 using Utf8Json.Resolvers;
@@ -27,7 +28,7 @@ public class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading
     private World _world;
-    private global::JobScheduler.JobScheduler _jobScheduler;
+    private JobScheduler _jobScheduler;
     
     // Our systems processing entities
     private System.Group<GameTime> _systems;
@@ -66,7 +67,15 @@ public class Game : Microsoft.Xna.Framework.Game
         
         // Create world & JobScheduler for multithreading
         _world = World.Create();
-        _jobScheduler = new("SampleWorkerThreads");
+        _jobScheduler = new(
+            new JobScheduler.Config
+            {
+                ThreadPrefixName = "Arch.Samples",
+                ThreadCount = 0,
+                MaxExpectedConcurrentJobs = 64,
+                StrictAllocationMode = false,
+            }
+        );
         
         // Spawn in entities with position, velocity and sprite
         for (var index = 0; index < 1000; index++)
