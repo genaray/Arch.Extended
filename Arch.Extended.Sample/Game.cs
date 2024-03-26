@@ -104,8 +104,6 @@ public class Game : Microsoft.Xna.Framework.Game
         // Initialize systems
         _systems.Initialize();
         _drawSystem.Initialize();
-
-        ComponentRegistry.Add(new ComponentType());
     }
 
     protected override void Update(GameTime gameTime)
