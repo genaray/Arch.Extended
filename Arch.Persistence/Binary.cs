@@ -202,6 +202,32 @@ public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentTyp
     }
 }
 
+/// <summary>
+///     The <see cref="ComponentTypeFormatter"/> class
+///     is a <see cref="IJsonFormatter{ComponentType}"/> to (de)serialize <see cref="ComponentType"/>s to or from json.
+/// </summary>
+public partial class EntitySlotFormatter : IMessagePackFormatter<(Archetype, (int,int))>
+{
+    public void Serialize(ref MessagePackWriter writer, (Archetype, (int, int)) value, MessagePackSerializerOptions options)
+    {
+        // Write chunk index
+        writer.WriteUInt32((uint)value.Item2.Item1);
+
+        // Write entity index
+        writer.WriteUInt32((uint)value.Item2.Item2);
+    }
+
+    public (Archetype, (int, int)) Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        
+        // Read chunk index and entity index
+        var chunkIndex = reader.ReadUInt32();
+        var entityIndex = reader.ReadUInt32();
+
+        return (null, ((int)chunkIndex, (int)entityIndex));
+    }
+}
+
 
 /// <summary>
 ///     The <see cref="WorldFormatter"/> class
@@ -247,6 +273,12 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         //Read recycled entity ids
         var recycledEntityIDs = MessagePackSerializer.Deserialize<List<(int, int)>>(ref reader, options);
 
+        // Forward values to the world
+        world.SetVersions(versions);
+        world.SetRecycledEntityIds(recycledEntityIDs);
+        world.SetSlots(slots);
+        world.EnsureCapacity(versions.Capacity);
+        
         // Read archetypes
         var size = reader.ReadInt32();
         List<Archetype> archetypes = new();
@@ -256,13 +288,9 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
             var archetype = archetypeFormatter.Deserialize(ref reader, options);
             archetypes.Add(archetype);
         }
-
-        // Forward values to the world
+        
+        // Set archetypes
         world.SetArchetypes(archetypes);
-        world.SetVersions(versions);
-        world.SetRecycledEntityIds(recycledEntityIDs);
-        world.SetSlots(slots);
-        world.EnsureCapacity(versions.Capacity);
         return world;
     }
 }

@@ -65,8 +65,8 @@ public class Tests
             var archetype = _world.Archetypes[index];
             var newArchetype = newWorld.Archetypes[index];
             
-            That(archetype.Capacity, Is.EqualTo(newArchetype.Capacity));
-            That(archetype.Entities, Is.EqualTo(newArchetype.Entities));
+            That(archetype.ChunkCapacity, Is.EqualTo(newArchetype.ChunkCapacity));
+            That(archetype.EntityCount, Is.EqualTo(newArchetype.EntityCount));
         }
         
         // Are entities equal?
@@ -123,8 +123,8 @@ public class Tests
             var archetype = _world.Archetypes[index];
             var newArchetype = newWorld.Archetypes[index];
             
-            That(archetype.Capacity, Is.EqualTo(newArchetype.Capacity));
-            That(archetype.Entities, Is.EqualTo(newArchetype.Entities));
+            That(archetype.ChunkCapacity, Is.EqualTo(newArchetype.ChunkCapacity));
+            That(archetype.EntityCount, Is.EqualTo(newArchetype.EntityCount));
         }
         
         // Are entities equal?

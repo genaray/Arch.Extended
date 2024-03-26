@@ -247,9 +247,9 @@ public partial class JaggedArrayFormatter<T> : IJsonFormatter<JaggedArray<T>>
         writer.WritePropertyName("items");
         writer.WriteBeginArray();
 
-        for (int index = 0; index < value.Capacity; index++)
+        for (var index = 0; index < value.Capacity; index++)
         {
-            T? item = value[index];
+            var item = value[index];
             JsonSerializer.Serialize(ref writer, item, formatterResolver);
             writer.WriteValueSeparator();
         }
@@ -330,6 +330,46 @@ public partial class ComponentTypeFormatter : IJsonFormatter<ComponentType>
 }
 
 /// <summary>
+///     The <see cref="ComponentTypeFormatter"/> class
+///     is a <see cref="IJsonFormatter{ComponentType}"/> to (de)serialize <see cref="ComponentType"/>s to or from json.
+/// </summary>
+public partial class EntitySlotFormatter : IJsonFormatter<(Archetype, (int,int))>
+{
+    public void Serialize(ref JsonWriter writer, (Archetype, (int, int)) value, IJsonFormatterResolver options)
+    {
+        writer.WriteBeginObject();
+        
+        // Write chunk index
+        writer.WritePropertyName("chunkIndex");
+        writer.WriteUInt32((uint)value.Item2.Item1);
+        writer.WriteValueSeparator();
+
+        // Write entity index
+        writer.WritePropertyName("entityIndex");
+        writer.WriteUInt32((uint)value.Item2.Item2);
+        
+        writer.WriteEndObject();
+    }
+
+    public (Archetype, (int, int)) Deserialize(ref JsonReader reader, IJsonFormatterResolver options)
+    {
+        reader.ReadIsBeginObject();
+
+        // Read chunk index
+        reader.ReadPropertyName();
+        var chunkIndex = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+        
+        // Read entity index
+        reader.ReadPropertyName();
+        var entityIndex = reader.ReadUInt32();
+
+        reader.ReadIsEndObject();
+        return (null, ((int)chunkIndex, (int)entityIndex));
+    }
+}
+
+/// <summary>
 ///     The <see cref="WorldFormatter"/> class
 ///     is a <see cref="IJsonFormatter{World}"/> to (de)serialize <see cref="World"/>s to or from json.
 /// </summary>
@@ -356,8 +396,8 @@ public partial class WorldFormatter : IJsonFormatter<World>
         //Write recycled entity ids
         writer.WritePropertyName("recycledEntityIDs");
         writer.WriteBeginArray();
-        List<(int, int)> recycledEntityIDs = value.GetRecycledEntityIds();
-        foreach ((int, int) recycledId in recycledEntityIDs)
+        var recycledEntityIDs = value.GetRecycledEntityIds();
+        foreach (var recycledId in recycledEntityIDs)
         {
             writer.WriteBeginObject();
             writer.WritePropertyName("id");
@@ -381,7 +421,7 @@ public partial class WorldFormatter : IJsonFormatter<World>
         //Write archetypes
         writer.WritePropertyName("archetypes");
         writer.WriteBeginArray();
-        foreach (Archetype archetype in value)
+        foreach (var archetype in value)
         {
             JsonSerializer.Serialize(ref writer, archetype, formatterResolver);
             writer.WriteValueSeparator();
@@ -428,10 +468,10 @@ public partial class WorldFormatter : IJsonFormatter<World>
         {
             reader.ReadIsBeginObject();
             reader.ReadPropertyName();
-            int id = reader.ReadInt32();
+            var id = reader.ReadInt32();
             reader.ReadIsValueSeparator();
             reader.ReadPropertyName();
-            int value = reader.ReadInt32();
+            var value = reader.ReadInt32();
             reader.ReadIsEndObject();
 
             (int, int) recycledId = new(id, value);
@@ -440,6 +480,12 @@ public partial class WorldFormatter : IJsonFormatter<World>
         }
 
         reader.ReadIsValueSeparator();
+        
+        // Forward values to the world
+        world.SetVersions(versions);
+        world.SetRecycledEntityIds(recycledIds);
+        world.SetSlots(slots);
+        world.EnsureCapacity(versions.Capacity);
 
         // Read archetypes
         count = 0;
@@ -452,13 +498,8 @@ public partial class WorldFormatter : IJsonFormatter<World>
             archetypes.Add(archetype);
         }
 
-        // Forward values to the world
+        // Set archetypes
         world.SetArchetypes(archetypes);
-        world.SetVersions(versions);
-        world.SetRecycledEntityIds(recycledIds);
-        world.SetSlots(slots);
-        world.EnsureCapacity(versions.Capacity);
-
         reader.ReadIsEndObject();
         return world;
     }
