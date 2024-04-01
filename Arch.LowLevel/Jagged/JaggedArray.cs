@@ -118,12 +118,12 @@ public class JaggedArray<T>
     /// </summary>
     /// <param name="bucketSize">The <see cref="Bucket{T}"/> size in bytes.</param>
     /// <param name="capacity">The total initial capacity, how many items should fit in.</param>
-    public JaggedArray(int bucketSize, int capacity = 64)
+    public JaggedArray(int bucketSize, int capacity = 64, bool increaseOne = true)
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new Bucket<T>[capacity/_bucketSize + 1];
-        
+        _bucketArray = new Bucket<T>[capacity / _bucketSize + (increaseOne ? 1 : 0)];
+
         _filler = default!;
 
         // Fill buckets
@@ -141,12 +141,12 @@ public class JaggedArray<T>
     /// <param name="bucketSize">The <see cref="Bucket{T}"/> size in bytes.</param>
     /// <param name="filler">The filler value for all slots, basically a custom default-value.</param>
     /// <param name="capacity">The total initial capacity, how many items should fit in.</param>
-    public JaggedArray(int bucketSize, T filler, int capacity = 64) : this(bucketSize, capacity)
+    public JaggedArray(int bucketSize, T filler, int capacity = 64, bool increaseOne = true) : this(bucketSize, capacity)
     {
         _bucketSize = MathExtensions.RoundToPowerOfTwo(bucketSize);
         _bucketSizeMinusOne = _bucketSize - 1;
-        _bucketArray = new Bucket<T>[capacity/_bucketSize + 1];
-        
+        _bucketArray = new Bucket<T>[capacity / _bucketSize + (increaseOne ? 1 : 0)];
+
         _filler = filler;
 
         // Fill buckets
@@ -162,6 +162,11 @@ public class JaggedArray<T>
     ///     The capacity, the total amount of items. 
     /// </summary>
     public int Capacity => _bucketArray.Length * _bucketSize;
+
+    /// <summary>
+    ///     The bucket size
+    /// </summary>
+    public int BucketSize => _bucketSize;
 
     /// <summary>
     ///     The length, the buckets inside the <see cref="_bucketArray"/>.
