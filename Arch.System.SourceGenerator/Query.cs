@@ -260,7 +260,7 @@ public static class QueryUtils
                         Exclusive = {{exclusiveTypeArray}}
                     };
 
-                    private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
+                    private {{staticModifier}} World _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
