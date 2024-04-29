@@ -37,9 +37,9 @@ public partial class MovementSystem : BaseSystem<World, GameTime>
     /// <param name="time">The <see cref="GameTime"/>, passed by the "MoveQuery".</param>
     /// <param name="pos">The <see cref="Position"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
     /// <param name="vel">The <see cref="Velocity"/> of the <see cref="Entity"/>. Passed by the "MoveQuery".</param>
-    [Query]
+    [Query(Parallel = true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Move([Data] GameTime time, ref Position pos, ref Velocity vel)
+    public static void Move([Data] GameTime time, ref Position pos, ref Velocity vel)
     {
         pos.Vector2 += time.ElapsedGameTime.Milliseconds * vel.Vector2;
     }

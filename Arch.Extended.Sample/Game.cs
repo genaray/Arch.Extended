@@ -76,6 +76,7 @@ public class Game : Microsoft.Xna.Framework.Game
                 StrictAllocationMode = false,
             }
         );
+        World.SharedJobScheduler = _jobScheduler;
         
         // Spawn in entities with position, velocity and sprite
         for (var index = 0; index < 1000; index++)

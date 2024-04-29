@@ -284,6 +284,7 @@ public static class QueryUtils
 
         var template = 
             $$"""
+            #nullable enable
             using System;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
@@ -360,6 +361,7 @@ public static class QueryUtils
 
         var template = 
             $$"""
+            #nullable enable
             using System;
             using System.Runtime.CompilerServices;
             using System.Runtime.InteropServices;
@@ -378,7 +380,7 @@ public static class QueryUtils
                         Exclusive = {{exclusiveTypeArray}}
                     };
 
-                    private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
+                    private {{staticModifier}} World _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
