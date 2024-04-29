@@ -6,8 +6,11 @@
 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
 public class QueryAttribute : global::System.Attribute
 {
+    /// <summary>
+    /// If set to true, Query will be run in parallel.
+    /// </summary>
+    public bool Parallel { get; set; }
 }
-
 
 /// <summary>
 ///     Marks a parameter as "data". This will be taken into account during source generation and will still be passed as a parameter in the query method.
