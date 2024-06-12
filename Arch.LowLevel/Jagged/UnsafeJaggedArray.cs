@@ -192,14 +192,13 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             return false;
         }
 
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
+        if (index >= Capacity)
         {
             value = _filler;
             return false;
         }
+        
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
@@ -229,16 +228,14 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
-
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
+        
+        if (index >= Capacity)
         {
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
 
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
         // If the item is the default then the nobody set its value.
@@ -249,7 +246,7 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
         }
 
         @bool = true;
-        return ref Unsafe.NullRef<T>(); 
+        return ref item; 
     }
     
     /// <summary>

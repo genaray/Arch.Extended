@@ -202,11 +202,6 @@ public class SparseJaggedArray<T>
     {
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
         
-        if (bucketIndex >= _bucketArray.Length)
-        {
-            EnsureCapacity(index);
-        }
-        
         ref var bucket = ref _bucketArray[bucketIndex];
         bucket.EnsureCapacity();
         bucket[itemIndex] = item;
@@ -244,15 +239,15 @@ public class SparseJaggedArray<T>
             value = _filler;
             return false;
         }
-
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
+        
+        // Index greater than capacity? 
+        if (index >= Capacity)
         {
             value = _filler;
             return false;
         }
+
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
@@ -282,15 +277,14 @@ public class SparseJaggedArray<T>
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
-
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
+        
+        if (index >= Capacity)
         {
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
+
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
@@ -302,7 +296,7 @@ public class SparseJaggedArray<T>
         }
 
         @bool = true;
-        return ref Unsafe.NullRef<T>(); 
+        return ref item; 
     }
 
     /// <summary>

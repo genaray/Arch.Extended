@@ -221,13 +221,6 @@ public class JaggedArray<T>
 
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
-        {
-            value = _filler;
-            return false;
-        }
-
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
         // If the item is the default then the nobody set its value.
@@ -257,14 +250,13 @@ public class JaggedArray<T>
             return ref Unsafe.NullRef<T>(); 
         }
 
-        IndexToSlot(index, out var bucketIndex, out var itemIndex);
-
-        // If the item is outside the array. Then it definetly doesn't exist
-        if (bucketIndex > _bucketArray.Length)
+        if (index >= Capacity)
         {
             @bool = false;
             return ref Unsafe.NullRef<T>(); 
         }
+        
+        IndexToSlot(index, out var bucketIndex, out var itemIndex);
 
         ref var item = ref _bucketArray[bucketIndex][itemIndex];
 
@@ -276,7 +268,7 @@ public class JaggedArray<T>
         }
 
         @bool = true;
-        return ref Unsafe.NullRef<T>(); 
+        return ref item; 
     }
     
     /// <summary>
