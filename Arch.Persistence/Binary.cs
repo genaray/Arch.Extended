@@ -156,6 +156,7 @@ public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray
 
         // Write length/capacity and items
         writer.WriteInt32(value.Capacity);
+        writer.WriteInt32(value.BucketSize);
         for (var index = 0; index < value.Capacity; index++)
         {
             var item = value[index];
@@ -166,7 +167,8 @@ public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray
     public JaggedArray<T> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         var capacity = reader.ReadInt32();
-        var jaggedArray = new JaggedArray<T>(CpuL1CacheSize / Unsafe.SizeOf<T>(), _filler,capacity);
+        var bucketSize = reader.ReadInt32();
+        var jaggedArray = new JaggedArray<T>(bucketSize, _filler, capacity, false);
 
         for (var index = 0; index < capacity; index++)
         {
