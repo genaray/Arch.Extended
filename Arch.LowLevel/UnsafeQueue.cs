@@ -217,7 +217,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
-        return new Enumerator<T>(_queue, Count);
+        return new UnsafeIEnumerator<T>(_queue, Count);
     }
 
     /// <summary>
@@ -227,7 +227,7 @@ public unsafe struct UnsafeQueue<T> : IEnumerable<T>, IDisposable where T : unma
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return new Enumerator<T>(_queue, Count);
+        return new UnsafeIEnumerator<T>(_queue, Count);
     }
     
     /// <summary>

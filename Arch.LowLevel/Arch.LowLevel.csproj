@@ -13,11 +13,14 @@
 
         <PackageId>Arch.LowLevel</PackageId>
         <Title>Arch.LowLevel</Title>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>LowLevel tools for arch.</Description>
-        <PackageReleaseNotes>Fixed several JaggedArray related bugs. </PackageReleaseNotes>
+        <PackageReleaseNotes>Refactored JaggedArrays.
+Increased performance of JaggedArrays.
+Added Array, a new class that acts as a Wrapper around normal generic Arrays for unsafe operations. 
+Added tests. </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
@@ -35,6 +38,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
       <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     </ItemGroup>
 

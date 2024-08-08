@@ -225,7 +225,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
-        return new ReverseEnumerator<T>(_stack, Count);
+        return new ReverseIEnumerator<T>(_stack, Count);
     }
 
     /// <summary>
@@ -235,7 +235,7 @@ public unsafe struct UnsafeStack<T> :  IEnumerable<T>, IDisposable where T : unm
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly IEnumerator IEnumerable.GetEnumerator()
     {
-        return new ReverseEnumerator<T>(_stack, Count);
+        return new ReverseIEnumerator<T>(_stack, Count);
     }
     
     /// <summary>

@@ -341,7 +341,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
     {
-        return new Enumerator<T>(_array, Count);
+        return new UnsafeIEnumerator<T>(_array, Count);
     }
 
     /// <summary>
@@ -351,7 +351,7 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return new Enumerator<T>(_array, Count);
+        return new UnsafeIEnumerator<T>(_array, Count);
     }
 
     /// <summary>

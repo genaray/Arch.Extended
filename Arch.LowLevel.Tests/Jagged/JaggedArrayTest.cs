@@ -15,7 +15,7 @@ public class JaggedArrayTest
     ///     Checks if <see cref="JaggedArray{T}"/> is capable of adding items correctly.
     /// </summary>
     [Test]
-    public void Add([Values(256,512,1024)] int capacity)
+    public void Add([Values(256,512,1024,2048,4096)] int capacity)
     {
         // Check add
         var jaggedArray = new JaggedArray<int>(16000/Unsafe.SizeOf<int>(), -1, capacity);
@@ -37,7 +37,7 @@ public class JaggedArrayTest
     }
     
     [Test]
-    public void TryGetValue([Values(256,512,1024)] int capacity)
+    public void TryGetValue([Values(256,512,1024,2048,4096)] int capacity)
     {
         // Initialize the JaggedArray
         var jaggedArray = new JaggedArray<int>(16000/Unsafe.SizeOf<int>(), -1, capacity);
@@ -62,7 +62,7 @@ public class JaggedArrayTest
     }
     
     [Test]
-    public void TryGetValueRef([Values(256,512,1024)] int capacity)
+    public void TryGetValueRef([Values(256,512,1024,2048,4096)] int capacity)
     {
         // Initialize the JaggedArray
         var jaggedArray = new JaggedArray<int>(16000/Unsafe.SizeOf<int>(), -1, capacity);
@@ -92,7 +92,7 @@ public class JaggedArrayTest
     ///     Checks if <see cref="JaggedArray{T}"/> is capable of adding items correctly.
     /// </summary>
     [Test]
-    public void Remove([Values(256,512,1024)] int capacity)
+    public void Remove([Values(256,512,1024,2048,4096)] int capacity)
     {
         // Check add
         var jaggedArray = new JaggedArray<int>(16000/Unsafe.SizeOf<int>(), -1, capacity);
