@@ -75,6 +75,7 @@ public class Game
         // Create a world and a group of systems which will be controlled 
         var world = World.Create();
         var _systems = new Group<float>(
+            "Systems",
             new MovementSystem(world),   // Run in order
             new MyOtherSystem(...),
             ...
