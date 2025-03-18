@@ -66,18 +66,18 @@ public static class QueryUtils
     {
         if (parameterSymbols.Count == 0)
         {
-            sb.Append("Array.Empty<ComponentType>()");
+            sb.Append("Signature.Null");
             return sb;
         }
 
-        sb.Append("new ComponentType[]{");
+        sb.Append("new Signature(");
         
         foreach (var symbol in parameterSymbols)
             if(symbol.Name is not "Entity") // Prevent entity being added to the type array
                 sb.Append($"typeof({symbol.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}),");
         
         if (sb.Length > 0) sb.Length -= 1;
-        sb.Append('}');
+        sb.Append(')');
 
         return sb;
     }
@@ -296,12 +296,12 @@ public static class QueryUtils
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     
-                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
-                        All = {{allTypeArray}},
-                        Any = {{anyTypeArray}},
-                        None = {{noneTypeArray}},
-                        Exclusive = {{exclusiveTypeArray}}
-                    };
+                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription(
+                        all: {{allTypeArray}},
+                        any: {{anyTypeArray}},
+                        none: {{noneTypeArray}},
+                        exclusive: {{exclusiveTypeArray}}
+                    );
 
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
@@ -314,9 +314,8 @@ public static class QueryUtils
                             _{{queryMethod.MethodName}}_Initialized = world;
                         }
 
-                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query.GetChunkIterator()){
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query){
                             
-                            var chunkSize = chunk.Size;
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
 
@@ -373,16 +372,34 @@ public static class QueryUtils
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     
-                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription{
-                        All = {{allTypeArray}},
-                        Any = {{anyTypeArray}},
-                        None = {{noneTypeArray}},
-                        Exclusive = {{exclusiveTypeArray}}
-                    };
+                    private {{staticModifier}} QueryDescription {{queryMethod.MethodName}}_QueryDescription = new QueryDescription(
+                        all: {{allTypeArray}},
+                        any: {{anyTypeArray}},
+                        none: {{noneTypeArray}},
+                        exclusive: {{exclusiveTypeArray}}
+                    );
 
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
 
+                    private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
+                    {
+                        {{jobParameters}}
+                        
+                        public void Execute(ref Chunk chunk) {
+                        
+                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
+                            {{getFirstElements}}
+                    
+                            foreach(var entityIndex in chunk)
+                            {
+                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
+                                {{getComponents}}
+                                {{queryMethod.MethodName}}({{insertParams}});
+                            }
+                        }
+                    }
+            
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
@@ -393,24 +410,6 @@ public static class QueryUtils
                         
                         var job = new {{queryMethod.MethodName}}QueryJobChunk() { {{jobParametersAssigment}} };
                         world.InlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job);
-                    }
-                    
-                    private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
-                    {
-                        {{jobParameters}}
-                        
-                        public void Execute(ref Chunk chunk) {
-                            var chunkSize = chunk.Size;
-                            {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
-                            {{getFirstElements}}
-
-                            foreach(var entityIndex in chunk)
-                            {
-                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
-                                {{getComponents}}
-                                {{queryMethod.MethodName}}({{insertParams}});
-                            }
-                        }
                     }
                 }
             {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}

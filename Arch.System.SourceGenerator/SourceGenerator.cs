@@ -139,7 +139,7 @@ public class QueryGenerator : IIncrementalGenerator
     /// </summary>
     class Comparer : IEqualityComparer<MethodDeclarationSyntax>
     {
-        public static readonly Comparer Instance = new Comparer();
+        public static readonly Comparer Instance = new();
 
         public bool Equals(MethodDeclarationSyntax x, MethodDeclarationSyntax y)
         {

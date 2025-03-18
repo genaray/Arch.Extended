@@ -342,7 +342,7 @@ public class SparseJaggedArray<T>
 
         var length = Buckets;
         var buckets = newCapacity / _bucketSize + 1;
-        Array.Resize(ref _buckets, buckets);
+        _buckets = Array.Resize(ref _buckets, buckets);
 
         for (var i = length; i < _buckets.Length; i++)
         {
@@ -372,7 +372,7 @@ public class SparseJaggedArray<T>
         }
 
         var buckets = _buckets.Length-count;
-        Array.Resize(ref _buckets, buckets);
+        _buckets = Array.Resize(ref _buckets, buckets);
     }
 
     /// <summary>

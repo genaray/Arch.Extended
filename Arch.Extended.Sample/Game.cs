@@ -88,10 +88,11 @@ public class Game : Microsoft.Xna.Framework.Game
             );
         }
         
+        /* Serializer is not updated yet. 
         // Serialize world and deserialize it back. Just for showcasing the serialization, its actually not necessary.
         var archSerializer = new ArchJsonSerializer(new SpriteSerializer{GraphicsDevice = GraphicsDevice});
         var worldJson = archSerializer.ToJson(_world);
-        _world = archSerializer.FromJson(worldJson);
+        _world = archSerializer.FromJson(worldJson);*/
         
         // Create systems, running in order
         _systems = new System.Group<GameTime>(
