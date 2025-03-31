@@ -114,7 +114,7 @@ public static class QueryUtils
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
-                sb.AppendLine($"public {CommonUtils.RefKindToString(parameter.RefKind)} {parameter.Type} @{parameter.Name.ToLower()};");
+                sb.AppendLine($"public {parameter.Type} @{parameter.Name.ToLower()};");
         }
         return sb;
     }
