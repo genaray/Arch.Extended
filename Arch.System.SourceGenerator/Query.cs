@@ -438,7 +438,7 @@ public static class QueryUtils
         while (type != null)
         {
             // Update was implemented by user, no need to do that by source generator.
-            if (type.MemberNames.Contains("Update"))
+            if (type.GetMembers("Update").OfType<IMethodSymbol>().Any(member => member.IsOverride))
                 implementsUpdate = true;
 
             type = type.BaseType;
