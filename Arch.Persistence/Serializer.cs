@@ -108,11 +108,12 @@ public class ArchBinarySerializer : IArchSerializer
         new ChunkFormatter(),
         new ArrayFormatter(),
         new ComponentTypeFormatter(),
+        new SignatureFormatter(),
         new EntitySlotFormatter(),
         new EntityFormatter(),
         new JaggedArrayFormatter<int>(-1),
         new JaggedArrayFormatter<(int,int)>((-1,-1)),
-        new JaggedArrayFormatter<(Archetype,(int,int))>((null, (-1,-1)))
+        new JaggedArrayFormatter<EntityData>(new EntityData(null, new Slot(-1,-1)))
     };
 
     /// <summary>
@@ -121,6 +122,7 @@ public class ArchBinarySerializer : IArchSerializer
     private readonly IMessagePackFormatter[] _singleEntityFormatters =
     {
         new ComponentTypeFormatter(),
+        new SignatureFormatter(),
         new SingleEntityFormatter()
     };
 
@@ -166,35 +168,35 @@ public class ArchBinarySerializer : IArchSerializer
     /// <inheritdoc/>
     public byte[] Serialize(World world, Entity entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return MessagePackSerializer.Serialize(entity, _singleEntityOptions);
     }
 
     /// <inheritdoc/>
     public void Serialize(Stream stream, World world, Entity entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         MessagePackSerializer.Serialize(stream, entity, _singleEntityOptions);
     }
 
     /// <inheritdoc/>
     public void Serialize(IBufferWriter<byte> writer, World world, Entity entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         MessagePackSerializer.Serialize(writer, entity, _singleEntityOptions);
     }
 
     /// <inheritdoc/>
     public Entity Deserialize(World world, byte[] entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return MessagePackSerializer.Deserialize<Entity>(entity, _singleEntityOptions);
     }
 
     /// <inheritdoc/>
     public Entity Deserialize(Stream stream, World world)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return MessagePackSerializer.Deserialize<Entity>(stream, _singleEntityOptions);
     }
 
@@ -245,11 +247,12 @@ public class ArchJsonSerializer : IArchSerializer
         new ChunkFormatter(),
         new ArrayFormatter(),
         new ComponentTypeFormatter(),
+        new SignatureFormatter(),
         new EntitySlotFormatter(),
         new EntityFormatter(),
         new JaggedArrayFormatter<int>(-1),
         new JaggedArrayFormatter<(int,int)>((-1,-1)),
-        new JaggedArrayFormatter<(Archetype,(int,int))>((null, (-1,-1))),
+        new JaggedArrayFormatter<EntityData>(new EntityData(null, new Slot(-1, -1))),
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };
@@ -260,6 +263,7 @@ public class ArchJsonSerializer : IArchSerializer
     private readonly IJsonFormatter[] _singleEntityFormatters =
     {
         new ComponentTypeFormatter(),
+        new SignatureFormatter(),
         new SingleEntityFormatter(),
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
@@ -344,7 +348,7 @@ public class ArchJsonSerializer : IArchSerializer
     /// <returns>A json-string of the entity with all its components.</returns>
     public string ToJson(World world, Entity entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.ToJsonString(entity, _singleEntityFormatterResolver);
     }
 
@@ -367,14 +371,14 @@ public class ArchJsonSerializer : IArchSerializer
     /// <returns>A new <see cref="Entity"/>.</returns>
     public Entity FromJson(World world, string jsonEntity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.Deserialize<Entity>(jsonEntity, _singleEntityFormatterResolver);
     }
 
     /// <inheritdoc/>
     public byte[] Serialize(World world, Entity entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.Serialize(entity, _singleEntityFormatterResolver);
     }
 
@@ -394,14 +398,14 @@ public class ArchJsonSerializer : IArchSerializer
     /// <inheritdoc/>
     public Entity Deserialize(World world, byte[] entity)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.Deserialize<Entity>(entity, _singleEntityFormatterResolver);
     }
 
     /// <inheritdoc/>
     public Entity Deserialize(Stream stream, World world)
     {
-        (_singleEntityFormatters[1] as SingleEntityFormatter)!.EntityWorld = world;
+        (_singleEntityFormatters[2] as SingleEntityFormatter)!.EntityWorld = world;
         return JsonSerializer.Deserialize<Entity>(stream, _singleEntityFormatterResolver);
     }
 
