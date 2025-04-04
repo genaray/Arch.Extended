@@ -11,13 +11,11 @@
 
         <PackageId>Arch.System</PackageId>
         <Title>Arch.System</Title>
-        <Version>1.0.5</Version>
+        <Version>1.1.0</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A systems framework for arch.</Description>
-        <PackageReleaseNotes>Added `.Get` and `.Find`.
-Added Metrics which can be enabled via flags in the source.
-Some other small improvements.</PackageReleaseNotes>
+        <PackageReleaseNotes>Made group extendible. </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>

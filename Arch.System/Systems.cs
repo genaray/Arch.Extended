@@ -85,7 +85,7 @@ public abstract class BaseSystem<W, T> : ISystem<T>
 ///     They will run in order.
 /// </summary>
 /// <typeparam name="T">The type passed to the <see cref="ISystem{T}"/>.</typeparam>
-public sealed class Group<T> : ISystem<T>
+public class Group<T> : ISystem<T>
 {
 #if !ARCH_METRICS_DISABLED
     private readonly Meter _meter;
