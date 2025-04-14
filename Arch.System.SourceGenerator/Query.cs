@@ -304,7 +304,7 @@ public static class QueryUtils
                     );
 
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
-                    private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
+                    private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
@@ -380,7 +380,7 @@ public static class QueryUtils
                     );
 
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
-                    private {{staticModifier}} Query _{{queryMethod.MethodName}}_Query;
+                    private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
                     private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
                     {

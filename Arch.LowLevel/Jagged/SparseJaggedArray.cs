@@ -259,9 +259,17 @@ public class SparseJaggedArray<T>
         }
 
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        ref var item = ref GetBucket(bucketIndex)[itemIndex];
-
+        
+        // Bucket empty? return false
+        ref var bucket = ref GetBucket(bucketIndex);
+        if (bucket.IsEmpty)
+        {
+            value = _filler;
+            return false;
+        }
+        
         // If the item is the default then the nobody set its value.
+        ref var item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             value = _filler;
@@ -289,9 +297,17 @@ public class SparseJaggedArray<T>
         }
         
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        ref var item = ref GetBucket(bucketIndex)[itemIndex];
-
+        
+        // Bucket empty? return false
+        ref var bucket = ref GetBucket(bucketIndex);
+        if (bucket.IsEmpty)
+        {
+            @bool = false;
+            return ref Unsafe.NullRef<T>(); 
+        }
+        
         // If the item is the default then the nobody set its value.
+        ref var item = ref bucket[itemIndex];
         if (EqualityComparer<T>.Default.Equals(item, _filler))
         {
             @bool = false;
@@ -316,8 +332,9 @@ public class SparseJaggedArray<T>
         }
         
         IndexToSlot(index, out var bucketIndex, out var itemIndex);
-        ref var bucket = ref GetBucket(bucketIndex);
         
+        // If bucket empty return false
+        ref var bucket = ref GetBucket(bucketIndex);
         if (bucket.IsEmpty)
         {
             return false;
