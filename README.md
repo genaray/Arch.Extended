@@ -14,7 +14,7 @@ Extensions for [Arch](https://github.com/genaray/Arch) with some useful features
 Download the packages and get started today! 
 ```console
 dotnet add package Arch.System --version 1.1.0
-dotnet add package Arch.System.SourceGenerator --version 2.0.0
+dotnet add package Arch.System.SourceGenerator --version 2.1.0
 dotnet add package Arch.EventBus --version 1.0.2
 dotnet add package Arch.LowLevel --version 1.1.5
 dotnet add package Arch.Relationships --version 1.0.0

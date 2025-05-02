@@ -292,7 +292,7 @@ public static class QueryUtils
             using Arch.Core.Extensions;
             using Arch.Core.Utils;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
-            using Component = Arch.Core.Utils.Component;
+            using Component = Arch.Core.Component;
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     
@@ -368,7 +368,7 @@ public static class QueryUtils
             using Arch.Core.Extensions;
             using Arch.Core.Utils;
             using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
-            using Component = Arch.Core.Utils.Component;
+            using Component = Arch.Core.Component;
             {{(!queryMethod.IsGlobalNamespace ? $"namespace {queryMethod.Namespace} {{" : "")}}
                 partial class {{queryMethod.ClassName}}{
                     

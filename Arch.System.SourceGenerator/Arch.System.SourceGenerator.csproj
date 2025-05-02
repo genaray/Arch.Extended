@@ -13,11 +13,11 @@
 
         <PackageId>Arch.System.SourceGenerator</PackageId>
         <Title>Arch.System.SourceGenerator</Title>
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A source generator for arch.system.</Description>
-        <PackageReleaseNotes>Updated to fit Arch 2.0.0.</PackageReleaseNotes>
+        <PackageReleaseNotes>Updated to fit Arch 2.1.0-beta and upwards. </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
