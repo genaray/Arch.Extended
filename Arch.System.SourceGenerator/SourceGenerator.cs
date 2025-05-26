@@ -17,20 +17,6 @@ public class QueryGenerator : IIncrementalGenerator
     {
         //if (!Debugger.IsAttached) Debugger.Launch();
 
-        // Register the generic attributes 
-        var attributes = $$"""
-            namespace Arch.System.SourceGenerator
-            {
-            #if NET7_0_OR_GREATER
-                {{new StringBuilder().AppendGenericAttributes("All", "All", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("Any", "Any", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("None", "None", 25)}}
-                {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
-            #endif
-            }
-        """;
-        context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
-        
         // Do a simple filter for methods marked with update
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
