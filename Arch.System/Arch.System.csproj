@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net7.0; net6.0; netstandard2.1</TargetFrameworks>
@@ -32,4 +32,22 @@
         <UnityPublish>true</UnityPublish>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Update="Templates\GenericAttributes.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>GenericAttributes.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Templates\GenericAttributes.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>GenericAttributes.tt</DependentUpon>
+      </Compile>
+    </ItemGroup>
 </Project>

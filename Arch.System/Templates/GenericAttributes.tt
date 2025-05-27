@@ -1,0 +1,28 @@
+namespace Arch.System;
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+#if NET7_0_OR_GREATER
+
+<#
+    var names = new string[] { "All", "Any", "None", "Exclusive" };
+    foreach (var name in names)
+    {
+        for (var index = 1; index <= Amount; index++)
+        {
+            var generics = AppendGenerics(index);
+            var parameters = AppendGenericTypeParameters(index);
+#>
+/// <inheritdoc/>
+public class <#= name #>Attribute<<#= generics #>> : <#= name #>Attribute
+{
+    /// <inheritdoc cref="<#= name #>Attribute.<#= name #>Attribute" />
+    public <#= name #>Attribute() : base(<#= parameters #>) { }
+}
+
+<#
+        }
+    }
+#>
+#endif

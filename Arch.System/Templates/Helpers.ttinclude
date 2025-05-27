@@ -1,0 +1,45 @@
+﻿<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+
+    public int Amount = 25;
+
+    public string Indent(StringBuilder sb, int spaces)
+    {
+        var indent = new string(' ', spaces);
+        return sb.ToString().Replace("\n", "\n" + indent);
+    }
+
+    string AppendGenerics(int amount)
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; i < amount; i++)
+        {
+            if (i > 0) sb.Append(", ");
+            sb.Append($"T{i}");
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     Lists generic types in a row as parameters.
+    ///     <example>
+    ///         <code>
+    ///             typeof(T0), typeof(T1), ...
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public StringBuilder AppendGenericTypeParameters(int amount)
+    {
+        var sb = new StringBuilder();
+        for (var localIndex = 0; localIndex < amount; localIndex++)
+        {
+            sb.Append($"typeof(T{localIndex}), ");
+        }
+
+        sb.Length -= 2;
+        return sb;
+    }
+#>

@@ -32,6 +32,10 @@ public class AllAttribute : global::System.Attribute
     /// </summary>
     public Type[] ComponentTypes { get; }
 
+    /// <summary>
+    /// Constructs an All attribute with the specified component types.
+    /// </summary>
+    /// <param name="componentTypes">The types of the components that should be present.</param>
     public AllAttribute(params Type[] componentTypes)
     {
         ComponentTypes = componentTypes;
@@ -49,6 +53,10 @@ public class AnyAttribute : global::System.Attribute
     /// </summary>
     public Type[] ComponentTypes { get; }
 
+    /// <summary>
+    /// Constructs an Any attribute with the specified component types.
+    /// </summary>
+    /// <param name="componentTypes">The types of the components that can be present.</param>
     public AnyAttribute(params Type[] componentTypes)
     {
         ComponentTypes = componentTypes;
@@ -67,6 +75,10 @@ public class NoneAttribute : global::System.Attribute
     /// </summary>
     public Type[] ComponentTypes { get; }
 
+    /// <summary>
+    /// Constructs a None attribute with the specified component types.
+    /// </summary>
+    /// <param name="componentTypes">The types of the components that should not be present.</param>
     public NoneAttribute(params Type[] componentTypes)
     {
         ComponentTypes = componentTypes;
@@ -79,12 +91,15 @@ public class NoneAttribute : global::System.Attribute
 [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
 public class ExclusiveAttribute : global::System.Attribute
 {
-
     /// <summary>
     /// The types of the component.
     /// </summary>
     public Type[] ComponentTypes { get; }
 
+    /// <summary>
+    /// Constructs an exclusive attribute with the specified component types.
+    /// </summary>
+    /// <param name="componentTypes">The types of the components that should be present exclusively.</param>
     public ExclusiveAttribute(params Type[] componentTypes)
     {
         ComponentTypes = componentTypes;
