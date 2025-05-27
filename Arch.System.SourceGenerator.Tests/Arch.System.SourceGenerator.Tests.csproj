@@ -1,26 +1,46 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-
-        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Arch" Version="1.1.1" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
-        <PackageReference Include="NUnit" Version="3.13.3" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
-        <PackageReference Include="NUnit.Analyzers" Version="3.3.0" />
-        <PackageReference Include="coverlet.collector" Version="3.1.2" />
+        <PackageReference Include="Arch" Version="2.1.0-beta" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+        <PackageReference Include="NUnit" Version="4.3.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="5.0.0">
+            <TreatAsUsed>true</TreatAsUsed>
+        </PackageReference>
+        <PackageReference Include="NUnit.Analyzers" Version="4.8.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="6.0.3">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
-
+  
     <ItemGroup>
-      <ProjectReference Include="..\Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj" />
-      <ProjectReference Include="..\Arch.System\Arch.System.csproj" />
+        <ProjectReference Include="..\Arch.System.SourceGenerator\Arch.System.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\Arch.System\Arch.System.csproj" />
     </ItemGroup>
 
+    <!-- Emit compiler generated files to Generated/ so that developers can easily find them, and copy them to ExpectedGeneration folders as needed -->
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+
+    <!-- Remove any bad .cs files that we don't want to include in the compilation -->
+    <ItemGroup>
+        <Compile Remove="Generated\**\*" />
+        <Compile Remove="**\ExpectedGeneration\**\*" />
+    </ItemGroup>
+
+    <!-- Include removed stuff in the Solution Explorer -->
+    <ItemGroup>
+        <None Include="Generated\**\*" />
+        <None Include="**\ExpectedGeneration\**\*" />
+    </ItemGroup>
 </Project>
