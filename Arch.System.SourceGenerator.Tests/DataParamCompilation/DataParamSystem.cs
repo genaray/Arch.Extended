@@ -97,14 +97,13 @@ internal partial class DataParamSystem : BaseTestSystem
     //    outEntity = e;
     //}
 
-    // Crashes source generator due to ? in filename; see https://github.com/genaray/Arch.Extended/issues/91
-    //[Query]
-    //[All(typeof(IntComponentA))]
-    //public static void CountANullable([Data] ref int? count)
-    //{
-    //    count ??= 0;
-    //    count++;
-    //}
+    [Query]
+    [All(typeof(IntComponentA))]
+    public static void CountANullable([Data] ref int? count)
+    {
+        count ??= 0;
+        count++;
+    }
 
     private Entity _sampleEntity;
     public override void Setup()
@@ -172,8 +171,8 @@ internal partial class DataParamSystem : BaseTestSystem
         //AssignEntityDataParamWithEntityLeftQuery(World, ref outEntity);
         //Assert.That(outEntity, Is.Not.EqualTo(Entity.Null));
 
-        //int? i3 = null;
-        //CountANullableQuery(World, ref i3);
-        //Assert.That(i, Is.EqualTo(2));
+        int? i3 = null;
+        CountANullableQuery(World, ref i3);
+        Assert.That(i, Is.EqualTo(2));
     }
 }
