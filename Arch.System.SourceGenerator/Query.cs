@@ -196,11 +196,14 @@ public static class QueryUtils
     {
 
         // Check for entity param
-        var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
-        var entityParam = entity ? methodSymbol.Parameters.First(symbol => symbol.Type.Name.Equals("Entity")) : null;
+        var entityParam = methodSymbol.Parameters.FirstOrDefault(symbol => symbol.Type.Name.Equals("Entity")
+            && symbol.GetAttributes().All(data => !(data.AttributeClass?.Name.Contains("Data") ?? false)));
+
+        var entity = entityParam != null;
 
         var queryData = methodSymbol.GetAttributeData("Query");
         bool isParallel = (bool)(queryData.NamedArguments.FirstOrDefault(d => d.Key == "Parallel").Value.Value ?? false);
+        var queryAccessbility = (QueryAccessibility)(queryData.NamedArguments.FirstOrDefault(d => d.Key == "Accessibility").Value.Value ?? QueryAccessibility.Public);
 
         // Get attributes
         var attributeData = methodSymbol.GetAttributeData("All");
@@ -255,7 +258,16 @@ public static class QueryUtils
             AllFilteredTypes = allArray,
             AnyFilteredTypes = anyArray,
             NoneFilteredTypes = noneArray,
-            ExclusiveFilteredTypes = exclusiveArray
+            ExclusiveFilteredTypes = exclusiveArray,
+            Accessibility = queryAccessbility switch
+            {
+                QueryAccessibility.Public => "public",
+                QueryAccessibility.Internal => "internal",
+                QueryAccessibility.Protected => "protected",
+                QueryAccessibility.ProtectedInternal => "protected internal",
+                QueryAccessibility.Private => "private",
+                _ => "public"
+            }
         };
         
         return isParallel ? sb.AppendParallelQueryMethod(ref queryMethod) : sb.AppendQueryMethod(ref queryMethod);
@@ -307,14 +319,14 @@ public static class QueryUtils
                     private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
+                    {{queryMethod.Accessibility}} {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
                         if(!ReferenceEquals(_{{queryMethod.MethodName}}_Initialized, world)) {
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
                             _{{queryMethod.MethodName}}_Initialized = world;
                         }
 
-                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query){
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query!){
                             
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
@@ -401,7 +413,7 @@ public static class QueryUtils
                     }
             
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
+                    {{queryMethod.Accessibility}} {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
                         if(!ReferenceEquals(_{{queryMethod.MethodName}}_Initialized, world)) {
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);

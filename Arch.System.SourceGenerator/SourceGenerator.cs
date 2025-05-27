@@ -104,7 +104,10 @@ public class QueryGenerator : IIncrementalGenerator
             
             var sb = new StringBuilder();
             var method = sb.AppendQueryMethod(methodSymbol);
-            var fileName = methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
+            var fileName = methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+                .Replace('<', '{')
+                .Replace('>', '}')
+                .Replace("?", "__NULLABLE");
             context.AddSource($"{fileName}.g.cs",CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
 
@@ -113,8 +116,11 @@ public class QueryGenerator : IIncrementalGenerator
         {
             var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
             if (string.IsNullOrEmpty(template)) continue;
-            
-            var fileName = (classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
+
+            var fileName = (classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat)
+                .Replace('<', '{')
+                .Replace('>', '}')
+                .Replace("?", "__NULLABLE");
             context.AddSource($"{fileName}.g.cs",
                 CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }

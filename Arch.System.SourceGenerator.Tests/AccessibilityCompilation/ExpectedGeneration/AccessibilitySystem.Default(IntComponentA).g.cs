@@ -10,27 +10,27 @@ using Component = Arch.Core.Component;
 
 namespace Arch.System.SourceGenerator.Tests
 {
-    partial class BasicSystem
+    partial class AccessibilitySystem
     {
-        private QueryDescription Basic_QueryDescription = new QueryDescription(all: new Signature(typeof(global::Arch.System.SourceGenerator.Tests.IntComponentA)), any: Signature.Null, none: Signature.Null, exclusive: Signature.Null);
-        private World? _Basic_Initialized;
-        private Query? _Basic_Query;
+        private QueryDescription Default_QueryDescription = new QueryDescription(all: new Signature(typeof(global::Arch.System.SourceGenerator.Tests.IntComponentA)), any: Signature.Null, none: Signature.Null, exclusive: Signature.Null);
+        private World? _Default_Initialized;
+        private Query? _Default_Query;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void BasicQuery(World world)
+        public void DefaultQuery(World world)
         {
-            if (!ReferenceEquals(_Basic_Initialized, world))
+            if (!ReferenceEquals(_Default_Initialized, world))
             {
-                _Basic_Query = world.Query(in Basic_QueryDescription);
-                _Basic_Initialized = world;
+                _Default_Query = world.Query(in Default_QueryDescription);
+                _Default_Initialized = world;
             }
 
-            foreach (ref var chunk in _Basic_Query!)
+            foreach (ref var chunk in _Default_Query!)
             {
                 ref var @intcomponentaFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentA>();
                 foreach (var entityIndex in chunk)
                 {
                     ref var @_ = ref Unsafe.Add(ref intcomponentaFirstElement, entityIndex);
-                    Basic(@_);
+                    Default(@_);
                 }
             }
         }

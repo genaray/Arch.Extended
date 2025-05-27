@@ -58,4 +58,10 @@ internal sealed class SystemsTest
     {
         TestSystem<GeneratedUpdateSystem>();
     }
+
+    [Test]
+    public void AccessibilityCompilation()
+    {
+        TestSystem<AccessibilitySystem>();
+    }
 }

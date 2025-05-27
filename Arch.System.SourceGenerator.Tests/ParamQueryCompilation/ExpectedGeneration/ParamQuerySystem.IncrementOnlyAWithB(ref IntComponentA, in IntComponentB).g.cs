@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _IncrementOnlyAWithB_Initialized = world;
             }
 
-            foreach (ref var chunk in _IncrementOnlyAWithB_Query)
+            foreach (ref var chunk in _IncrementOnlyAWithB_Query!)
             {
                 ref var @intcomponentaFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentA>();
                 ref var @intcomponentbFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentB>();

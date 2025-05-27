@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _CountANoParams_Initialized = world;
             }
 
-            foreach (ref var chunk in _CountANoParams_Query)
+            foreach (ref var chunk in _CountANoParams_Query!)
             {
                 foreach (var entityIndex in chunk)
                 {
