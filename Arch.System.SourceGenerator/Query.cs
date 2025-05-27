@@ -203,6 +203,7 @@ public static class QueryUtils
 
         var queryData = methodSymbol.GetAttributeData("Query");
         bool isParallel = (bool)(queryData.NamedArguments.FirstOrDefault(d => d.Key == "Parallel").Value.Value ?? false);
+        var queryAccessbility = (QueryAccessibility)(queryData.NamedArguments.FirstOrDefault(d => d.Key == "Accessibility").Value.Value ?? QueryAccessibility.Public);
 
         // Get attributes
         var attributeData = methodSymbol.GetAttributeData("All");
@@ -257,7 +258,16 @@ public static class QueryUtils
             AllFilteredTypes = allArray,
             AnyFilteredTypes = anyArray,
             NoneFilteredTypes = noneArray,
-            ExclusiveFilteredTypes = exclusiveArray
+            ExclusiveFilteredTypes = exclusiveArray,
+            Accessibility = queryAccessbility switch
+            {
+                QueryAccessibility.Public => "public",
+                QueryAccessibility.Internal => "internal",
+                QueryAccessibility.Protected => "protected",
+                QueryAccessibility.ProtectedInternal => "protected internal",
+                QueryAccessibility.Private => "private",
+                _ => "public"
+            }
         };
         
         return isParallel ? sb.AppendParallelQueryMethod(ref queryMethod) : sb.AppendQueryMethod(ref queryMethod);
@@ -309,7 +319,7 @@ public static class QueryUtils
                     private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
+                    {{queryMethod.Accessibility}} {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
                         if(!ReferenceEquals(_{{queryMethod.MethodName}}_Initialized, world)) {
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);
@@ -403,7 +413,7 @@ public static class QueryUtils
                     }
             
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    public {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
+                    {{queryMethod.Accessibility}} {{staticModifier}} void {{queryMethod.MethodName}}Query(World world {{data}}){
                      
                         if(!ReferenceEquals(_{{queryMethod.MethodName}}_Initialized, world)) {
                             _{{queryMethod.MethodName}}_Query = world.Query(in {{queryMethod.MethodName}}_QueryDescription);

@@ -1,6 +1,33 @@
 ﻿namespace Arch.System;
 
 /// <summary>
+///     Accessibility levels for queries.
+/// </summary>
+public enum QueryAccessibility
+{
+    /// <summary>
+    ///   Public accessibility
+    /// </summary>
+    Public,
+    /// <summary>
+    ///     Internal accessibility
+    /// </summary>
+    Internal,
+    /// <summary>
+    /// Private accessibility
+    /// </summary>
+    Private,
+    /// <summary>
+    /// Protected accessibility
+    /// </summary>
+    Protected,
+    /// <summary>
+    /// Protected internal accessibility
+    /// </summary>
+    ProtectedInternal
+}
+
+/// <summary>
 ///     Marks a method to generate a high performance query for it. 
 /// </summary>
 [global::System.AttributeUsage(global::System.AttributeTargets.Method)]
@@ -10,6 +37,11 @@ public class QueryAttribute : global::System.Attribute
     /// If set to true, Query will be run in parallel.
     /// </summary>
     public bool Parallel { get; set; }
+
+    /// <summary>
+    ///     The accessibility of the generated query method.
+    /// </summary>
+    public QueryAccessibility Accessibility { get; set; } = QueryAccessibility.Public;
 }
 
 /// <summary>

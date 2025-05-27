@@ -196,4 +196,10 @@ internal class SnapshotTest
     {
         VerifyCompilation(nameof(GeneratedUpdateCompilation), "GeneratedUpdateSystem");
     }
+
+    [Test]
+    public void AccessibilityCompilation()
+    {
+        VerifyCompilation(nameof(AccessibilityCompilation), "AccessibilitySystem");
+    }
 }

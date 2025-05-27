@@ -67,6 +67,11 @@ public struct QueryMethod
     /// The name of the Query method.
     /// </summary>
     public string MethodName { get; set; }
+
+    /// <summary>
+    /// The accessibility of the generated query method.
+    /// </summary>
+    public string Accessibility { get; set; }
     
     /// <summary>
     /// The entity parameter, if its an entity query. 
@@ -108,4 +113,31 @@ public struct QueryMethod
     /// <remarks>[Exclusive(typeof(Position), typeof(Velocity)] or its generic variant</remarks>
     /// </summary>
     public IList<ITypeSymbol> ExclusiveFilteredTypes { get; set; }
+}
+
+/// <summary>
+///     Accessibility levels for queries.
+/// </summary>
+public enum QueryAccessibility
+{
+    /// <summary>
+    ///   Public accessibility
+    /// </summary>
+    Public,
+    /// <summary>
+    ///     Internal accessibility
+    /// </summary>
+    Internal,
+    /// <summary>
+    /// Private accessibility
+    /// </summary>
+    Private,
+    /// <summary>
+    /// Protected accessibility
+    /// </summary>
+    Protected,
+    /// <summary>
+    /// Protected internal accessibility
+    /// </summary>
+    ProtectedInternal
 }
