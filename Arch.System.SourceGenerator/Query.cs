@@ -196,8 +196,10 @@ public static class QueryUtils
     {
 
         // Check for entity param
-        var entity = methodSymbol.Parameters.Any(symbol => symbol.Type.Name.Equals("Entity"));
-        var entityParam = entity ? methodSymbol.Parameters.First(symbol => symbol.Type.Name.Equals("Entity")) : null;
+        var entityParam = methodSymbol.Parameters.FirstOrDefault(symbol => symbol.Type.Name.Equals("Entity")
+            && symbol.GetAttributes().All(data => !(data.AttributeClass?.Name.Contains("Data") ?? false)));
+
+        var entity = entityParam != null;
 
         var queryData = methodSymbol.GetAttributeData("Query");
         bool isParallel = (bool)(queryData.NamedArguments.FirstOrDefault(d => d.Key == "Parallel").Value.Value ?? false);
