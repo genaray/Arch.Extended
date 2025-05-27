@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _Basic_Initialized = world;
             }
 
-            foreach (ref var chunk in _Basic_Query)
+            foreach (ref var chunk in _Basic_Query!)
             {
                 ref var @intcomponentaFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentA>();
                 foreach (var entityIndex in chunk)

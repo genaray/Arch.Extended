@@ -314,7 +314,7 @@ public static class QueryUtils
                             _{{queryMethod.MethodName}}_Initialized = world;
                         }
 
-                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query){
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query!){
                             
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}

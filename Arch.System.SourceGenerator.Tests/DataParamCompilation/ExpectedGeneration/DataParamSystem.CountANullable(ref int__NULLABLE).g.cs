@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _CountANullable_Initialized = world;
             }
 
-            foreach (ref var chunk in _CountANullable_Query)
+            foreach (ref var chunk in _CountANullable_Query!)
             {
                 foreach (var entityIndex in chunk)
                 {

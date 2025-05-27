@@ -147,13 +147,14 @@ internal class SnapshotTest
         });
 
         // Compare the generated files with the expected files
+        // Trim them because editors like newlines at ends of files
         var expectedFiles = csFiles
             .Where(file => file.FullName.Contains("ExpectedGeneration"))
-            .Select(file => (Name: file.Name, Text: File.ReadAllText(file.FullName)))
+            .Select(file => (Name: file.Name, Text: File.ReadAllText(file.FullName).Trim()))
             .OrderBy(x => x.Name).ToArray();
 
         var generatedFiles = driver.GetRunResult().GeneratedTrees
-            .Select(tree => (Name: Path.GetFileName(tree.FilePath), Text: tree.GetText().ToString()))
+            .Select(tree => (Name: Path.GetFileName(tree.FilePath), Text: tree.GetText().ToString().Trim()))
             .Where(x => x.Name != "Attributes.g.cs") // Skip the attributes file
             .OrderBy(x => x.Name).ToArray();
 
