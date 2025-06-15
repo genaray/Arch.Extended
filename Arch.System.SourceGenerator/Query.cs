@@ -118,17 +118,22 @@ public static class QueryUtils
         }
         return sb;
     }
-    
+
     /// <summary>
     ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
     ///     <example>ref gameTime, out somePassedList,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> of <see cref="IParameterSymbol"/>s which will be appended if they are marked with data.</param>
+    /// <param name="isStatic">Whether the method is static and should not add the self parameter</param>
     /// <returns></returns>
-    public static StringBuilder JobParametersAssigment(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
+    public static StringBuilder JobParametersAssigment(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols, bool isStatic)
     {
         bool found = false;
+        if (!isStatic)
+        {
+            sb.Append($"self = this,");
+        }
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
@@ -347,7 +352,7 @@ public static class QueryUtils
         
         // Generate code 
         var jobParameters = new StringBuilder().JobParameters(queryMethod.Parameters);
-        var jobParametersAssigment = new StringBuilder().JobParametersAssigment(queryMethod.Parameters);
+        var jobParametersAssigment = new StringBuilder().JobParametersAssigment(queryMethod.Parameters, queryMethod.IsStatic);
         var data = new StringBuilder().DataParameters(queryMethod.Parameters);
         var getFirstElements = new StringBuilder().GetFirstElements(queryMethod.Components);
         var getComponents = new StringBuilder().GetComponents(queryMethod.Components);
@@ -385,7 +390,7 @@ public static class QueryUtils
                     private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
                     {
                         {{jobParameters}}
-                        
+                        public {{queryMethod.ClassName}} self;
                         public void Execute(ref Chunk chunk) {
                         
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
@@ -395,7 +400,7 @@ public static class QueryUtils
                             {
                                 {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
                                 {{getComponents}}
-                                {{queryMethod.MethodName}}({{insertParams}});
+                                {{(queryMethod.IsStatic ? "" : "self.")}}{{queryMethod.MethodName}}({{insertParams}});
                             }
                         }
                     }
