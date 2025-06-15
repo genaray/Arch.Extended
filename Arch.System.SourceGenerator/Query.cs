@@ -118,17 +118,22 @@ public static class QueryUtils
         }
         return sb;
     }
-    
+
     /// <summary>
     ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
     ///     <example>ref gameTime, out somePassedList,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> of <see cref="IParameterSymbol"/>s which will be appended if they are marked with data.</param>
+    /// <param name="isStatic">Whether the method is static and should not add the self parameter</param>
     /// <returns></returns>
-    public static StringBuilder JobParametersAssigment(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols)
+    public static StringBuilder JobParametersAssigment(this StringBuilder sb, IEnumerable<IParameterSymbol> parameterSymbols, bool isStatic)
     {
         bool found = false;
+        if (!isStatic)
+        {
+            sb.Append($"self = this,");
+        }
         foreach (var parameter in parameterSymbols)
         {
             if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
@@ -347,7 +352,7 @@ public static class QueryUtils
         
         // Generate code 
         var jobParameters = new StringBuilder().JobParameters(queryMethod.Parameters);
-        var jobParametersAssigment = new StringBuilder().JobParametersAssigment(queryMethod.Parameters);
+        var jobParametersAssigment = new StringBuilder().JobParametersAssigment(queryMethod.Parameters, queryMethod.IsStatic);
         var data = new StringBuilder().DataParameters(queryMethod.Parameters);
         var getFirstElements = new StringBuilder().GetFirstElements(queryMethod.Components);
         var getComponents = new StringBuilder().GetComponents(queryMethod.Components);
@@ -382,21 +387,24 @@ public static class QueryUtils
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
-                    private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
+                    private struct {{queryMethod.MethodName}}QueryJobChunk : IParallelChunkJobProducer 
                     {
                         {{jobParameters}}
-                        
-                        public void Execute(ref Chunk chunk) {
+                        public {{queryMethod.ClassName}} self;
+                        private Chunk chunk;
+                        public void RunSingle(int entityIndex) {
                         
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
                     
-                            foreach(var entityIndex in chunk)
-                            {
-                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
-                                {{getComponents}}
-                                {{queryMethod.MethodName}}({{insertParams}});
-                            }
+                            {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
+                            {{getComponents}}
+                            {{(queryMethod.IsStatic ? "" : "self.")}}{{queryMethod.MethodName}}({{insertParams}});
+                        }
+                        
+                        public void SetChunk(Chunk chunk)
+                        {
+                            this.chunk = chunk;
                         }
                     }
             
@@ -409,7 +417,7 @@ public static class QueryUtils
                         }
                         
                         var job = new {{queryMethod.MethodName}}QueryJobChunk() { {{jobParametersAssigment}} };
-                        world.InlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job);
+                        world.AdvancedInlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job);
                     }
                 }
             {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
