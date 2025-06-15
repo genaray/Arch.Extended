@@ -387,21 +387,24 @@ public static class QueryUtils
                     private {{staticModifier}} World? _{{queryMethod.MethodName}}_Initialized;
                     private {{staticModifier}} Query? _{{queryMethod.MethodName}}_Query;
 
-                    private struct {{queryMethod.MethodName}}QueryJobChunk : IChunkJob 
+                    private struct {{queryMethod.MethodName}}QueryJobChunk : IParallelChunkJobProducer 
                     {
                         {{jobParameters}}
                         public {{queryMethod.ClassName}} self;
-                        public void Execute(ref Chunk chunk) {
+                        private Chunk chunk;
+                        public void RunSingle(int entityIndex) {
                         
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
                     
-                            foreach(var entityIndex in chunk)
-                            {
-                                {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
-                                {{getComponents}}
-                                {{(queryMethod.IsStatic ? "" : "self.")}}{{queryMethod.MethodName}}({{insertParams}});
-                            }
+                            {{(queryMethod.IsEntityQuery ? $"ref readonly var {queryMethod.EntityParameter.Name.ToLower()} = ref Unsafe.Add(ref entityFirstElement, entityIndex);" : "")}}
+                            {{getComponents}}
+                            {{(queryMethod.IsStatic ? "" : "self.")}}{{queryMethod.MethodName}}({{insertParams}});
+                        }
+                        
+                        public void SetChunk(Chunk chunk)
+                        {
+                            this.chunk = chunk;
                         }
                     }
             
@@ -414,7 +417,7 @@ public static class QueryUtils
                         }
                         
                         var job = new {{queryMethod.MethodName}}QueryJobChunk() { {{jobParametersAssigment}} };
-                        world.InlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job);
+                        world.AdvancedInlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job);
                     }
                 }
             {{(!queryMethod.IsGlobalNamespace ? "}" : "")}}
