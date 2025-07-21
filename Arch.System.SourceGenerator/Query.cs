@@ -351,7 +351,10 @@ public static class QueryUtils
                         }
                         var job = new {{queryMethod.MethodName}}QueryJobChunk() { {{jobParametersAssigment}} };
                         var handle = World.SharedJobScheduler.Schedule(job, parent);
-                        handle.SetDependsOn(source);
+                        if(!source.IsNull)
+                        {
+                            handle.SetDependsOn(source);
+                        }
                         World.SharedJobScheduler.Flush(handle);
                         return handle;
                     }
