@@ -41,7 +41,7 @@ public static class WorldRelationshipExtensions
         foreach (var (target, inRelationship) in relationships.Elements)
         {
             var id = inRelationship.ComponentTypeId;
-            var componentType = new ComponentType(id, null, 0, false);
+            var componentType = new ComponentType(id, 0);
             
             // Get slots, chunk and array to prevent entity.Get(type) object allocation
             ref readonly var chunk = ref world.GetChunk(target);
@@ -49,7 +49,7 @@ public static class WorldRelationshipExtensions
             var relationshipsArray = Unsafe.As<IRelationship[]>(array);
 
             var slot = world.GetSlot(target);
-            var relationship = relationshipsArray[slot.Item1];
+            var relationship = relationshipsArray[slot.Index];
             relationship.Remove(entity);
             
             if (relationship.Count == 0)

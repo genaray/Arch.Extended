@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arch.System.SourceGenerator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arch.System.SourceGenerator.Tests", "Arch.System.SourceGenerator.Tests\Arch.System.SourceGenerator.Tests.csproj", "{FDDA22B1-43DF-48E6-82CE-BC528C8349B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.AOT.SourceGenerator", "Arch.AOT.SourceGenerator\Arch.AOT.SourceGenerator.csproj", "{454AC3E0-A46A-4620-A377-3A360B8D11A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Persistence.Tests", "Arch.Persistence.Tests\Arch.Persistence.Tests.csproj", "{15E851C2-ACD6-4626-A7E4-46AA4CCD3BD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +79,14 @@ Global
 		{FDDA22B1-43DF-48E6-82CE-BC528C8349B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDDA22B1-43DF-48E6-82CE-BC528C8349B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDDA22B1-43DF-48E6-82CE-BC528C8349B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{454AC3E0-A46A-4620-A377-3A360B8D11A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{454AC3E0-A46A-4620-A377-3A360B8D11A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{454AC3E0-A46A-4620-A377-3A360B8D11A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{454AC3E0-A46A-4620-A377-3A360B8D11A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15E851C2-ACD6-4626-A7E4-46AA4CCD3BD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15E851C2-ACD6-4626-A7E4-46AA4CCD3BD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15E851C2-ACD6-4626-A7E4-46AA4CCD3BD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15E851C2-ACD6-4626-A7E4-46AA4CCD3BD5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

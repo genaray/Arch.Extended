@@ -198,7 +198,7 @@ public class RelationshipTest
         // Query all ParentOf relationships
         var query = new QueryDescription().WithAll<Relationship<ParentOf>>();
         var entities = new List<Entity>();
-        _world.Query(query, (in Entity _, ref Relationship<ParentOf> parentOf) =>
+        _world.Query(query, (ref Relationship<ParentOf> parentOf) =>
         {
             entities.AddRange(parentOf.Elements.Select(p => p.Key));
         });

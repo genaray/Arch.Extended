@@ -43,13 +43,13 @@ public partial class SingleEntityFormatter : IJsonFormatter<Entity>
         // Write size
         var componentTypes = value.GetComponentTypes();
         writer.WritePropertyName("size");
-        writer.WriteInt32(componentTypes.Length);
+        writer.WriteInt32(componentTypes.Count);
         writer.WriteValueSeparator();
 
         // Write components
         writer.WritePropertyName("components");
         writer.WriteBeginArray();
-        foreach (ref var type in componentTypes.AsSpan())
+        foreach (ref var type in componentTypes.Components)
         {
             // Write type
             writer.WriteBeginObject();
@@ -418,7 +418,7 @@ public partial class EntitySlotFormatter : IJsonFormatter<EntityData>
         var entityIndex = reader.ReadUInt32();
 
         reader.ReadIsEndObject();
-        return new EntityData(null, new Slot((int)entityIndex, (int)chunkIndex));
+        return new EntityData(null, new Slot((int)entityIndex, (int)chunkIndex), 0);
     }
 }
 

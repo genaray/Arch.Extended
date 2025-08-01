@@ -82,6 +82,7 @@ public class Tests
             var newEntity = newEntities[index];
             
             That(entity.Id, Is.EqualTo(newEntity.Id));
+            That(entity.Version, Is.EqualTo(newEntity.Version));
             That(entity.Get<Transform>(), Is.EqualTo(newEntity.Get<Transform>()));
             That(entity.Get<MetaData>(), Is.EqualTo(newEntity.Get<MetaData>()));
         }
