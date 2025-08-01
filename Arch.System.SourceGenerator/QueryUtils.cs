@@ -1,16 +1,16 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace Arch.System.SourceGenerator;
 
+/// <summary>
+/// Various query utilities.
+/// </summary>
 public static class QueryUtils
 {
 
     /// <summary>
-    ///     Appends the first elements of the types specified in the <see cref="parameterSymbols"/> from the previous specified arrays.
+    ///     Appends the first elements of the types specified in the <paramref name="parameterSymbols"/> from the previous specified arrays.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the first elements for.</param>
@@ -19,14 +19,14 @@ public static class QueryUtils
     {
       
         foreach (var symbol in parameterSymbols)
-            if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data"))) // Prevent entity being added to the type array
+            if(symbol.Type.Name is not "Entity" || !symbol.GetAttributes().Any(data => data.AttributeClass!.Name.Contains("Data"))) // Prevent entity being added to the type array
                 sb.AppendLine($"ref var @{symbol.Type.Name.ToLower()}FirstElement = ref chunk.GetFirst<{symbol.Type.ToDisplayString(NullableFlowState.None, SymbolDisplayFormat.FullyQualifiedFormat)}>();");
 
         return sb;
     }
     
     /// <summary>
-    ///     Appends the components of the types specified in the <see cref="parameterSymbols"/> from the previous specified first elements.
+    ///     Appends the components of the types specified in the <paramref name="parameterSymbols"/> from the previous specified first elements.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
     /// <param name="parameterSymbols">The <see cref="IEnumerable{T}"/> list of <see cref="IParameterSymbol"/>s which we wanna append the components for.</param>
@@ -41,7 +41,7 @@ public static class QueryUtils
     }
     
     /// <summary>
-    ///     Inserts the types defined in the <see cref="parameterSymbols"/> as parameters in a method.
+    ///     Inserts the types defined in the <paramref name="parameterSymbols"/> as parameters in a method.
     ///     <example>ref position, out velocity,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
@@ -57,7 +57,7 @@ public static class QueryUtils
     }
     
     /// <summary>
-    ///     Creates a ComponentType array from the <see cref="parameterSymbols"/> passed through.
+    ///     Creates a ComponentType array from the <paramref name="parameterSymbols"/> passed through.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/>.</param>
     /// <param name="parameterSymbols">The <see cref="IList{T}"/> with <see cref="ITypeSymbol"/>s which we wanna create a ComponentType array for.</param>
@@ -84,7 +84,7 @@ public static class QueryUtils
 
 
     /// <summary>
-    ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
+    ///     Appends a set of <paramref name="parameterSymbols"/> if they are marked by the data attribute.
     ///     <example>ref gameTime, out somePassedList,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
@@ -95,7 +95,7 @@ public static class QueryUtils
         sb.Append(',');
         foreach (var parameter in parameterSymbols)
         {
-            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass!.Name.Contains("Data")))
                 sb.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} {parameter.Type} @{parameter.Name.ToLower()},");
         }
         sb.Length--;
@@ -103,7 +103,7 @@ public static class QueryUtils
     }
     
     /// <summary>
-    ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
+    ///     Appends a set of <paramref name="parameterSymbols"/> if they are marked by the data attribute.
     ///     <example>ref gameTime, out somePassedList,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
@@ -113,14 +113,14 @@ public static class QueryUtils
     {
         foreach (var parameter in parameterSymbols)
         {
-            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass!.Name.Contains("Data")))
                 sb.AppendLine($"public {parameter.Type} @{parameter.Name.ToLower()};");
         }
         return sb;
     }
     
     /// <summary>
-    ///     Appends a set of <see cref="parameterSymbols"/> if they are marked by the data attribute.
+    ///     Appends a set of <paramref name="parameterSymbols"/> if they are marked by the data attribute.
     ///     <example>ref gameTime, out somePassedList,...</example>
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> instance.</param>
@@ -131,7 +131,7 @@ public static class QueryUtils
         bool found = false;
         foreach (var parameter in parameterSymbols)
         {
-            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data")))
+            if (parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass!.Name.Contains("Data")))
             {
                 found = true;
                 sb.Append($"@{parameter.Name.ToLower()} = @{parameter.Name.ToLower()},");
@@ -156,7 +156,7 @@ public static class QueryUtils
             data.Append(',');
             foreach (var parameter in method.Parameters)
             {
-                if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass.Name.Contains("Data"))) continue;
+                if (!parameter.GetAttributes().Any(attributeData => attributeData.AttributeClass!.Name.Contains("Data"))) continue;
                 data.Append($"{CommonUtils.RefKindToString(parameter.RefKind)} data,");
                 break;
             }
@@ -172,17 +172,17 @@ public static class QueryUtils
     /// </summary>
     /// <param name="data">The <see cref="AttributeData"/>.</param>
     /// <param name="array">The <see cref="List{T}"/> where the found <see cref="ITypeSymbol"/>s are added to.</param>
-    public static void GetAttributeTypes(AttributeData data, List<ITypeSymbol> array)
+    public static void GetAttributeTypes(AttributeData? data, List<ITypeSymbol> array)
     {
-        if (data is not null && data.AttributeClass.IsGenericType)
+        if (data is not null && data.AttributeClass!.IsGenericType)
         {
             array.AddRange(data.AttributeClass.TypeArguments);
         }
-        else if (data is not null && !data.AttributeClass.IsGenericType)
+        else if (data is not null && !data.AttributeClass!.IsGenericType)
         {
             var constructorArguments = data.ConstructorArguments[0].Values;
             var constructorArgumentsTypes = constructorArguments.Select(constant => constant.Value as ITypeSymbol).ToList();
-            array.AddRange(constructorArgumentsTypes);
+            array.AddRange(constructorArgumentsTypes!);
         }
     }
 
@@ -211,7 +211,7 @@ public static class QueryUtils
         // Get params / components except those marked with data or entities. 
         var components = methodSymbol.Parameters.ToList();
         components.RemoveAll(symbol => symbol.Type.Name.Equals("Entity"));                                                // Remove entitys 
-        components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass.Name.Contains("Data")));    // Remove data annotated params
+        components.RemoveAll(symbol => symbol.GetAttributes().Any(data => data.AttributeClass!.Name.Contains("Data")));    // Remove data annotated params
         
         // Create all query array
         var allArray = components.Select(symbol => symbol.Type).ToList();
@@ -226,10 +226,10 @@ public static class QueryUtils
         GetAttributeTypes(exclusiveAttributeData, exclusiveArray);
         
         // Remove doubles and entities 
-        allArray = allArray.Distinct().ToList();
-        anyArray = anyArray.Distinct().ToList();
-        noneArray = noneArray.Distinct().ToList();
-        exclusiveArray = exclusiveArray.Distinct().ToList();
+        allArray = allArray.Distinct<ITypeSymbol>(SymbolEqualityComparer.Default).ToList();
+        anyArray = anyArray.Distinct<ITypeSymbol>(SymbolEqualityComparer.Default).ToList();
+        noneArray = noneArray.Distinct<ITypeSymbol>(SymbolEqualityComparer.Default).ToList();
+        exclusiveArray = exclusiveArray.Distinct<ITypeSymbol>(SymbolEqualityComparer.Default).ToList();
         
         allArray.RemoveAll(symbol => symbol.Name.Equals("Entity")); 
         anyArray.RemoveAll(symbol => symbol.Name.Equals("Entity"));
@@ -248,7 +248,7 @@ public static class QueryUtils
             IsEntityQuery = entity,
             MethodName = methodSymbol.Name,
             
-            EntityParameter = entityParam,
+            EntityParameter = entityParam!,
             Parameters = methodSymbol.Parameters,
             Components = components,
             
@@ -314,7 +314,7 @@ public static class QueryUtils
                             _{{queryMethod.MethodName}}_Initialized = world;
                         }
 
-                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query){
+                        foreach(ref var chunk in _{{queryMethod.MethodName}}_Query!){
                             
                             {{(queryMethod.IsEntityQuery ? "ref var entityFirstElement = ref chunk.Entity(0);" : "")}}
                             {{getFirstElements}}
@@ -457,7 +457,7 @@ public static class QueryUtils
         // Get generic of BaseSystem
         var typeSymbol = parentSymbol.TypeArguments[1];
 
-        var className = classSymbol.ToString();
+        var className = classSymbol!.ToString();
 
         // Generate basesystem.
         var baseSystem = new BaseSystem

@@ -20,7 +20,7 @@ public static class EntityRelationshipExtensions
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <param name="relationship">The relationship instance.</param>
-    public static void AddRelationship<T>(this in Entity source, Entity target, T relationship = default)
+    public static void AddRelationship<T>(this in Entity source, Entity target, T relationship = default!)
     {
         var world = World.Worlds[source.WorldId];
         world.AddRelationship(source, target, relationship);
@@ -33,7 +33,7 @@ public static class EntityRelationshipExtensions
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <param name="relationship">The relationship instance.</param>
-    public static void SetRelationship<T>(this in Entity source, Entity target, T relationship = default)
+    public static void SetRelationship<T>(this in Entity source, Entity target, T relationship = default!)
     {
         var world = World.Worlds[source.WorldId];
         world.SetRelationship(source, target, relationship);

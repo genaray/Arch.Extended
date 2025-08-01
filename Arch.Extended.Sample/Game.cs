@@ -27,18 +27,18 @@ namespace Arch.Extended;
 public class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading
-    private World _world;
-    private JobScheduler _jobScheduler;
+    private World _world = null!;
+    private JobScheduler _jobScheduler = null!;
     
     // Our systems processing entities
-    private System.Group<GameTime> _systems;
-    private DrawSystem _drawSystem;
+    private System.Group<GameTime> _systems = null!;
+    private DrawSystem _drawSystem = null!;
 
     // Monogame stuff
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
-    private Texture2D _texture2D;
-    private Random _random;
+    private SpriteBatch _spriteBatch = null!;
+    private Texture2D _texture2D = null!;
+    private Random _random = null!;
     
     public Game()
     {

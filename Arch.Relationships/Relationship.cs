@@ -27,7 +27,7 @@ internal interface IRelationship
     internal void Destroy(World world, Entity source);
 
     /// <summary>
-    ///     Removes the relationship targeting <see cref="target"/> from this buffer.
+    ///     Removes the relationship targeting <paramref name="target"/> from this buffer.
     /// </summary>
     /// <param name="target">The <see cref="Entity"/> in the relationship to remove.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,7 +35,7 @@ internal interface IRelationship
 }
 
 /// <summary>
-///     A buffer storing relationships of <see cref="Entity"/> and <see cref="T"/>.
+///     A buffer storing relationships of <see cref="Entity"/> and <typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the second relationship element.</typeparam>
 public class Relationship<T> : IRelationship
@@ -91,12 +91,12 @@ public class Relationship<T> : IRelationship
     }
     
     /// <summary>
-    ///     Sets the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    ///     Sets the stored <typeparamref name="T"/> for the given <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="data">The data to store.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(Entity entity, T data = default)
+    public void Set(Entity entity, T data = default!)
     {
         Elements[entity] = data;
     }
@@ -113,25 +113,26 @@ public class Relationship<T> : IRelationship
     }
     
     /// <summary>
-    ///     Returns the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    ///     Returns the stored <typeparamref name="T"/> for the given <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>The stored <see cref="T"/>.</returns>
+    /// <returns>The stored <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Get(Entity entity)
     {
         return Elements[entity];
     }
-    
+
     /// <summary>
-    ///     Returns the stored <see cref="T"/> for the given <see cref="Entity"/>.
+    ///     Returns the stored <typeparamref name="T"/> for the given <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>The stored <see cref="T"/>.</returns>
+    /// <param name="value">The stored <typeparamref name="T"/>.</param>
+    /// <returns>The stored <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetValue(Entity entity, out T value)
     {
-        return Elements.TryGetValue(entity, out value);
+        return Elements.TryGetValue(entity, out value!);
     }
     
     /// <inheritdoc/>
@@ -163,9 +164,9 @@ public class Relationship<T> : IRelationship
     }
 
     /// <summary>
-    ///     Creates a new <see cref="SortedListEnumerator{TKey,TValue}"/>.
+    ///     Creates a new <see cref="SortedListEnumerator{TValue}"/>.
     /// </summary>
-    /// <returns>The new <see cref="SortedListEnumerator{TKey,TValue}"/>.</returns>
+    /// <returns>The new <see cref="SortedListEnumerator{TValue}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SortedListEnumerator<T> GetEnumerator()
     {

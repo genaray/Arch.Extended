@@ -29,6 +29,7 @@ public static class WorldRelationshipExtensions
     /// <summary>
     ///     Cleans up all relations of the passed <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world"></param>
     /// <param name="entity"></param>
     public static void CleanupRelationships(this World world, in Entity entity)
     {
@@ -67,17 +68,17 @@ public static class WorldRelationshipExtensions
         }
     }
 #endif
-    
 
     /// <summary>
     ///     Adds a new relationship to the <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <param name="relationship">The relationship instance.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AddRelationship<T>(this World world, Entity source, Entity target, in T relationship = default)
+    public static void AddRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
         ref var buffer = ref world.AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
@@ -86,18 +87,18 @@ public static class WorldRelationshipExtensions
         ref var targetBuffer = ref world.AddOrGetRelationships<InRelationship>(target);
         targetBuffer.Add(in targetComp, source);
     }
-    
 
     /// <summary>
     ///     Ensures the existence of a relationship on an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <param name="relationship">The relationship value used if its being added.</param>
     /// <returns>The relationship.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T AddOrGetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default)
+    public static T AddOrGetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
         ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
         if (exists)
@@ -108,10 +109,11 @@ public static class WorldRelationshipExtensions
         world.AddRelationship(source, target, in relationship);
         return world.GetRelationship<T>(source, target);
     }
-    
+
     /// <summary>
     ///     Ensures the existence of a buffer of relationships on an <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationships.</param>
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <returns>The relationships.</returns>
@@ -121,22 +123,23 @@ public static class WorldRelationshipExtensions
         ref var component = ref world.TryGetRef<Relationship<T>>(source, out var exists);
         if (exists)
         {
-            return ref component;
+            return ref component!;
         }
 
         world.Add(source, new Relationship<T>());
         return ref world.Get<Relationship<T>>(source);
     }
-    
+
     /// <summary>
     ///     Sets the existing relationship data.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <param name="relationship">The new data.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default)
+    public static void SetRelationship<T>(this World world, Entity source, Entity target, in T relationship = default!)
     {
         ref var relationships = ref world.GetRelationships<T>(source);
         relationships.Set(target, relationship);
@@ -146,6 +149,7 @@ public static class WorldRelationshipExtensions
     ///     Checks if an <see cref="Entity"/> has a certain relationship.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <returns>True if it has the desired relationship, otherwise false.</returns>
@@ -160,11 +164,12 @@ public static class WorldRelationshipExtensions
 
         return relationships.Contains(target);
     }
-    
+
     /// <summary>
     ///     Checks if an <see cref="Entity"/> has a certain relationship.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <returns>True if it has the desired relationship, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -177,6 +182,7 @@ public static class WorldRelationshipExtensions
     ///     Returns a relationship of an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <returns>The relationship.</returns>
@@ -192,6 +198,7 @@ public static class WorldRelationshipExtensions
     ///     Will copy the relationship if its a struct.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <param name="relationship">The found relationship.</param>
@@ -202,16 +209,18 @@ public static class WorldRelationshipExtensions
         ref var relationships = ref world.TryGetRefRelationships<T>(source, out var exists);
         if (!exists)
         {
-            relationship = default;
+            relationship = default!;
             return false;
         }
 
         return relationships.TryGetValue(target, out relationship);
     }
+
     /// <summary>
     ///     Returns all relationships of the given type of an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -224,20 +233,22 @@ public static class WorldRelationshipExtensions
     ///     Tries to return an <see cref="Entity"/>s relationships of the specified type.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The <see cref="Entity"/>.</param>
     /// <param name="relationships">The found relationships.</param>
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     internal static bool TryGetRelationships<T>(this World world, Entity source, out Relationship<T> relationships)
     {
-        return world.TryGet(source, out relationships);
+        return world.TryGet(source, out relationships!);
     }
 
-        /// <summary>
+    /// <summary>
     ///     Tries to return a reference to an <see cref="Entity"/>s relationships of the
     ///     specified type.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The <see cref="Entity"/>.</param>
     /// <param name="exists">True if it exists, otherwise false.</param>
     /// <returns>A reference to the relationships.</returns>
@@ -251,6 +262,7 @@ public static class WorldRelationshipExtensions
     ///     Removes a relationship from an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="world">World.</param>
     /// <param name="source">The <see cref="Entity"/> to remove the relationship from.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

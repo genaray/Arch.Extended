@@ -54,7 +54,9 @@ public class UnsafeArrayTest
         var array = new UnsafeArray<int>(35);
         using (array)
         {
+#pragma warning disable CS0728 // Possibly incorrect assignment to local which is the argument to a using or lock statement
             UnsafeArray.Fill(ref array, 8);
+#pragma warning restore CS0728 // Possibly incorrect assignment to local which is the argument to a using or lock statement
 
             for (var i = 0; i < array.Length; i++)
                 That(array[i], Is.EqualTo(8));
@@ -72,8 +74,10 @@ public class UnsafeArrayTest
             for (var i = 0; i < src.Length; i++)
                 src[i] = i;
 
+#pragma warning disable CS0728 // Possibly incorrect assignment to local which is the argument to a using or lock statement
             UnsafeArray.Fill(ref dst);
             UnsafeArray.Copy(ref src, 4, ref dst, 1, 4);
+#pragma warning restore CS0728 // Possibly incorrect assignment to local which is the argument to a using or lock statement
 
             Multiple(() =>
             {

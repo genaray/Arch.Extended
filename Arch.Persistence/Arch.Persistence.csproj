@@ -23,6 +23,10 @@
         <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 
         <UnityPublish>true</UnityPublish>
+
+        <!-- Package 'MessagePack' 2.6.100-alpha has a known moderate severity vulnerability, https://github.com/advisories/GHSA-4qm4-8hg2-g2xm -->
+        <!-- For proper fix, consider upgrading to MessagePack v3 https://github.com/MessagePack-CSharp/MessagePack-CSharp/blob/master/doc/migrating_v2-v3.md -->
+        <NoWarn>NU1902</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

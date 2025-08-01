@@ -15,8 +15,8 @@ public class SpriteSerializer : IJsonFormatter<Sprite>, IMessagePackFormatter<Sp
     /// <summary>
     ///     The <see cref="GraphicsDevice"/> to create <see cref="Texture2D"/>s from. 
     /// </summary>
-    public GraphicsDevice GraphicsDevice { get; set; }
-    
+    public GraphicsDevice GraphicsDevice { get; set; } = null!;
+
     public void Serialize(ref JsonWriter writer, Sprite value, IJsonFormatterResolver formatterResolver)
     {
         writer.WriteBeginObject();

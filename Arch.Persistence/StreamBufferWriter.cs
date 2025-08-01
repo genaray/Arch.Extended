@@ -125,7 +125,7 @@ public sealed class StreamBufferWriter : IBufferWriter<byte>, IDisposable
         Flush(true);
         
         var tmp = _buffer;
-        _buffer = null;
+        _buffer = null!;
         ArrayPool<byte>.Shared.Return(tmp);
 
         if (_ownsStream)

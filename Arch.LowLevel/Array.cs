@@ -187,6 +187,9 @@ public readonly struct Array<T>
 }
 
 
+/// <summary>
+/// Array.
+/// </summary>
 public unsafe struct Array
 {
 
@@ -221,13 +224,13 @@ public unsafe struct Array
     /// <param name="source">The <see cref="UnsafeArray{T}"/> instance.</param>
     /// <param name="value">The value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Fill<T>(ref Array<T> source, in T value = default) 
+    public static void Fill<T>(ref Array<T> source, in T value = default!) 
     {
         source.AsSpan().Fill(value);
     }
     
     /// <summary>
-    ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <see cref="newCapacity"/>.
+    ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <paramref name="newCapacity"/>.
     /// </summary>
     /// <param name="source">The <see cref="UnsafeArray{T}"/>.</param>
     /// <param name="newCapacity">The new capacity.</param>

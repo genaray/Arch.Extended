@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _AutoRunB_Initialized = world;
             }
 
-            foreach (ref var chunk in _AutoRunB_Query)
+            foreach (ref var chunk in _AutoRunB_Query!)
             {
                 foreach (var entityIndex in chunk)
                 {

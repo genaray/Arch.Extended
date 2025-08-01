@@ -2,7 +2,10 @@
 
 namespace Arch.Bus;
 
-public static class IMethodSymbolExtensions
+/// <summary>
+/// Method symbol extensions.
+/// </summary>
+public static class MethodSymbolExtensions
 {
 
     /// <summary>
@@ -16,12 +19,12 @@ public static class IMethodSymbolExtensions
         foreach (var attribute in ms.GetAttributes())
         {
             var classSymbol = attribute.AttributeClass;
-            if(!classSymbol.Name.Contains(name)) continue;
+            if(!classSymbol!.Name.Contains(name)) continue;
 
             return attribute;
         }
 
-        return default;
+        return default!;
     }
     
     /// <summary>
@@ -30,17 +33,17 @@ public static class IMethodSymbolExtensions
     /// </summary>
     /// <param name="data">The <see cref="AttributeData"/>.</param>
     /// <param name="array">The <see cref="List{T}"/> where the found <see cref="ITypeSymbol"/>s are added to.</param>
-    public static void GetAttributeTypes(this AttributeData data, List<ITypeSymbol> array)
+    public static void GetAttributeTypes(this AttributeData? data, List<ITypeSymbol> array)
     {
-        if (data is not null && data.AttributeClass.IsGenericType)
+        if (data is not null && data.AttributeClass!.IsGenericType)
         {
             array.AddRange(data.AttributeClass.TypeArguments);
         }
-        else if (data is not null && !data.AttributeClass.IsGenericType)
+        else if (data is not null && !data.AttributeClass!.IsGenericType)
         {
             var constructorArguments = data.ConstructorArguments[0].Values;
             var constructorArgumentsTypes = constructorArguments.Select(constant => constant.Value as ITypeSymbol).ToList();
-            array.AddRange(constructorArgumentsTypes);
+            array.AddRange(constructorArgumentsTypes!);
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace Arch.System.SourceGenerator;
 
+/// <summary>
+/// Common utils.
+/// </summary>
 public static class CommonUtils
 {
     
@@ -25,7 +27,7 @@ public static class CommonUtils
             case RefKind.Out:
                 return "out";
         }
-        return null;
+        return null!;
     }
     
     /// <summary>

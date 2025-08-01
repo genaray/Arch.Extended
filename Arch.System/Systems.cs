@@ -178,7 +178,7 @@ public class Group<T> : ISystem<T>
     }
 
     /// <summary>
-    ///     Return the first <see cref="G"/> which was found in the hierachy.
+    ///     Return the first <typeparamref name="G"/> which was found in the hierachy.
     /// </summary>
     /// <typeparam name="G">The Type.</typeparam>
     /// <returns></returns>

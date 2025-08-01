@@ -322,7 +322,7 @@ public class SparseJaggedArray<T>
         }
 
         @bool = true;
-        return ref item; 
+        return ref item!; 
     }
 
     /// <summary>

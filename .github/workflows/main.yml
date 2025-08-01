@@ -34,6 +34,6 @@ jobs:
     - name: Restore packages
       run: dotnet restore Arch.Extended.sln
     - name: Build
-      run: dotnet build Arch.Extended.sln -c ${{ matrix.config }} --no-restore
+      run: dotnet build Arch.Extended.sln -c ${{ matrix.config }} --no-restore -warnaserror
     - name: Test
       run: dotnet test Arch.Extended.sln -c ${{ matrix.config }} -l "console;verbosity=detailed"
