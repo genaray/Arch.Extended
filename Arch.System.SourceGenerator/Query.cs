@@ -465,7 +465,7 @@ public static class QueryUtils
                         }
                         
                         var job = new {{queryMethod.MethodName}}QueryJobChunk() { {{jobParametersAssigment}} };
-                        var parentHandle = World.SharedJobScheduler.Schedule();
+                        var parentHandle = World.SharedJobScheduler!.Schedule();
                         var handle = world.AdvancedInlineParallelChunkQuery(in {{queryMethod.MethodName}}_QueryDescription, job, parentHandle, default);
                         World.SharedJobScheduler.Flush(parentHandle);
                         handle.Wait();
