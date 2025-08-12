@@ -17,7 +17,7 @@
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A source generator for arch to support AOT. </Description>
-        <PackageReleaseNotes>Updated to Arch 1.7 and up. </PackageReleaseNotes>
+        <PackageReleaseNotes>Updated to Arch 2.1.0 </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
 
         <PackageProjectUrl>https://github.com/genaray/Arch.Extended</PackageProjectUrl>
