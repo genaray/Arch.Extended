@@ -31,10 +31,10 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
 
         // Write size
         var componentTypes = value.GetComponentTypes();
-        writer.WriteInt32(componentTypes.Length);
+        writer.WriteInt32(componentTypes.Count);
 
         // Write components
-        foreach (ref var type in componentTypes.AsSpan())
+        foreach (ref var type in componentTypes)
         {
             // Write type
             MessagePackSerializer.Serialize(ref writer, type, options);
@@ -252,6 +252,10 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
 
         // Write entity index
         writer.WriteUInt32((uint)value.Slot.Index);
+        
+        
+        // Write entity version
+        writer.WriteUInt32((uint)value.Version);
     }
 
     public EntityData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -260,8 +264,9 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
         // Read chunk index and entity index
         var chunkIndex = reader.ReadUInt32();
         var entityIndex = reader.ReadUInt32();
+        var entityVersion = reader.ReadUInt32();
 
-        return new EntityData(null, new Slot((int)entityIndex, (int)chunkIndex));
+        return new EntityData(null, new Slot((int)entityIndex, (int)chunkIndex), (int)entityVersion);
     }
 }
 
