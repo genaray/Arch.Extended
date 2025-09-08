@@ -64,6 +64,9 @@ public struct ReceivingMethod
     public int Order;
 }
 
+/// <summary>
+/// EventBusExtensions
+/// </summary>
 public static class EventBusExtensions
 {
     
@@ -86,7 +89,7 @@ public static class EventBusExtensions
             case RefKind.Out:
                 return "out";
         }
-        return null;
+        return null!;
     }
 
     /// <summary>
@@ -108,7 +111,7 @@ public static class EventBusExtensions
     ///     Appends all methods redirecting events.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/>.</param>
-    /// <param name="callMethods">The <see cref="IList{T}"/> containing the <see cref="Method"/>s redirecting the event and calling the methods. </param>
+    /// <param name="callMethod">The <see cref="IList{T}"/> containing the <see cref="Method"/>s redirecting the event and calling the methods. </param>
     /// <returns></returns>
     public static StringBuilder AppendEventMethod(this StringBuilder sb, Method callMethod)
     {

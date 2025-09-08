@@ -18,6 +18,7 @@ namespace Arch.Persistence;
 public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
 {
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Entity value, MessagePackSerializerOptions options)
     {
         // Write id
@@ -31,10 +32,10 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
 
         // Write size
         var componentTypes = value.GetComponentTypes();
-        writer.WriteInt32(componentTypes.Length);
+        writer.WriteInt32(componentTypes.Count);
 
         // Write components
-        foreach (ref var type in componentTypes.AsSpan())
+        foreach (ref var type in componentTypes.Components)
         {
             // Write type
             MessagePackSerializer.Serialize(ref writer, type, options);
@@ -45,6 +46,7 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Entity Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         // Read id
@@ -66,7 +68,7 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
             // Read type
             var type = MessagePackSerializer.Deserialize<ComponentType>(ref reader, options);
             var cmp = MessagePackSerializer.Deserialize(type, ref reader, options);
-            components[index] = cmp;
+            components[index] = cmp!;
         }
 
         // Create the entity
@@ -82,12 +84,14 @@ public partial class SingleEntityFormatter : IMessagePackFormatter<Entity>
 /// </summary>
 public partial class EntityFormatter : IMessagePackFormatter<Entity>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Entity value, MessagePackSerializerOptions options)
     {
         writer.WriteInt32(value.Id);
         writer.WriteInt32(value.Version);
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Entity Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         // Read id
@@ -103,6 +107,7 @@ public partial class EntityFormatter : IMessagePackFormatter<Entity>
 /// </summary>
 public partial class ArrayFormatter : IMessagePackFormatter<Array>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Array value, MessagePackSerializerOptions options)
     {
         var type = value.GetType().GetElementType();
@@ -119,6 +124,7 @@ public partial class ArrayFormatter : IMessagePackFormatter<Array>
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Array Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         // Write type and size
@@ -148,11 +154,16 @@ public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray
     private const int CpuL1CacheSize = 16_384;
     private readonly T _filler;
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="filler">Filler.</param>
     public JaggedArrayFormatter(T filler)
     {
         _filler = filler;
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, JaggedArray<T> value, MessagePackSerializerOptions options)
     {
         // Write length/capacity and items
@@ -164,6 +175,7 @@ public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public JaggedArray<T> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         var capacity = reader.ReadInt32();
@@ -185,6 +197,7 @@ public partial class JaggedArrayFormatter<T> : IMessagePackFormatter<JaggedArray
 /// </summary>
 public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentType>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, ComponentType value, MessagePackSerializerOptions options)
     {
         // Write id
@@ -194,6 +207,7 @@ public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentTyp
         writer.WriteUInt32((uint)value.ByteSize);
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public ComponentType Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         var id = reader.ReadUInt32();
@@ -209,6 +223,7 @@ public partial class ComponentTypeFormatter : IMessagePackFormatter<ComponentTyp
 /// </summary>
 public partial class SignatureFormatter : IMessagePackFormatter<Signature>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Signature value, MessagePackSerializerOptions options)
     {
         var componentTypeFormatter = options.Resolver.GetFormatter<ComponentType>() as ComponentTypeFormatter;
@@ -217,10 +232,11 @@ public partial class SignatureFormatter : IMessagePackFormatter<Signature>
         writer.WriteUInt32((uint)value.Count);
         foreach(var type in value.Components)
         {
-            componentTypeFormatter.Serialize(ref writer, type, options);
+            componentTypeFormatter!.Serialize(ref writer, type, options);
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Signature Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         var componentTypeFormatter = options.Resolver.GetFormatter<ComponentType>() as ComponentTypeFormatter;
@@ -232,7 +248,7 @@ public partial class SignatureFormatter : IMessagePackFormatter<Signature>
         var componentTypes = new ComponentType[count];
         for (var index = 0; index < count; index++)
         {
-            var componentType = componentTypeFormatter.Deserialize(ref reader, options);
+            var componentType = componentTypeFormatter!.Deserialize(ref reader, options);
             componentTypes[index] = componentType;
         }
         return new Signature(componentTypes);
@@ -245,6 +261,7 @@ public partial class SignatureFormatter : IMessagePackFormatter<Signature>
 /// </summary>
 public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, EntityData value, MessagePackSerializerOptions options)
     {
         // Write chunk index
@@ -254,6 +271,7 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
         writer.WriteUInt32((uint)value.Slot.Index);
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public EntityData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         
@@ -261,7 +279,7 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
         var chunkIndex = reader.ReadUInt32();
         var entityIndex = reader.ReadUInt32();
 
-        return new EntityData(null, new Slot((int)entityIndex, (int)chunkIndex));
+        return new EntityData(null!, new Slot((int)entityIndex, (int)chunkIndex), 0);
     }
 }
 
@@ -272,6 +290,7 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
 /// </summary>
 public partial class WorldFormatter : IMessagePackFormatter<World>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, World value, MessagePackSerializerOptions options)
     {
         // Write important meta data
@@ -293,9 +312,10 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public World Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
-        // Read important meta data
+        // Read important metadata
         var baseChunkSize= reader.ReadUInt32();
         var baseChunkEntityCount = reader.ReadUInt32();
         
@@ -303,8 +323,8 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
         var world = World.Create(chunkSizeInBytes: (int)baseChunkSize, minimumAmountOfEntitiesPerChunk: (int)baseChunkEntityCount);
         var archetypeFormatter = options.Resolver.GetFormatter<Archetype>() as ArchetypeFormatter;
         var entityFormatter = options.Resolver.GetFormatter<Entity>() as EntityFormatter;
-        entityFormatter.WorldId = world.Id;
-        archetypeFormatter.World = world;
+        entityFormatter!.WorldId = world.Id;
+        archetypeFormatter!.World = world;
         
         // Read slots
         var slots = MessagePackSerializer.Deserialize<JaggedArray<EntityData>>(ref reader, options);
@@ -340,13 +360,14 @@ public partial class WorldFormatter : IMessagePackFormatter<World>
 /// </summary>
 public partial class ArchetypeFormatter : IMessagePackFormatter<Archetype>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Archetype value, MessagePackSerializerOptions options)
     {
         // Setup formatters
         var types = value.Signature;
         var chunks = value.Chunks;
         var chunkFormatter = options.Resolver.GetFormatter<Chunk>() as ChunkFormatter;
-        chunkFormatter.Signature = types;
+        chunkFormatter!.Signature = types;
         
         // Write type array
         MessagePackSerializer.Serialize(ref writer, types, options);
@@ -365,6 +386,7 @@ public partial class ArchetypeFormatter : IMessagePackFormatter<Archetype>
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Archetype Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
 
@@ -386,7 +408,7 @@ public partial class ArchetypeFormatter : IMessagePackFormatter<Archetype>
         archetype.SetCount((int)chunkSize - 1);
 
         // Pass types and lookup array to the chunk formatter for saving performance and memory
-        chunkFormatter.World = World;
+        chunkFormatter!.World = World;
         chunkFormatter.Archetype = archetype;
         chunkFormatter.Signature = types;
         chunkFormatter.LookupArray = lookupArray;
@@ -412,6 +434,7 @@ public partial class ArchetypeFormatter : IMessagePackFormatter<Archetype>
 /// </summary>
 public partial class ChunkFormatter : IMessagePackFormatter<Chunk>
 {
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Serialize"/>
     public void Serialize(ref MessagePackWriter writer, Chunk value, MessagePackSerializerOptions options)
     {
         // Write size
@@ -432,6 +455,7 @@ public partial class ChunkFormatter : IMessagePackFormatter<Chunk>
         }
     }
 
+    /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public Chunk Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         // Read chunk size
@@ -461,7 +485,7 @@ public partial class ChunkFormatter : IMessagePackFormatter<Chunk>
         {
             // Read array of the type
             var array = MessagePackSerializer.Deserialize<Array>(ref reader, options);
-            var chunkArray = chunk.GetArray(array.GetType().GetElementType());
+            var chunkArray = chunk.GetArray(array.GetType().GetElementType()!);
             Array.Copy(array, chunkArray, (int)size);
         }
 

@@ -8,11 +8,15 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Arch.System.SourceGenerator;
 
+/// <summary>
+/// Generates queries.
+/// </summary>
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
-    private static Dictionary<ISymbol, List<IMethodSymbol>> _classToMethods { get; set; }
+    private static Dictionary<ISymbol, List<IMethodSymbol>> _classToMethods { get; set; } = null!;
 
+    /// <inheritdoc cref="IIncrementalGenerator.Initialize"/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         //if (!Debugger.IsAttached) Debugger.Launch();
@@ -44,7 +48,7 @@ public class QueryGenerator : IIncrementalGenerator
     }
     
     /// <summary>
-    ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
+    ///     Returns a <see cref="MethodDeclarationSyntax"/> if it's annotated with an attribute of <paramref name="name"/>.
     /// </summary>
     /// <param name="context">Its <see cref="GeneratorSyntaxContext"/>.</param>
     /// <param name="name">The attributes name.</param>
@@ -85,7 +89,7 @@ public class QueryGenerator : IIncrementalGenerator
         if (methods.IsDefaultOrEmpty) return;
         
         // Generate Query methods and map them to their classes
-        _classToMethods = new(512);
+        _classToMethods = new(512, SymbolEqualityComparer.Default);
         foreach (var methodSyntax in methods)
         {
             IMethodSymbol? methodSymbol = null;
@@ -100,11 +104,11 @@ public class QueryGenerator : IIncrementalGenerator
                 continue;
             }
 
-            AddMethodToClass(methodSymbol);
+            AddMethodToClass(methodSymbol!);
             
             var sb = new StringBuilder();
-            var method = sb.AppendQueryMethod(methodSymbol);
-            var fileName = methodSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
+            var method = sb.AppendQueryMethod(methodSymbol!);
+            var fileName = methodSymbol!.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
             context.AddSource($"{fileName}.g.cs",CSharpSyntaxTree.ParseText(method.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         }
 
@@ -114,7 +118,7 @@ public class QueryGenerator : IIncrementalGenerator
             var template = new StringBuilder().AppendBaseSystem(classToMethod).ToString();
             if (string.IsNullOrEmpty(template)) continue;
             
-            var fileName = (classToMethod.Key as INamedTypeSymbol).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
+            var fileName = ((INamedTypeSymbol)classToMethod.Key).ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat).Replace('<', '{').Replace('>', '}');
             context.AddSource($"{fileName}.g.cs",
                 CSharpSyntaxTree.ParseText(template).GetRoot().NormalizeWhitespace().ToFullString());
         }

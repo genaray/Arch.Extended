@@ -10,7 +10,7 @@ using NullableDateTimeFormatter = Utf8Json.Formatters.NullableDateTimeFormatter;
 namespace Arch.Persistence;
 
 /// <summary>
-///     The <see cref="ArchSerializer"/> interface
+///     The <see cref="IArchSerializer"/> interface
 ///     represents an interface with shared methods to (de)serialize worlds and entities.
 ///     <remarks>It might happen that the serialized object is too large to fit into a regular c# byte-array. In this case use the <see cref="IBufferWriter{T}"/>-API.</remarks>
 /// </summary>
@@ -113,7 +113,7 @@ public class ArchBinarySerializer : IArchSerializer
         new EntityFormatter(),
         new JaggedArrayFormatter<int>(-1),
         new JaggedArrayFormatter<(int,int)>((-1,-1)),
-        new JaggedArrayFormatter<EntityData>(new EntityData(null, new Slot(-1,-1)))
+        new JaggedArrayFormatter<EntityData>(new EntityData(null!, new Slot(-1,-1), -1))
     };
 
     /// <summary>
@@ -252,7 +252,7 @@ public class ArchJsonSerializer : IArchSerializer
         new EntityFormatter(),
         new JaggedArrayFormatter<int>(-1),
         new JaggedArrayFormatter<(int,int)>((-1,-1)),
-        new JaggedArrayFormatter<EntityData>(new EntityData(null, new Slot(-1, -1))),
+        new JaggedArrayFormatter<EntityData>(new EntityData(null!, new Slot(-1, -1), -1)),
         new DateTimeFormatter("yyyy-MM-dd HH:mm:ss"),
         new NullableDateTimeFormatter("yyyy-MM-dd HH:mm:ss")
     };

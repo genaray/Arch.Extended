@@ -205,6 +205,9 @@ public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
     }
 }
 
+/// <summary>
+/// Unsafe array.
+/// </summary>
 public unsafe struct UnsafeArray
 {
 
@@ -249,7 +252,7 @@ public unsafe struct UnsafeArray
     }
     
     /// <summary>
-    ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <see cref="newCapacity"/>.
+    ///     Resizes an <see cref="UnsafeArray{T}"/> to a new <paramref name="newCapacity"/>.
     /// </summary>
     /// <param name="source">The <see cref="UnsafeArray{T}"/>.</param>
     /// <param name="newCapacity">The new capacity.</param>

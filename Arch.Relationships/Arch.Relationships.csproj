@@ -20,7 +20,7 @@
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system; arch;</PackageTags>
         <PackageReleaseNotes>Relationships now use less memory and are serializable.</PackageReleaseNotes>
         <Authors>genaray</Authors>
-        <Version>1.0.1</Version>
+        <Version>2.1.0</Version>
         <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 
         <UnityPublish>true</UnityPublish>
@@ -31,7 +31,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Arch" Version="1.2.6.6-alpha" />
+      <PackageReference Include="Arch" Version="2.1.0" />
     </ItemGroup>
 
 </Project>

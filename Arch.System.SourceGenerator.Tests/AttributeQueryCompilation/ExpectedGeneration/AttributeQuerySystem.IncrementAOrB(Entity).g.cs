@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _IncrementAOrB_Initialized = world;
             }
 
-            foreach (ref var chunk in _IncrementAOrB_Query)
+            foreach (ref var chunk in _IncrementAOrB_Query!)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
                 foreach (var entityIndex in chunk)

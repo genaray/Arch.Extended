@@ -56,7 +56,7 @@ public record struct UnsafeBucket<T> : IDisposable where T : unmanaged
     }
 
     /// <summary>
-    ///     Clears this <see cref="UnsafeBucket{T}"/> and sets all values to the <see cref="filler"/>.
+    ///     Clears this <see cref="UnsafeBucket{T}"/> and sets all values to the <paramref name="filler"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear(T filler = default)
@@ -321,7 +321,7 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     }
 
     /// <summary>
-    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_items"/> array.
+    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_bucketArray"/> array.
     /// </summary>
     /// <param name="id">The id.</param>
     /// <param name="bucketIndex">The outer index.</param>
@@ -346,11 +346,12 @@ public struct UnsafeJaggedArray<T> : IDisposable where T : unmanaged
     {
         return ref _bucketArray[index];
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="UnsafeBucket{T}"/> from the <see cref="_bucketArray"/> at the given index.
     /// </summary>
     /// <param name="index">The index.</param>
+    /// <param name="bucket">Bucket.</param>
     /// <returns>The <see cref="UnsafeBucket{T}"/> at the given index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetBucket(int index, in UnsafeBucket<T> bucket)

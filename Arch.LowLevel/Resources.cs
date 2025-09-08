@@ -164,8 +164,8 @@ public sealed class Resources<T> : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        _array = null;
-        _ids = null;
+        _array = null!;
+        _ids = null!;
         Count = 0;
     }
 }

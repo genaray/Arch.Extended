@@ -8,22 +8,28 @@ using CommunityToolkit.HighPerformance;
 namespace Arch.Relationships;
 
 /// <summary>
-///     The <see cref="SortedListEnumerator{TKey,TValue}"/> struct
+///     The <see cref="SortedListEnumerator{TValue}"/> struct
 ///     is a enumerator to enumerate a passed <see cref="SortedList{TKey,TValue}"/> in an efficient way. 
 /// </summary>
-/// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TValue"></typeparam>
 public struct SortedListEnumerator<TValue> 
 {
     private SortedList<Entity, TValue> sortedList;
     private int currentIndex;
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="list">List.</param>
     public SortedListEnumerator(SortedList<Entity, TValue> list)
     {
         sortedList = list;
         currentIndex = -1;
     }
 
+    /// <summary>
+    /// Current.
+    /// </summary>
     public KeyValuePair<Entity, TValue> Current
     {
         get
@@ -37,12 +43,18 @@ public struct SortedListEnumerator<TValue>
         }
     }
     
+    /// <summary>
+    /// Moves to the next element in the enumerator.
+    /// </summary>
     public bool MoveNext()
     {
         currentIndex++;
         return currentIndex < sortedList.Count;
     }
 
+    /// <summary>
+    /// Resets the enumerator to its initial position.
+    /// </summary>
     public void Reset()
     {
         currentIndex = -1;

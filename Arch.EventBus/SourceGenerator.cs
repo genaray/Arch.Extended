@@ -8,15 +8,19 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Arch.Bus;
 
+/// <summary>
+/// Query generator.
+/// </summary>
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
 {
     private static EventBus _eventBus;
     private static Hooks _hooks;
     
-    private static Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)> _eventTypeToReceivingMethods;
-    private static Dictionary<ITypeSymbol, IList<EventHook>> _containingTypeToReceivingMethods;
+    private static Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)> _eventTypeToReceivingMethods = null!;
+    private static Dictionary<ITypeSymbol, IList<EventHook>> _containingTypeToReceivingMethods = null!;
 
+    /// <inheritdoc cref="IIncrementalGenerator.Initialize"/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         //if (!Debugger.IsAttached) Debugger.Launch();
@@ -59,7 +63,7 @@ public class QueryGenerator : IIncrementalGenerator
     
 
     /// <summary>
-    ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annocated with a attribute of <see cref="name"/>.
+    ///     Returns a <see cref="MethodDeclarationSyntax"/> if its annotated with an attribute of <paramref name="name"/>.
     /// </summary>
     /// <param name="context">Its <see cref="GeneratorSyntaxContext"/>.</param>
     /// <param name="name">The attributes name.</param>
@@ -97,7 +101,7 @@ public class QueryGenerator : IIncrementalGenerator
     {
         var eventType = methodSymbol.Parameters[0];
         var param = methodSymbol.GetAttributes()[0].ConstructorArguments[0];
-        var receivingMethod = new ReceivingMethod{ Static = methodSymbol.IsStatic, MethodSymbol = methodSymbol, Order = (int)param.Value };
+        var receivingMethod = new ReceivingMethod{ Static = methodSymbol.IsStatic, MethodSymbol = methodSymbol, Order = (int)param.Value! };
 
         // Either append or create a new receiving method with a new list.
         if (_eventTypeToReceivingMethods.TryGetValue(eventType.Type, out var tuple))
@@ -189,10 +193,10 @@ public class QueryGenerator : IIncrementalGenerator
         // Init 
         _eventBus.Namespace = "Arch.Bus";
         _eventBus.Methods = new List<Method>(512);
-        _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)>(512);
+        _eventTypeToReceivingMethods = new Dictionary<ITypeSymbol, (RefKind, IList<ReceivingMethod>)>(512, SymbolEqualityComparer.Default);
         
         _hooks.Instances = new List<ClassHooks>(512);
-        _containingTypeToReceivingMethods = new Dictionary<ITypeSymbol, IList<EventHook>>(512);
+        _containingTypeToReceivingMethods = new Dictionary<ITypeSymbol, IList<EventHook>>(512, SymbolEqualityComparer.Default);
         
         // Generate Query methods and map them to their classes
         foreach (var methodSyntax in methods)
@@ -200,8 +204,8 @@ public class QueryGenerator : IIncrementalGenerator
             var semanticModel = compilation.GetSemanticModel(methodSyntax.SyntaxTree);
             var methodSymbol = ModelExtensions.GetDeclaredSymbol(semanticModel, methodSyntax) as IMethodSymbol;
 
-            MapMethodToEventType(methodSymbol);
-            MapMethodToContainingType(methodSymbol);
+            MapMethodToEventType(methodSymbol!);
+            MapMethodToContainingType(methodSymbol!);
         }
         
         PrepareEventBus();

@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _CountAWithEntityLeft_Initialized = world;
             }
 
-            foreach (ref var chunk in _CountAWithEntityLeft_Query)
+            foreach (ref var chunk in _CountAWithEntityLeft_Query!)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
                 foreach (var entityIndex in chunk)

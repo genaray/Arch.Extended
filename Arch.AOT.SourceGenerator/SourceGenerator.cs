@@ -31,6 +31,8 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 	                                             public sealed class ComponentAttribute : Attribute { }
 	                                         }
 	                                         """;
+
+	/// <inheritdoc cref="IIncrementalGenerator.Initialize"/>
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		// Register the attribute.

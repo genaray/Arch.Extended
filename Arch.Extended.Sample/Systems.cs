@@ -4,7 +4,6 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.LowLevel;
 using Arch.System;
-using Arch.System.SourceGenerator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;

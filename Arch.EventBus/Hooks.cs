@@ -3,14 +3,30 @@ using Microsoft.CodeAnalysis;
 
 namespace Arch.Bus;
 
+/// <summary>
+/// Hooks.
+/// </summary>
 public struct Hooks
 {
+    /// <summary>
+    /// Instances.
+    /// </summary>
     public List<ClassHooks> Instances;
 }
 
+/// <summary>
+/// Class hooks.
+/// </summary>
 public struct ClassHooks
 {
+    /// <summary>
+    /// Partial class.
+    /// </summary>
     public ITypeSymbol PartialClass;
+
+    /// <summary>
+    /// Event hooks.
+    /// </summary>
     public IList<EventHook> EventHooks;
 }
 
@@ -32,7 +48,10 @@ public struct EventHook
     public IMethodSymbol MethodSymbol;
 }
 
-public static class Hookersxtensions
+/// <summary>
+/// Hook extensions.
+/// </summary>
+public static class HookExtensions
 {
     
     /// <summary>

@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _CountAWithParamsMiddle_Initialized = world;
             }
 
-            foreach (ref var chunk in _CountAWithParamsMiddle_Query)
+            foreach (ref var chunk in _CountAWithParamsMiddle_Query!)
             {
                 ref var @intcomponentaFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentA>();
                 ref var @intcomponentbFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentB>();

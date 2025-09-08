@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _AssignEntityDataParamWithEntityRight_Initialized = world;
             }
 
-            foreach (ref var chunk in _AssignEntityDataParamWithEntityRight_Query)
+            foreach (ref var chunk in _AssignEntityDataParamWithEntityRight_Query!)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
                 ref var @intcomponentaFirstElement = ref chunk.GetFirst<global::Arch.System.SourceGenerator.Tests.IntComponentA>();

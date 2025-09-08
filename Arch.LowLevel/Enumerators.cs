@@ -62,6 +62,7 @@ public unsafe struct UnsafeIEnumerator<T> : IEnumerator<T> where T : unmanaged
     ///     Creates an instance of the <see cref="UnsafeIEnumerator{T}"/>.
     /// </summary>
     /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="count">Count.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal UnsafeIEnumerator(T* list, int count)
     {
@@ -117,6 +118,7 @@ public unsafe ref struct UnsafeEnumerator<T> where T : unmanaged
     ///     Creates an instance of the <see cref="UnsafeIEnumerator{T}"/>.
     /// </summary>
     /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="count">Count.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal UnsafeEnumerator(T* list, int count)
     {
@@ -162,6 +164,7 @@ public unsafe struct ReverseIEnumerator<T> : IEnumerator<T> where T : unmanaged
     ///     Creates an instance of the <see cref="UnsafeIEnumerator{T}"/>.
     /// </summary>
     /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="count">Count.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ReverseIEnumerator(T* list, int count)
     {
@@ -216,6 +219,7 @@ public unsafe ref struct UnsafeReverseEnumerator<T> where T : unmanaged
     ///     Creates an instance of the <see cref="UnsafeIEnumerator{T}"/>.
     /// </summary>
     /// <param name="list">The <see cref="UnsafeList{T}"/>.</param>
+    /// <param name="count">Count.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal UnsafeReverseEnumerator(T* list, int count)
     {

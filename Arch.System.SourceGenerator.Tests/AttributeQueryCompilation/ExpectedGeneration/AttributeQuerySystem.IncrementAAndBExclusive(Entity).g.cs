@@ -24,7 +24,7 @@ namespace Arch.System.SourceGenerator.Tests
                 _IncrementAAndBExclusive_Initialized = world;
             }
 
-            foreach (ref var chunk in _IncrementAAndBExclusive_Query)
+            foreach (ref var chunk in _IncrementAAndBExclusive_Query!)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
                 foreach (var entityIndex in chunk)

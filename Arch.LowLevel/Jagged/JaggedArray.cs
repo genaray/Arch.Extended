@@ -88,10 +88,10 @@ public record struct Bucket<T>
     }
     
     /// <summary>
-    ///     Clears this <see cref="Bucket{T}"/> and sets all values to the <see cref="filler"/>.
+    ///     Clears this <see cref="Bucket{T}"/> and sets all values to the <paramref name="filler"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear(T filler = default)
+    public void Clear(T filler = default!)
     {
         System.Array.Fill(Array, filler);
     }
@@ -272,7 +272,7 @@ public class JaggedArray<T>
         }
 
         @bool = true;
-        return ref item; 
+        return ref item!; 
     }
     
     /// <summary>
@@ -343,7 +343,7 @@ public class JaggedArray<T>
     }
 
     /// <summary>
-    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_items"/> array.
+    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_buckets"/> array.
     /// </summary>
     /// <param name="id">The id.</param>
     /// <param name="bucketIndex">The outer index.</param>

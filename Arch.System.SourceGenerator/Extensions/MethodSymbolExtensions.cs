@@ -2,7 +2,10 @@
 
 namespace Arch.System.SourceGenerator;
 
-public static class IMethodSymbolExtensions
+/// <summary>
+/// Extensions for <see cref="IMethodSymbol"/>.
+/// </summary>
+public static class MethodSymbolExtensions
 {
 
     /// <summary>
@@ -16,12 +19,12 @@ public static class IMethodSymbolExtensions
         foreach (var attribute in ms.GetAttributes())
         {
             var classSymbol = attribute.AttributeClass;
-            if(!classSymbol.Name.Contains(name)) continue;
+            if(!classSymbol!.Name.Contains(name)) continue;
 
             return attribute;
         }
 
-        return default;
+        return default!;
     }
     
 }

@@ -127,7 +127,7 @@ internal class SnapshotTest
             .WithOptimizationLevel(OptimizationLevel.Release);
         var inputCompilation = CSharpCompilation.Create(compilationFolder, sourceTrees,
             references: references.Select(r => MetadataReference.CreateFromFile(r)),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            options: compilationOptions);
 
         // Run the generator
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new QueryGenerator());
