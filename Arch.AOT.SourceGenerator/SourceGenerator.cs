@@ -108,32 +108,81 @@ public sealed class ComponentRegistryGenerator : IIncrementalGenerator
 		var sb = new StringBuilder();
 		_componentTypes.Clear();
 
+		var openGenericTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		var closedGenericTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		
 		foreach (var type in typeList)
 		{
 			// Get the symbol for the type.
 			var symbol = ModelExtensions.GetDeclaredSymbol(compilation.GetSemanticModel(type.SyntaxTree), type);
 
 			// If the symbol is not a type symbol, we can't do anything with it.
-			if (symbol is not ITypeSymbol typeSymbol)
+			if (symbol is not INamedTypeSymbol typeSymbol)
 			{
 				continue;
 			}
-
-			// Check if there are any fields in the type.
-			var hasZeroFields = true;
-			foreach (var member in typeSymbol.GetMembers())
+			
+			// If the type is a generic Type definition (e.g. SomeType<T>) we don't want to register it, we want to register their concrete usages instead.
+			if (!IsClosedType(typeSymbol))
 			{
-				if (member is not IFieldSymbol) continue;
-				
-				hasZeroFields = false;
-				break;
+				openGenericTypes.Add(typeSymbol);
+				continue;
 			}
 
-			var typeName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-			_componentTypes.Add(new ComponentType(typeName, hasZeroFields, typeSymbol.IsValueType));
+			AddComponentType(typeSymbol);
 		}
+		
+		foreach (var tree in compilation.SyntaxTrees)
+		{
+			var semanticModel = compilation.GetSemanticModel(tree);
+			var root = tree.GetRoot();
 
+			foreach (var node in root.DescendantNodes().OfType<TypeSyntax>())
+			{
+				if (semanticModel.GetSymbolInfo(node).Symbol is not INamedTypeSymbol typeSymbol)
+					continue;
+
+				// This is a constructed instance of a generic component
+				if (openGenericTypes.Contains(typeSymbol.OriginalDefinition) && IsClosedType(typeSymbol))
+				{
+					closedGenericTypes.Add(typeSymbol);
+				}
+			}
+		}
+		
+		foreach (var typeSymbol in closedGenericTypes)
+		{
+			AddComponentType(typeSymbol);
+		}
+		
 		sb.AppendComponentTypes(_componentTypes);
 		productionContext.AddSource("GeneratedComponentRegistry.g.cs",CSharpSyntaxTree.ParseText(sb.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+	}
+
+	private static bool IsClosedType(INamedTypeSymbol typeSymbol)
+	{
+		if (typeSymbol.IsUnboundGenericType) return false;
+		if (typeSymbol.IsGenericType)
+		{
+			return typeSymbol.TypeArguments.All(t => t.TypeKind != TypeKind.TypeParameter);
+		}
+
+		return true;
+	}
+
+	private void AddComponentType(INamedTypeSymbol typeSymbol)
+	{
+		// Check if there are any fields in the type.
+		var hasZeroFields = true;
+		foreach (var member in typeSymbol.GetMembers())
+		{
+			if (member is not IFieldSymbol) continue;
+				
+			hasZeroFields = false;
+			break;
+		}
+
+		var typeName = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+		_componentTypes.Add(new ComponentType(typeName, hasZeroFields, typeSymbol.IsValueType));
 	}
 }

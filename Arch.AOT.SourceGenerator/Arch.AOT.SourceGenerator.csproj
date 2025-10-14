@@ -13,7 +13,7 @@
 
         <PackageId>Arch.AOT.SourceGenerator</PackageId>
         <Title>Arch.AOT.SourceGenerator</Title>
-        <Version>1.0.1</Version>
+        <Version>1.0.3-custom</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A source generator for arch to support AOT. </Description>

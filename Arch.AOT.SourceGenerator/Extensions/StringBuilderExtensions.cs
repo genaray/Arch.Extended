@@ -27,7 +27,7 @@ public static class StringBuilderExtensions
 		sb.AppendLine(
 			$$"""
 		    using System.Runtime.CompilerServices;
-		    using Arch.Core.Utils;
+		    using Arch.Core;
 		              
 		    namespace Arch.AOT.SourceGenerator
 		    {
