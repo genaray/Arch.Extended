@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Publish Arch.LowLevel to Unity Publish" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/UnityPublish/Plugins" target_framework="netstandard2.1" uuid_high="50739187434734475" uuid_low="-7009414175307955308" />
+    <method v="2" />
+  </configuration>
+</component>

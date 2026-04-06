@@ -21,7 +21,21 @@ public class QueryGenerator : IIncrementalGenerator
     {
         //if (!Debugger.IsAttached) Debugger.Launch();
 
-        // Do a simple filter for methods marked with update
+        // Register the generic attributes
+        var attributes = $$"""
+            namespace Arch.System.SourceGenerator
+            {
+            #if NET7_0_OR_GREATER
+                {{new StringBuilder().AppendGenericAttributes("All", "All", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("Any", "Any", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("None", "None", 25)}}
+                {{new StringBuilder().AppendGenericAttributes("Exclusive", "Exclusive", 25)}}
+            #endif
+            }
+        """;
+        context.RegisterPostInitializationOutput(ctx => ctx.AddSource("Attributes.g.cs", SourceText.From(attributes, Encoding.UTF8)));
+
+        // Do a simple filter for methods marked with execute
         IncrementalValuesProvider<MethodDeclarationSyntax> methodDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
                  static (s, _) => s is MethodDeclarationSyntax { AttributeLists.Count: > 0 },
                  static (ctx, _) => GetMethodSymbolIfAttributeof(ctx, "Arch.System.QueryAttribute")
@@ -46,7 +60,7 @@ public class QueryGenerator : IIncrementalGenerator
         }
         list.Add(methodSymbol);
     }
-    
+
     /// <summary>
     ///     Returns a <see cref="MethodDeclarationSyntax"/> if it's annotated with an attribute of <paramref name="name"/>.
     /// </summary>
@@ -64,7 +78,7 @@ public class QueryGenerator : IIncrementalGenerator
             foreach (var attributeSyntax in attributeListSyntax.Attributes)
             {
                 if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol) continue;
-                
+
                 var attributeContainingTypeSymbol = attributeSymbol.ContainingType;
                 var fullName = attributeContainingTypeSymbol.ToDisplayString();
 
@@ -87,7 +101,7 @@ public class QueryGenerator : IIncrementalGenerator
     private static void Generate(Compilation compilation, ImmutableArray<MethodDeclarationSyntax> methods, SourceProductionContext context)
     {
         if (methods.IsDefaultOrEmpty) return;
-        
+
         // Generate Query methods and map them to their classes
         _classToMethods = new(512, SymbolEqualityComparer.Default);
         foreach (var methodSyntax in methods)
@@ -125,7 +139,7 @@ public class QueryGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Compares <see cref="MethodDeclarationSyntax"/>s to remove duplicates. 
+    /// Compares <see cref="MethodDeclarationSyntax"/>s to remove duplicates.
     /// </summary>
     class Comparer : IEqualityComparer<MethodDeclarationSyntax>
     {

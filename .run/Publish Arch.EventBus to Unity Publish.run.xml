@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Publish Arch.EventBus to Unity Publish" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" platform="Any CPU" runtime="Portable" target_folder="$PROJECT_DIR$/UnityPublish/SourceGenerators" target_framework="netstandard2.0" uuid_high="-8378326082408201200" uuid_low="-8691373370981991138" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -14,7 +14,7 @@ using System.Diagnostics.Metrics;
 namespace Arch.System;
 
 /// <summary>
-///     An interface providing several methods for a system. 
+///     An interface providing several methods for a system.
 /// </summary>
 /// <typeparam name="T">The type passed to each method. For example a delta time or some other data.</typeparam>
 public interface ISystem<T> : IDisposable
@@ -23,24 +23,24 @@ public interface ISystem<T> : IDisposable
     ///     Initializes a system, before its first ever run.
     /// </summary>
     void Initialize();
-    
+
     /// <summary>
-    ///     Runs before <see cref="Update"/>.
+    ///     Runs before <see cref="Execute"/>.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
-    void BeforeUpdate(in T t);
-    
+    void BeforeExecute(in T t);
+
     /// <summary>
     ///     Updates the system.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
-    void Update(in T t);
-    
+    void Execute(in T t);
+
     /// <summary>
-    ///     Runs after <see cref="Update"/>.
+    ///     Runs after <see cref="Execute"/>.
     /// </summary>
     /// <param name="t">An instance passed to it.</param>
-    void AfterUpdate(in T t);
+    void AfterExecute(in T t);
 }
 
 /// <summary>
@@ -50,18 +50,18 @@ public interface ISystem<T> : IDisposable
 /// <typeparam name="T">The type passed to the <see cref="ISystem{T}"/> interface.</typeparam>
 public abstract class BaseSystem<W, T> : ISystem<T>
 {
-    
+
     /// <summary>
-    ///     Creates an instance. 
+    ///     Creates an instance.
     /// </summary>
     /// <param name="world">The <see cref="World"/>.</param>
     protected BaseSystem(W world)
     {
         World = world;
     }
- 
+
     /// <summary>
-    ///     The world instance. 
+    ///     The world instance.
     /// </summary>
     public W World { get; private set; }
 
@@ -69,13 +69,13 @@ public abstract class BaseSystem<W, T> : ISystem<T>
     public virtual void Initialize(){}
 
     /// <inheritdoc />
-    public virtual void BeforeUpdate(in T t) { }
+    public virtual void BeforeExecute(in T t) { }
 
     /// <inheritdoc />
-    public virtual void Update(in T t){}
+    public virtual void Execute(in T t){}
 
     /// <inheritdoc />
-    public virtual void AfterUpdate(in T t){}
+    public virtual void AfterExecute(in T t){}
 
     /// <inheritdoc />
     public virtual void Dispose(){}
@@ -99,7 +99,7 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
     public string Name { get; }
 
     /// <summary>
-    /// All <see cref="SystemEntry"/>'s in this group. 
+    /// All <see cref="SystemEntry"/>'s in this group.
     /// </summary>
     private readonly List<SystemEntry> _systems = new();
 
@@ -150,7 +150,7 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
 
         return this;
     }
-    
+
     /// <summary>
     ///     Adds an single <see cref="ISystem{T}"/> to this group by its generic.
     ///     Automatically initializes it properly. Must be contructorless.
@@ -202,7 +202,7 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
 
         return default;
     }
-    
+
     /// <summary>
     ///     Finds all <see cref="ISystem{T}"/>s which can be cast into the given type.
     /// </summary>
@@ -221,10 +221,10 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
             {
                 continue;
             }
-            
+
             foreach (var nested in grp.Find<G>())
             {
-                yield return nested;   
+                yield return nested;
             }
         }
     }
@@ -242,10 +242,10 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
     }
 
     /// <summary>
-    ///     Runs <see cref="ISystem{T}.BeforeUpdate"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
+    ///     Runs <see cref="ISystem{T}.BeforeExecute"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
     /// </summary>
     /// <param name="t">An instance passed to each <see cref="ISystem{T}.Initialize"/> method.</param>
-    public void BeforeUpdate(in T t)
+    public void BeforeExecute(in T t)
     {
         for (var index = 0; index < _systems.Count; index++)
         {
@@ -256,21 +256,21 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
             {
 #endif
 
-                entry.System.BeforeUpdate(in t);
+                entry.System.BeforeExecute(in t);
 
 #if !ARCH_METRICS_DISABLED
             }
             _timer.Stop();
-            entry.BeforeUpdate.Record(_timer.Elapsed.TotalMilliseconds);
+            entry.BeforeExecute.Record(_timer.Elapsed.TotalMilliseconds);
 #endif
         }
     }
 
     /// <summary>
-    ///     Runs <see cref="ISystem{T}.Update"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
+    ///     Runs <see cref="ISystem{T}.Execute"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
     /// </summary>
     /// <param name="t">An instance passed to each <see cref="ISystem{T}.Initialize"/> method.</param>
-    public void Update(in T t)
+    public void Execute(in T t)
     {
         for (var index = 0; index < _systems.Count; index++)
         {
@@ -281,21 +281,21 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
             {
 #endif
 
-                entry.System.Update(in t);
+                entry.System.Execute(in t);
 
 #if !ARCH_METRICS_DISABLED
             }
             _timer.Stop();
-            entry.Update.Record(_timer.Elapsed.TotalMilliseconds);
+            entry.Execute.Record(_timer.Elapsed.TotalMilliseconds);
 #endif
         }
     }
 
     /// <summary>
-    ///     Runs <see cref="ISystem{T}.AfterUpdate"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
+    ///     Runs <see cref="ISystem{T}.AfterExecute"/> on each <see cref="ISystem{T}"/> of this <see cref="Group{T}"/>..
     /// </summary>
     /// <param name="t">An instance passed to each <see cref="ISystem{T}.Initialize"/> method.</param>
-    public void AfterUpdate(in T t)
+    public void AfterExecute(in T t)
     {
         for (var index = 0; index < _systems.Count; index++)
         {
@@ -306,12 +306,12 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
             {
 #endif
 
-                entry.System.AfterUpdate(in t);
+                entry.System.AfterExecute(in t);
 
 #if !ARCH_METRICS_DISABLED
             }
             _timer.Stop();
-            entry.AfterUpdate.Record(_timer.Elapsed.TotalMilliseconds);
+            entry.AfterExecute.Record(_timer.Elapsed.TotalMilliseconds);
 #endif
         }
     }
@@ -345,7 +345,7 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
         {
             stringBuilder.Length--;
         }
-        
+
         return $"Group = {{ {nameof(Name)} = {Name}, Systems = {{ {stringBuilder} }} }} ";
     }
     
@@ -372,9 +372,9 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
         public readonly ISystem<T> System;
 
 #if !ARCH_METRICS_DISABLED
-        public readonly Histogram<double> BeforeUpdate;
-        public readonly Histogram<double> Update;
-        public readonly Histogram<double> AfterUpdate;
+        public readonly Histogram<double> BeforeExecute;
+        public readonly Histogram<double> Execute;
+        public readonly Histogram<double> AfterExecute;
 #endif
 
         public void Dispose()
@@ -392,9 +392,9 @@ public class Group<T> : ISystem<T>, IEnumerable<ISystem<T>>
             System = system;
 
 #if !ARCH_METRICS_DISABLED
-            BeforeUpdate = meter.CreateHistogram<double>($"{name}.BeforeUpdate", unit: "millisecond");
-            Update = meter.CreateHistogram<double>($"{name}.Update", unit: "millisecond");
-            AfterUpdate = meter.CreateHistogram<double>($"{name}.AfterUpdate", unit: "millisecond");
+            BeforeExecute = meter.CreateHistogram<double>($"{name}.BeforeExecute", unit: "millisecond");
+            Execute = meter.CreateHistogram<double>($"{name}.Execute", unit: "millisecond");
+            AfterExecute = meter.CreateHistogram<double>($"{name}.AfterExecute", unit: "millisecond");
 #endif
         }
     }

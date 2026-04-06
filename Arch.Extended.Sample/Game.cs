@@ -6,9 +6,9 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Bus;
 using Arch.Core.Extensions.Dangerous;
-using Arch.Core.Utils;
 using Arch.Persistence;
 using Arch.Relationships;
+using Arch.System;
 using MessagePack;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -45,7 +45,7 @@ public class Game : Microsoft.Xna.Framework.Game
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
     }
-    
+
     protected override void Initialize()
     {
         // Setup texture and randomness
@@ -54,17 +54,17 @@ public class Game : Microsoft.Xna.Framework.Game
 
         base.Initialize();
     }
-    
+
     protected override void LoadContent()
     {
         // Create a new SpriteBatch, which can be used to draw textures.
         _spriteBatch = new SpriteBatch(GraphicsDevice);
     }
-    
+
     protected override void BeginRun()
     {
         base.BeginRun();
-        
+
         // Create world & JobScheduler for multithreading
         _world = World.Create();
         _jobScheduler = new(
@@ -82,8 +82,8 @@ public class Game : Microsoft.Xna.Framework.Game
         for (var index = 0; index < 10; index++)
         {
             _world.Create(
-                new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
-                new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) }, 
+                new Position{ Vector2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
+                new Velocity{ Vector2 = _random.NextVector2(-0.25f,0.25f) },
                 new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
             );
         }
@@ -99,14 +99,14 @@ public class Game : Microsoft.Xna.Framework.Game
         _world = archSerializer.Deserialize(worldJson);
         
         // Create systems, running in order
-        _systems = new System.Group<GameTime>(
+        _systems = new Group<GameTime>(
             "Systems",
             new MovementSystem(_world, GraphicsDevice.Viewport.Bounds),
             new ColorSystem(_world),
             new DebugSystem(_world)
         );
-        _drawSystem = new DrawSystem(_world, _spriteBatch);  // Draw system must be its own system since monogame differentiates between update and draw. 
-        
+        _drawSystem = new DrawSystem(_world, _spriteBatch);  // Draw system must be its own system since monogame differentiates between update and draw.
+
         // Initialize systems
         _systems.Initialize();
         _drawSystem.Initialize();
@@ -116,7 +116,7 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         // Exit game on press
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) Exit();
-        
+
         // Forward keyboard state as an event to another handles by using the eventbus
         var @event = (_world, Keyboard.GetState());
         EventBus.Send(ref @event);
@@ -193,31 +193,31 @@ public class Game : Microsoft.Xna.Framework.Game
         }
         
         // Update systems
-        _systems.BeforeUpdate(in gameTime);
-        _systems.Update(in gameTime);
-        _systems.AfterUpdate(in gameTime);
+        _systems.BeforeExecute(in gameTime);
+        _systems.Execute(in gameTime);
+        _systems.AfterExecute(in gameTime);
         base.Update(gameTime);
     }
-    
+
     protected override void Draw(GameTime gameTime)
     {
         _graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
-        
+
         // Update draw system and draw stuff
-        _drawSystem.BeforeUpdate(in gameTime);
-        _drawSystem.Update(in gameTime);
-        _drawSystem.AfterUpdate(in gameTime);
+        _drawSystem.BeforeExecute(in gameTime);
+        _drawSystem.Execute(in gameTime);
+        _drawSystem.AfterExecute(in gameTime);
         base.Draw(gameTime);
     }
 
     protected override void EndRun()
     {
         base.EndRun();
-        
-        // Destroy world and shutdown the jobscheduler 
+
+        // Destroy world and shutdown the jobscheduler
         World.Destroy(_world);
         _jobScheduler.Dispose();
-        
+
         // Dispose systems
         _systems.Dispose();
     }
