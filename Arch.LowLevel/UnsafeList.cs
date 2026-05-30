@@ -163,6 +163,46 @@ public unsafe struct UnsafeList<T> : IList<T>, IDisposable where T : unmanaged
     }
     
     /// <summary>
+    /// Removes a contiguous range of elements from the list and shifts the remaining elements down
+    /// to fill the gap.
+    /// </summary>
+    /// <param name="start">
+    /// The starting index of the range to remove. Must be within the bounds of the list.
+    /// </param>
+    /// <param name="count">
+    /// The number of elements to remove. Must be non-negative and not exceed the remaining elements
+    /// beyond <paramref name="start"/>.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown if <paramref name="start"/> or <paramref name="count"/> define a range outside
+    /// the bounds of the list.
+    /// </exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void RemoveRange(int start, int count)
+    {
+        if (start > Count)
+            throw new ArgumentOutOfRangeException(nameof(start));
+        if (count > Count - start)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        if (count == 0)
+            return;
+
+        // Calculate the tail size to move
+        var tail = Count - (start + count);
+        if (tail > 0)
+        {
+            // Move the tail down over the removed range
+            Unsafe.CopyBlock(
+                destination: (byte*)(_array._ptr + start),
+                source: (byte*)(_array._ptr + start + count),
+                byteCount: (uint)(tail * sizeof(T))
+            );
+        }
+
+        Count -= count;
+    }
+    
+    /// <summary>
     ///     Checks if the item is containted in this <see cref="UnsafeList{T}"/> instance and returns its index.
     /// </summary>
     /// <param name="item">The item.</param>
