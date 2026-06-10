@@ -403,7 +403,7 @@ public partial class EntitySlotFormatter : IJsonFormatter<EntityData>
     public void Serialize(ref JsonWriter writer, EntityData value, IJsonFormatterResolver options)
     {
         writer.WriteBeginObject();
-        
+
         // Write chunk index
         writer.WritePropertyName("chunkIndex");
         writer.WriteUInt32((uint)value.Slot.ChunkIndex);
@@ -412,7 +412,12 @@ public partial class EntitySlotFormatter : IJsonFormatter<EntityData>
         // Write entity index
         writer.WritePropertyName("index");
         writer.WriteUInt32((uint)value.Slot.Index);
-        
+        writer.WriteValueSeparator();
+
+        // Write version (required for IsAlive checks after deserialization)
+        writer.WritePropertyName("version");
+        writer.WriteInt32(value.Version);
+
         writer.WriteEndObject();
     }
 
@@ -425,13 +430,18 @@ public partial class EntitySlotFormatter : IJsonFormatter<EntityData>
         reader.ReadPropertyName();
         var chunkIndex = reader.ReadUInt32();
         reader.ReadIsValueSeparator();
-        
+
         // Read entity index
         reader.ReadPropertyName();
         var entityIndex = reader.ReadUInt32();
+        reader.ReadIsValueSeparator();
+
+        // Read version (required for IsAlive checks after deserialization)
+        reader.ReadPropertyName();
+        var version = reader.ReadInt32();
 
         reader.ReadIsEndObject();
-        return new EntityData(null!, new Slot((int)entityIndex, (int)chunkIndex), 0);
+        return new EntityData(null!, new Slot((int)entityIndex, (int)chunkIndex), version);
     }
 }
 

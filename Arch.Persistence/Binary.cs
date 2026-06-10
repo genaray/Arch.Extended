@@ -269,17 +269,23 @@ public partial class EntitySlotFormatter : IMessagePackFormatter<EntityData>
 
         // Write entity index
         writer.WriteUInt32((uint)value.Slot.Index);
+
+        // Write version (required for IsAlive checks after deserialization)
+        writer.WriteInt32(value.Version);
     }
 
     /// <inheritdoc cref="IMessagePackFormatter{T}.Deserialize"/>
     public EntityData Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
-        
+
         // Read chunk index and entity index
         var chunkIndex = reader.ReadUInt32();
         var entityIndex = reader.ReadUInt32();
 
-        return new EntityData(null!, new Slot((int)entityIndex, (int)chunkIndex), 0);
+        // Read version (required for IsAlive checks after deserialization)
+        var version = reader.ReadInt32();
+
+        return new EntityData(null!, new Slot((int)entityIndex, (int)chunkIndex), version);
     }
 }
 

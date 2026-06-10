@@ -158,8 +158,50 @@ public class Tests
 
         var newWorld = World.Create();
         var newEntity = _jsonSerializer.Deserialize(newWorld, bytes);
-        
+
         That(newEntity.Get<Transform>(), Is.EqualTo(entity.Get<Transform>()));
         That(newEntity.Get<MetaData>(), Is.EqualTo(entity.Get<MetaData>()));
+    }
+
+    /// <summary>
+    ///     Checks if entities are alive after binary world deserialization.
+    ///     This verifies that EntityData.Version is correctly preserved.
+    /// </summary>
+    [Test]
+    public void BinaryWorldSerialization_EntitiesAreAlive()
+    {
+        var bytes = _binarySerializer.Serialize(_world);
+        var newWorld = _binarySerializer.Deserialize(bytes);
+
+        var newEntities = new Entity[newWorld.Size];
+        newWorld.GetEntities(new QueryDescription(), newEntities.AsSpan());
+
+        // All entities should be alive after deserialization
+        for (var index = 0; index < newEntities.Length; index++)
+        {
+            var entity = newEntities[index];
+            That(newWorld.IsAlive(entity), Is.True, $"Entity {entity.Id} with version {entity.Version} should be alive");
+        }
+    }
+
+    /// <summary>
+    ///     Checks if entities are alive after JSON world deserialization.
+    ///     This verifies that EntityData.Version is correctly preserved.
+    /// </summary>
+    [Test]
+    public void JsonWorldSerialization_EntitiesAreAlive()
+    {
+        var bytes = _jsonSerializer.Serialize(_world);
+        var newWorld = _jsonSerializer.Deserialize(bytes);
+
+        var newEntities = new Entity[newWorld.Size];
+        newWorld.GetEntities(new QueryDescription(), newEntities.AsSpan());
+
+        // All entities should be alive after deserialization
+        for (var index = 0; index < newEntities.Length; index++)
+        {
+            var entity = newEntities[index];
+            That(newWorld.IsAlive(entity), Is.True, $"Entity {entity.Id} with version {entity.Version} should be alive");
+        }
     }
 }
